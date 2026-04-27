@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/JJaeHwan/trellis/compare/v0.3.0...v0.4.0) (2026-04-27)
+
+
+### Features
+
+* **interview:** add Q10-Q13 (DB feature, auth, LLM scope, embedding) for sharper playbook matching ([7a171a9](https://github.com/JJaeHwan/trellis/commit/7a171a91661a3cadafe252e9c94008748d223be7))
+
 ## [0.3.0](https://github.com/JJaeHwan/trellis/compare/v0.2.0...v0.3.0) (2026-04-27)
 
 
