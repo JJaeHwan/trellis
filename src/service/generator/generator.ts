@@ -1,7 +1,12 @@
 import Handlebars from "handlebars";
-import type { ProjectSpec, VirtualFile, VirtualTree } from "../../domain/index.js";
+import type {
+  ProjectSpec,
+  Template,
+  VirtualFile,
+  VirtualTree,
+} from "../../domain/index.js";
 import { registerHelpers, toKebab, toPascal } from "./handlebars-helpers.js";
-import type { GeneratorContext, Template } from "./types.js";
+import type { GeneratorContext } from "./types.js";
 
 const HBS_EXT = ".hbs";
 

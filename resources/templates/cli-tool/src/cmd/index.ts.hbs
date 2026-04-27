@@ -1,0 +1,29 @@
+import { Command } from "commander";
+import { AppError, ExitCode } from "../common/errors/index.js";
+import { logger } from "../common/logger/index.js";
+import { registerHelloCommand } from "./hello.js";
+
+const VERSION = "0.0.0";
+
+async function main(argv: string[]): Promise<void> {
+  const program = new Command();
+
+  program
+    .name("{{projectNameKebab}}")
+    .description("{{projectName}} CLI.")
+    .version(VERSION);
+
+  registerHelloCommand(program);
+
+  await program.parseAsync(argv);
+}
+
+main(process.argv).catch((error: unknown) => {
+  if (error instanceof AppError) {
+    process.stderr.write(`${error.message}\n`);
+    process.exit(error.exitCode);
+  }
+  logger.error({ err: error }, "unhandled-error");
+  process.stderr.write("Unexpected error.\n");
+  process.exit(ExitCode.GeneralError);
+});

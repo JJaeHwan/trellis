@@ -1,0 +1,98 @@
+# {{projectName}} — Project Rules
+
+> 이 문서는 하네스 엔지니어링의 핵심입니다.
+> 에이전트(AI)가 코드를 생성할 때 반드시 이 규칙을 따라야 합니다.
+
+---
+
+## 1. 프로젝트 개요
+
+- **이름**: {{projectName}}
+- **플레이북**: cli-tool
+- **생성**: trellis {{trellisVersion}} on {{generatedAt}}
+
+### 기술 스택
+
+| 계층 | 선택 |
+|------|------|
+| 런타임 | Node.js ≥ 20 |
+| 언어 | TypeScript 5.x (strict) |
+| CLI | commander |
+| 로거 | pino (silent default) |
+| 빌드 | tsup |
+| 테스트 | vitest |
+| 린트 | eslint + @typescript-eslint |
+| 계층 검증 | dependency-cruiser |
+
+---
+
+## 2. 아키텍처 계층 (cli-tool 축약형)
+
+```
+L0 common     (타입, 예외, 유틸 — 프레임워크 의존 금지)
+L1 config     (설정 로드)
+L2 domain     (순수 모델)
+L3 external   (파일 시스템, API 어댑터)
+L4 service    (핵심 로직)
+L5 cmd        (서브커맨드 엔트리)
+```
+
+### 의존성 규칙
+
+| ID | 규칙 |
+|----|------|
+| DEP-01 | Layer N은 Layer 0..N-1만 import 가능 |
+| DEP-02 | common(L0)은 써드파티 프레임워크 의존 금지 |
+| DEP-03 | domain(L2)은 순수 타입 — I/O 금지 |
+| DEP-04 | external(L3)은 I/O 어댑터 — 비즈니스 로직 금지 |
+| DEP-05 | cmd(L5)는 얇게 — commander 파싱과 service 호출만 |
+
+---
+
+## 3. 코딩 컨벤션
+
+- 클래스/타입: PascalCase
+- 함수/변수: camelCase
+- 상수: UPPER_SNAKE_CASE
+- 파일명: kebab-case
+- 예외: `common/errors/` 의 `AppError` 사용
+- `any` 금지 — `unknown` + 타입 가드
+- Optional 반환은 `| undefined` 명시
+
+---
+
+## 4. CLI 규칙
+
+- **stdin/stdout 1등 시민** — 파이프 친화적
+- **exit code**: `0`=성공, `1`=일반 오류, `2`=사용자 입력 오류
+- `--json` 플래그로 구조화 출력 (필요 시)
+- TTY 감지 — 파이프면 컬러/스피너 off
+- stdout 에 진행바 금지 (stderr 로)
+- 매 실행 네트워크 체크 금지
+
+---
+
+## 5. 테스트 규칙
+
+- 프레임워크: **vitest**
+- 단위 테스트: `src/**/*.test.ts` — 소스 옆
+- 골든 / E2E: `tests/golden/`, `tests/e2e/`
+- `src/` 와 `tests/` 양쪽 중복 금지
+- 테스트명: `{함수}_{조건}_{기대결과}`
+
+---
+
+## 6. Git 규칙
+
+- 브랜치: `feature/*`, `fix/*`, `refactor/*`, `docs/*`
+- 커밋: Conventional Commits
+
+---
+
+## 7. 금지 사항
+
+- [ ] 계층 역방향 의존
+- [ ] `any` 타입
+- [ ] stdout 에 이스케이프 코드 직접
+- [ ] 프로덕션 코드의 `console.log` (logger 사용)
+- [ ] L5(cmd) 에 비즈니스 로직

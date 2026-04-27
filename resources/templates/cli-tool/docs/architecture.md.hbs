@@ -1,0 +1,69 @@
+# Architecture — {{projectName}}
+
+---
+
+## 1. 시스템 구성도
+
+```
+[Terminal User]
+      ↓
+[{{projectName}} CLI]
+      ↓
+[입력 → 처리 → 출력]
+```
+
+데이터베이스, 웹 서버, 외부 API — 없음 (cli-tool 기본).
+
+---
+
+## 2. 계층 구조
+
+```
+src/
+├── common/          # L0 — 프레임워크 무관 유틸
+│   ├── errors/
+│   └── logger/
+├── config/          # L1 — 설정 로드
+├── domain/          # L2 — 순수 도메인 모델
+├── external/        # L3 — I/O 어댑터
+├── service/         # L4 — 핵심 로직
+└── cmd/             # L5 — commander 엔트리
+    ├── index.ts
+    └── hello.ts
+```
+
+---
+
+## 3. 의존성 규칙
+
+| ID | 규칙 |
+|----|------|
+| DEP-01 | Layer N은 Layer 0..N-1만 import 가능 |
+| DEP-02 | common(L0)은 써드파티 프레임워크 의존 금지 |
+| DEP-03 | domain(L2)은 순수 타입 — I/O 금지 |
+| DEP-04 | external(L3)은 I/O 어댑터 — 비즈니스 로직 금지 |
+| DEP-05 | cmd(L5)는 얇게 — commander 파싱과 service 호출만 |
+
+자동 검증: `npm run dep:check` (dependency-cruiser).
+
+---
+
+## 4. 테스트 전략
+
+| 종류 | 위치 | 도구 |
+|------|------|------|
+| 단위 | `src/**/*.test.ts` | vitest |
+| 골든 스냅샷 | `tests/golden/` | vitest + JSON diff |
+| E2E | `tests/e2e/` | vitest + child_process |
+
+---
+
+## 5. 배포
+
+- npm publish — `npm i -g {{projectNameKebab}}`
+- 버전: SemVer (`{{projectNameKebab}} --version`)
+- 릴리스 자동화: release-please (선택)
+
+---
+
+생성: trellis {{trellisVersion}} on {{generatedAt}}

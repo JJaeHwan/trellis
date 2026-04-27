@@ -22,3 +22,4 @@ export type { BuildProjectSpecInput, ProjectSpec } from "./project-spec.js";
 export { buildProjectSpec } from "./project-spec.js";
 
 export type { VirtualFile, VirtualTree } from "./virtual-file.js";
+export type { Template } from "./template.js";
