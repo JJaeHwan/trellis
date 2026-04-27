@@ -1,21 +1,15 @@
-# Node / Frontend
+# Dependencies
 node_modules/
+
+# Next.js
 .next/
-dist/
-build/
+out/
 *.tsbuildinfo
+next-env.d.ts
+
+# Test artifacts
 coverage/
-
-# JVM / Backend (Spring Boot 사용 시)
-target/
-*.class
-.gradle/
-
-# Python (FastAPI 사용 시)
-__pycache__/
-*.py[cod]
-.venv/
-.pytest_cache/
+.vitest-cache/
 
 # Editor / OS
 .DS_Store
@@ -25,8 +19,13 @@ __pycache__/
 
 # Logs
 *.log
+npm-debug.log*
 
-# Env (절대 커밋하지 말 것)
+# Env
 .env
 .env.local
 .env.*.local
+
+# Prisma local
+prisma/dev.db
+prisma/dev.db-journal

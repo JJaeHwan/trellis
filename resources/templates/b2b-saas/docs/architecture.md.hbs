@@ -1,0 +1,85 @@
+# Architecture — {{projectName}}
+
+---
+
+## 1. 시스템 구성도
+
+```
+[Browser]
+   ↓ HTTPS
+[Next.js (App Router)]
+   ├── (auth) pages   → NextAuth client
+   ├── api/* routes   → service 호출
+   └── middleware.ts  → 보호 라우트 가드
+       ↓
+[lib/service/*]  ← 비즈니스 로직
+       ↓
+[lib/external/db.ts]  ← Prisma client
+       ↓
+[SQLite (dev) / PostgreSQL (prod)]
+```
+
+외부: NextAuth 가 OAuth provider 추가 시 외부 콜백 사용.
+이메일 / 결제는 P4+ 에서 추가.
+
+---
+
+## 2. 계층 구조
+
+```
+src/
+├── lib/
+│   ├── common/      # L0 — AppError, ConflictError, UnauthorizedError
+│   ├── config/      # L1 — env.ts (zod)
+│   ├── domain/      # L2 — UserProfile, UserRole
+│   ├── external/    # L3 — db.ts (Prisma singleton)
+│   └── service/     # L4 — auth.ts, user.ts, admin.ts
+├── app/             # L5
+│   ├── (auth)/login, register
+│   ├── dashboard, admin
+│   ├── api/auth/[...nextauth], api/auth/register, api/me, api/admin/users
+│   ├── layout.tsx, page.tsx, globals.css
+└── middleware.ts    # withAuth — /dashboard, /admin 보호
+```
+
+---
+
+## 3. 의존성 규칙
+
+| ID | 규칙 |
+|----|------|
+| DEP-01 | Layer N 은 Layer 0..N-1 만 import |
+| DEP-02 | common(L0) 은 써드파티 프레임워크 의존 금지 |
+| DEP-03 | domain(L2) 은 순수 타입 — I/O 금지 |
+| DEP-04 | external(L3) 은 어댑터 — 비즈니스 로직 금지 |
+| DEP-05 | app/* (L5) 은 service 호출만 (Prisma 직접 호출 금지) |
+
+---
+
+## 4. 인증 플로우
+
+```
+사용자 → /api/auth/register (POST)
+        ↓ zod 검증 → bcrypt 해시 → Prisma 저장
+        ↓
+사용자 → /login → NextAuth Credentials provider
+        ↓ bcrypt.compare → JWT 발급 (id, role 클레임)
+        ↓
+보호 라우트 (/dashboard, /admin)
+        ↓ middleware.withAuth → JWT 검증 + role 체크
+        ↓ getServerSession() → 페이지 렌더
+```
+
+---
+
+## 5. 테스트 전략
+
+| 종류 | 위치 | 도구 |
+|------|------|------|
+| 단위 | `src/**/*.test.ts` | vitest |
+| 통합 | `tests/integration/` | vitest + 별도 SQLite |
+| E2E | `tests/e2e/` | (Playwright 추후) |
+
+---
+
+생성: trellis {{trellisVersion}} on {{generatedAt}}

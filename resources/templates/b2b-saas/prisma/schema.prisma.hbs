@@ -1,0 +1,28 @@
+// {{projectName}} — Prisma schema (b2b-saas baseline)
+//
+// SQLite by default; switch `provider = "postgresql"` for production.
+// After edits: `npx prisma db push` (dev) or `npx prisma migrate dev`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

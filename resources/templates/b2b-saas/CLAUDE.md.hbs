@@ -1,50 +1,116 @@
 # {{projectName}} — Project Rules (b2b-saas)
 
 > 이 문서는 하네스 엔지니어링의 핵심입니다.
+> 에이전트(AI)가 코드를 생성할 때 반드시 이 규칙을 따라야 합니다.
+
+---
 
 ## 1. 프로젝트 개요
 
 - **이름**: {{projectName}}
-- **플레이북**: b2b-saas
+- **플레이북**: b2b-saas (TS 변형 — Next.js + Prisma + NextAuth)
 - **생성**: trellis {{trellisVersion}} on {{generatedAt}}
 
-## 2. 아키텍처 계층 (백엔드)
+### 기술 스택
+
+| 계층 | 선택 |
+|------|------|
+| 런타임 | Node.js ≥ 20 |
+| 언어 | TypeScript 5 (strict) |
+| 프레임워크 | Next.js 14 (App Router) |
+| 인증 | NextAuth.js (Credentials + JWT) |
+| ORM | Prisma |
+| DB | SQLite (dev) / PostgreSQL (prod) |
+| 스타일 | Tailwind CSS |
+| 테스트 | vitest |
+| 린트 | eslint (next/core-web-vitals) |
+
+---
+
+## 2. 아키텍처 계층
 
 ```
-L0 common     (타입, 예외)
-L1 config     (DB / Web / Auth 설정)
-L2 domain     (엔티티, 값 객체)
-L3 repository (데이터 접근)
-L4 service    (비즈니스 로직)
-   ├── auth/
-   ├── user/
-   └── {도메인}/
-L5 api        (Controller, DTO)
+src/
+├── lib/
+│   ├── common/      # L0 — 타입, 예외 (프레임워크 무관)
+│   ├── config/      # L1 — env 검증
+│   ├── domain/      # L2 — User, Role 등 순수 모델
+│   ├── external/    # L3 — Prisma client 등 어댑터
+│   └── service/     # L4 — auth/user/admin 비즈니스 로직
+├── app/             # L5 — 페이지 + API 라우트 (얇게)
+└── middleware.ts    # 보호 라우트 가드
 ```
+
+### 의존성 규칙
+
+| ID | 규칙 |
+|----|------|
+| DEP-01 | Layer N 은 Layer 0..N-1 만 import |
+| DEP-02 | common(L0) 은 써드파티 프레임워크 의존 금지 (Node 표준만) |
+| DEP-03 | domain(L2) 은 순수 타입 — I/O 금지 |
+| DEP-04 | external(L3) 은 어댑터 — 비즈니스 로직 금지 |
+| DEP-05 | app/* (L5) 은 얇게 — service 호출 + 응답 직렬화만 |
+
+---
 
 ## 3. 보안 체크리스트
 
-- [ ] 비밀번호 bcrypt/argon2 해시
-- [ ] JWT 서명 키 환경변수
-- [ ] CSRF (쿠키 기반 시)
-- [ ] Rate limiting (로그인/가입)
-- [ ] SQL injection 방어 (ORM/Prepared)
-- [ ] XSS 출력 이스케이프
-- [ ] Role 인가는 service 계층에서 검증
+- [x] 비밀번호 bcrypt 해시 (`PASSWORD_ROUNDS = 12`)
+- [x] JWT 서명 키는 `NEXTAUTH_SECRET` 환경변수
+- [ ] CSRF — NextAuth 가 기본 처리. 외부 폼 추가 시 검증
+- [ ] Rate limiting — production 시 Vercel Edge Middleware 또는 외부 미들웨어
+- [x] SQL injection — Prisma 가 prepared 문장 자동 처리
+- [x] XSS — React 가 기본 이스케이프
+- [x] Role 인가 — `service` 계층 + `middleware.ts` 양쪽 검증
 
-## 4. 초기 플랜 순서 (권장)
+---
 
-1. P0 — 스켈레톤 + health check
-2. P1 — 회원가입 / 로그인 / JWT
-3. P2 — 사용자 설정 / 프로필
-4. P3 — 코어 도메인 기능 (이 SaaS 의 핵심)
-5. P4 — 관리자 화면
-6. P5 — 이메일 (비밀번호 리셋 등)
-7. P6 — 디자인 폴리시
+## 4. 코딩 컨벤션
 
-## 5. 금지
+- 클래스/타입: PascalCase
+- 함수/변수: camelCase
+- 상수: UPPER_SNAKE_CASE
+- 파일명: kebab-case (`auth-service.ts`) 또는 React 관례 (`page.tsx`)
+- 예외: `lib/common/errors.ts` 의 `AppError` 계열
+- `any` 금지 — `unknown` + 타입 가드
+- Prisma row → domain 객체 변환 시 enum cast 명시
+- 비밀번호 / 토큰은 절대 로그/응답에 포함 금지
 
-- [ ] 컨트롤러에서 엔티티 직접 반환
-- [ ] 컨트롤러에 비즈니스 로직
-- [ ] 환경 설정 하드코딩
-- [ ] Role 검증을 UI 만으로 (서버 측 필수)
+---
+
+## 5. 환경변수
+
+| 키 | 필수 | 설명 |
+|----|------|------|
+| `DATABASE_URL` | ✅ | Prisma 연결 |
+| `NEXTAUTH_SECRET` | ✅ | JWT 서명 (≥ 16 chars) |
+| `NEXTAUTH_URL` | ⚠️ | production 필수 |
+
+검증은 `lib/config/env.ts` 의 zod 스키마.
+
+---
+
+## 6. 테스트 규칙
+
+- 프레임워크: vitest
+- 단위: `src/**/*.test.ts` — 소스 옆
+- 통합/E2E: `tests/` — DB 의존 시 별도 SQLite 인스턴스
+- 테스트명: `{함수}_{조건}_{기대결과}`
+
+---
+
+## 7. Git 규칙
+
+- 브랜치: `feature/*`, `fix/*`, `refactor/*`, `docs/*`
+- 커밋: Conventional Commits
+
+---
+
+## 8. 금지
+
+- [ ] 비밀번호 평문 저장 / 로깅
+- [ ] L5(app/*) 에 비즈니스 로직 (DB 호출도 포함)
+- [ ] Role 검증을 클라이언트(UI)만으로
+- [ ] `any` 타입
+- [ ] `console.log` 프로덕션 코드 (logger 또는 structured event)
+- [ ] 하드코딩된 URL/키 — 모두 `lib/config/env.ts` 경유

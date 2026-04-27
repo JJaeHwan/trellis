@@ -1,0 +1,54 @@
+# P0 — Initial Skeleton
+
+> trellis 가 생성한 b2b-saas 스켈레톤을 로컬에서 동작 확인하고
+> 본 프로젝트의 도메인 작업 (P1) 을 시작할 수 있는 상태로 만든다.
+
+---
+
+## 1. 목표
+
+P0 종료 시점:
+
+- `npm run dev` → `localhost:3000` 동작
+- 가입/로그인/대시보드/관리자 흐름 완주
+- CI 그린
+
+---
+
+## 2. 작업 체크리스트
+
+### 환경 설정
+
+- [ ] `npm install`
+- [ ] `cp .env.example .env.local`
+- [ ] `NEXTAUTH_SECRET` 생성 (`openssl rand -base64 32`)
+- [ ] `npx prisma generate`
+- [ ] `npx prisma db push`
+
+### 기본 검증
+
+- [ ] `npm run typecheck` — 통과
+- [ ] `npm run lint` — 통과
+- [ ] `npm run test` — 통과 (또는 테스트 추가)
+- [ ] `npm run build` — 통과
+- [ ] `npm run dev` — 시작 후 `/` 접속 OK
+
+### 흐름 수동 테스트
+
+- [ ] `/register` → 신규 계정 가입 (200)
+- [ ] `/login` → 로그인 → `/dashboard` 자동 이동
+- [ ] 미인증 상태 `/dashboard` 접근 → `/login` 리다이렉트
+- [ ] DB 에서 첫 사용자의 `role` 을 `ADMIN` 으로 수동 변경 후 `/admin` 접근 가능
+
+### 후속 정리
+
+- [ ] 본 파일을 `docs/plans/completed/00-initial-skeleton.md` 로 이동
+
+---
+
+## 3. 다음 (P1)
+
+- 이 SaaS 의 핵심 도메인 결정 (Project / Document / Workspace 등)
+- Prisma schema 확장
+- service 계층에 CRUD 추가
+- API 라우트 + UI 화면
