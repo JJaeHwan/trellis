@@ -12,17 +12,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  USER
-  ADMIN
-}
-
+// SQLite 는 enum 미지원 → role 은 string. 도메인 타입은 UserRole 로 좁힘.
+// PostgreSQL 로 전환 시 `enum Role { USER ADMIN }` 추가하고 컬럼 타입을 Role 로 변경 가능.
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   passwordHash String
   name         String?
-  role         Role     @default(USER)
+  role         String   @default("USER")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
