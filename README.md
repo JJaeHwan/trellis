@@ -22,11 +22,11 @@ AI 에이전트와 함께 프로젝트를 만들 때 **예측 가능한 품질**
 
 ## 상태
 
-🚧 **개발 중 — Phase 3 (Validator 준비)**
+🚧 **개발 중 — Phase 4 (Doctor 준비)**
 
-P2 (Generator) 완료 — `trellis new <name>` 가 인터뷰 → 매칭 → **실제 파일 트리 생성**
-까지 동작. 3개 플레이북 (cli-tool / b2b-saas / ai-rag-platform) 매처 + 골든 부착.
-다음: `trellis check <dir>` — 계층 규칙 위반 자동 탐지 (dependency-cruiser 래핑).
+P3 (Validator) 완료 — `trellis check [dir]` 가 TypeScript 프로젝트의 계층 규칙
+위반을 자동 탐지. dogfooding 검증: `trellis check .` 자기 자신 통과 유지.
+다음: `trellis doctor` — 문서(CLAUDE.md / architecture.md) ↔ 코드 일관성 검사.
 로드맵은 [`docs/plans/`](docs/plans/).
 
 ---

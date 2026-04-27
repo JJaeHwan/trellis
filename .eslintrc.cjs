@@ -34,5 +34,5 @@ module.exports = {
       },
     },
   ],
-  ignorePatterns: ["dist", "node_modules", "coverage", "*.cjs"],
+  ignorePatterns: ["dist", "node_modules", "coverage", "*.cjs", "fixtures/**"],
 };
