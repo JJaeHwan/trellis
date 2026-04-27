@@ -268,6 +268,129 @@
           "cons": ["CI 시간 ↑", "툴체인 부담"]
         }
       ]
+    },
+    {
+      "id": "10",
+      "label": "DB 특수 기능",
+      "description": "관계형 단순 CRUD 인지, 벡터/문서지향 같은 특수 기능이 필요한지.",
+      "allowFreeform": true,
+      "options": [
+        {
+          "id": "A",
+          "label": "표준 RDB (관계형, CRUD)",
+          "description": "Postgres/MySQL/SQLite 의 일반적 사용",
+          "pros": ["가장 범용", "툴/ORM 풍부"],
+          "cons": ["벡터/그래프 등은 부적합"]
+        },
+        {
+          "id": "B",
+          "label": "벡터 DB (pgvector / Pinecone)",
+          "description": "임베딩 기반 유사도 검색 필요",
+          "pros": ["RAG 의 핵심", "의미 검색"],
+          "cons": ["임베딩 차원 마이그레이션 부담"]
+        },
+        {
+          "id": "C",
+          "label": "NoSQL / 문서지향 (MongoDB 등)",
+          "description": "스키마 유연 / 비정형 데이터",
+          "pros": ["스키마 변경 쉬움"],
+          "cons": ["관계 질의 약함"]
+        },
+        {
+          "id": "D",
+          "label": "해당 없음 (stateless)",
+          "description": "DB 자체를 사용하지 않음",
+          "pros": ["배포 단순"],
+          "cons": ["이력/통계 없음"]
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "label": "인증 전략",
+      "description": "사용자 식별과 세션 관리 방식.",
+      "allowFreeform": true,
+      "options": [
+        {
+          "id": "A",
+          "label": "통합 솔루션 (NextAuth / Clerk / Auth0)",
+          "description": "검증된 라이브러리/SaaS 로 인증 위임",
+          "pros": ["보안 검증됨", "OAuth 다수 지원"],
+          "cons": ["벤더 락인 위험"]
+        },
+        {
+          "id": "B",
+          "label": "자체 구현 (JWT/OAuth from scratch)",
+          "description": "직접 토큰/세션 관리",
+          "pros": ["완전한 제어"],
+          "cons": ["보안 결함 위험 ↑"]
+        },
+        {
+          "id": "C",
+          "label": "필요 없음",
+          "description": "단일 사용자 도구 / 인증 불필요",
+          "pros": ["복잡도 0"],
+          "cons": ["멀티유저 불가"]
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "label": "LLM 사용 범위",
+      "description": "LLM 을 어떻게 쓰는가 — RAG, 단순 챗봇, 또는 전혀 안 씀.",
+      "allowFreeform": true,
+      "options": [
+        {
+          "id": "A",
+          "label": "RAG (문서 검색 + LLM)",
+          "description": "사용자 문서를 인덱싱하여 LLM 응답에 근거 제공",
+          "pros": ["출처 추적 가능", "도메인 특화"],
+          "cons": ["벡터 DB + 임베딩 인프라 필요"]
+        },
+        {
+          "id": "B",
+          "label": "단순 프롬프트 / 챗봇",
+          "description": "LLM 호출만, 검색/그라운딩 없음",
+          "pros": ["구현 단순"],
+          "cons": ["환각 통제 어려움"]
+        },
+        {
+          "id": "C",
+          "label": "없음",
+          "description": "LLM 미사용",
+          "pros": ["비용/지연 없음"],
+          "cons": ["AI 기능 불가"]
+        }
+      ]
+    },
+    {
+      "id": "13",
+      "label": "임베딩 provider",
+      "description": "RAG/시맨틱 검색용 임베딩을 어디서 만드는가.",
+      "allowFreeform": true,
+      "options": [
+        {
+          "id": "A",
+          "label": "로컬 (Ollama / 자체 모델)",
+          "description": "온프레미스 또는 로컬 GPU/CPU",
+          "pros": ["데이터 보안", "비용 0"],
+          "cons": ["하드웨어 필요"]
+        },
+        {
+          "id": "B",
+          "label": "클라우드 (OpenAI / Cohere)",
+          "description": "외부 API 호출",
+          "pros": ["품질 안정", "운영 단순"],
+          "cons": ["토큰 비용", "데이터 전송"]
+        },
+        {
+          "id": "C",
+          "label": "해당 없음",
+          "description": "임베딩 미사용",
+          "pros": ["복잡도 0"],
+          "cons": ["시맨틱 검색 불가"]
+        }
+      ]
     }
   ]
 }

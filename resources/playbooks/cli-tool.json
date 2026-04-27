@@ -13,7 +13,11 @@
     "6": "A",
     "7": "A",
     "8": "A",
-    "9": "C"
+    "9": "C",
+    "10": "D",
+    "11": "C",
+    "12": "C",
+    "13": "C"
   },
   "recommendationReasons": {
     "1": "dogfooding 이 방법론 결함 발견에 가장 효과적이며 범위 폭주를 막는다.",
@@ -24,7 +28,11 @@
     "6": "MVP 는 stateless. 이력/통계가 필요해지면 SQLite 로 승급.",
     "7": "오프라인 원칙은 cli-tool.md 의 핵심 금기 (매 실행 네트워크 체크 금지) 와 일관.",
     "8": "npm publish 가 가장 단순. 단일 바이너리(Go/Rust) 도 동등한 cli-tool 친화.",
-    "9": "cli-tool 은 생성 결과 자체가 제품이므로 골든+E2E 의 회귀 방어가 특히 가치 있다."
+    "9": "cli-tool 은 생성 결과 자체가 제품이므로 골든+E2E 의 회귀 방어가 특히 가치 있다.",
+    "10": "stateless CLI 가 일반적. 벡터/NoSQL 은 cli-tool 의 정의에서 벗어남.",
+    "11": "CLI 는 단일 사용자 도구가 보통 — 인증 불필요.",
+    "12": "오프라인 원칙과 LLM 호출이 상충 — 기본은 LLM 미사용.",
+    "13": "LLM/임베딩을 안 쓰므로 임베딩 provider 도 무관."
   },
   "scoring": {
     "exactThreshold": 0.85,
@@ -74,6 +82,26 @@
         "questionId": "9",
         "comment": "골든+E2E 가 cli-tool.md 권장",
         "scores": { "A": 0.7, "B": 1.0, "C": 1.0, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "10",
+        "comment": "stateless 가 cli-tool 의 일반 패턴. RDB 도 일부 가능 (이력/캐시).",
+        "scores": { "A": 0.4, "B": 0.1, "C": 0.3, "D": 1.0, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "11",
+        "comment": "단일 사용자 도구가 일반적 — 인증 불필요.",
+        "scores": { "A": 0.1, "B": 0.3, "C": 1.0, "OTHER": 0.4 }
+      },
+      {
+        "questionId": "12",
+        "comment": "오프라인 원칙과 상충 — LLM 미사용이 기본.",
+        "scores": { "A": 0.2, "B": 0.4, "C": 1.0, "OTHER": 0.4 }
+      },
+      {
+        "questionId": "13",
+        "comment": "임베딩 미사용이 일관.",
+        "scores": { "A": 0.5, "B": 0.5, "C": 1.0, "OTHER": 0.5 }
       }
     ]
   }

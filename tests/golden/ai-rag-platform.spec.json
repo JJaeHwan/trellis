@@ -12,7 +12,11 @@
     { "questionId": "6", "selectedOptionId": "B" },
     { "questionId": "7", "selectedOptionId": "C" },
     { "questionId": "8", "selectedOptionId": "B" },
-    { "questionId": "9", "selectedOptionId": "B" }
+    { "questionId": "9", "selectedOptionId": "B" },
+    { "questionId": "10", "selectedOptionId": "B" },
+    { "questionId": "11", "selectedOptionId": "A" },
+    { "questionId": "12", "selectedOptionId": "A" },
+    { "questionId": "13", "selectedOptionId": "B" }
   ],
   "placeholders": {}
 }

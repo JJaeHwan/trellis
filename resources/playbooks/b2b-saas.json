@@ -13,7 +13,11 @@
     "6": "B",
     "7": "B",
     "8": "B",
-    "9": "B"
+    "9": "B",
+    "10": "A",
+    "11": "A",
+    "12": "C",
+    "13": "C"
   },
   "recommendationReasons": {
     "1": "SaaS 는 포트폴리오 가치가 높고 외부 노출 동기가 자연스럽다.",
@@ -24,7 +28,11 @@
     "6": "PostgreSQL 이 관계형 SaaS 의 표준 + JSONB 등 유연성.",
     "7": "외부 인증/결제(OAuth, Stripe) 가 일반적 — 제로 외부는 비현실적.",
     "8": "Docker + 클라우드(Vercel/Railway) 가 SaaS 배포 관례.",
-    "9": "단위 + 골든이 충분. E2E 는 DB 셋업 부담 ↑."
+    "9": "단위 + 골든이 충분. E2E 는 DB 셋업 부담 ↑.",
+    "10": "표준 RDB 가 SaaS 의 표준. 벡터/NoSQL 은 분기.",
+    "11": "NextAuth/Clerk 같은 통합 솔루션이 보안/생산성 균형점.",
+    "12": "MVP SaaS 는 LLM 없이 시작 — RAG 가 필요하면 ai-rag-platform 으로 분기.",
+    "13": "LLM 없으면 임베딩도 없음."
   },
   "scoring": {
     "exactThreshold": 0.85,
@@ -74,6 +82,26 @@
         "questionId": "9",
         "comment": "B 또는 C 둘 다 SaaS 에 적합",
         "scores": { "A": 0.6, "B": 1.0, "C": 0.95, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "10",
+        "comment": "관계형 RDB 가 SaaS 표준. 벡터는 부수 기능, NoSQL 도 가능.",
+        "scores": { "A": 1.0, "B": 0.5, "C": 0.6, "D": 0.1, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "11",
+        "comment": "통합 인증이 b2b-saas 의 핵심 시그널.",
+        "scores": { "A": 1.0, "B": 0.7, "C": 0.1, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "12",
+        "comment": "RAG 는 ai-rag-platform 으로 분기 — b2b-saas 기본은 LLM 없음.",
+        "scores": { "A": 0.3, "B": 0.6, "C": 1.0, "OTHER": 0.6 }
+      },
+      {
+        "questionId": "13",
+        "comment": "임베딩 미사용이 일반 SaaS.",
+        "scores": { "A": 0.5, "B": 0.5, "C": 1.0, "OTHER": 0.6 }
       }
     ]
   }

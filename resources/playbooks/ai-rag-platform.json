@@ -13,7 +13,11 @@
     "6": "B",
     "7": "C",
     "8": "B",
-    "9": "B"
+    "9": "B",
+    "10": "B",
+    "11": "A",
+    "12": "A",
+    "13": "B"
   },
   "recommendationReasons": {
     "1": "AI 플랫폼은 포트폴리오 노출과 트렌드 반영에 가치가 크다.",
@@ -24,7 +28,11 @@
     "6": "PostgreSQL + pgvector 가 RAG 의 핵심 인프라.",
     "7": "LLM 연동이 ai-rag-platform 의 정의 자체 — 외부 의존성 필수.",
     "8": "Docker + 클라우드가 AI 추론 배포 관례 (GPU 인스턴스 등).",
-    "9": "단위 + 골든이 적합. LLM 비결정성 때문에 E2E 어려움."
+    "9": "단위 + 골든이 적합. LLM 비결정성 때문에 E2E 어려움.",
+    "10": "벡터 DB(pgvector) 가 RAG 의 정의 자체.",
+    "11": "통합 솔루션이 효율적 — RAG 코어에 집중하기 위해.",
+    "12": "RAG 가 ai-rag-platform 의 정의 자체.",
+    "13": "클라우드 임베딩이 품질/운영 단순. 로컬도 동등 친화."
   },
   "scoring": {
     "exactThreshold": 0.85,
@@ -74,6 +82,26 @@
         "questionId": "9",
         "comment": "단위 + 골든이 LLM 비결정성에 적합",
         "scores": { "A": 0.6, "B": 1.0, "C": 0.9, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "10",
+        "comment": "벡터 DB 가 RAG 의 핵심. RDB 만으로는 부족.",
+        "scores": { "A": 0.4, "B": 1.0, "C": 0.4, "D": 0.1, "OTHER": 0.4 }
+      },
+      {
+        "questionId": "11",
+        "comment": "통합 솔루션이 RAG 코어 집중에 최적. 자체/없음도 RAG 자체에는 무방.",
+        "scores": { "A": 1.0, "B": 0.7, "C": 0.6, "OTHER": 0.7 }
+      },
+      {
+        "questionId": "12",
+        "comment": "RAG 가 ai-rag-platform 의 정의 자체.",
+        "scores": { "A": 1.0, "B": 0.7, "C": 0.1, "OTHER": 0.6 }
+      },
+      {
+        "questionId": "13",
+        "comment": "로컬/클라우드 둘 다 친화. 미사용은 RAG 아님.",
+        "scores": { "A": 1.0, "B": 1.0, "C": 0.2, "OTHER": 0.7 }
       }
     ]
   }
