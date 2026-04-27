@@ -1,7 +1,7 @@
 {
   "id": "b2b-saas",
   "sourceMd": "harness-engineering/playbooks/b2b-saas.md",
-  "sourceMdHash": "bad097fad4c06932647b0b25af45c46a0fffaee10c904f4ad54c529af8f314e6",
-  "lastSyncedAt": "2026-04-27T01:50:32Z",
-  "trellisVersion": "0.0.0"
+  "sourceMdHash": "bc90ed7b658f5c83b37ea951e3cfda383b2c6e4ed5df301797f14017d715ebf9",
+  "lastSyncedAt": "2026-04-27T15:55:00Z",
+  "trellisVersion": "0.1.0"
 }
