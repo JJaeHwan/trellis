@@ -1,0 +1,80 @@
+{
+  "id": "cli-tool",
+  "title": "CLI Tool",
+  "version": 1,
+  "description": "단일 바이너리/스크립트, 웹 UI 없음. dev-script / code-migrator / log-analyzer 같은 개발자 도구.",
+  "sourceMd": "harness-engineering/playbooks/cli-tool.md",
+  "recommendations": {
+    "1": "B",
+    "2": "B",
+    "3": "B",
+    "4": "A",
+    "5": "A",
+    "6": "A",
+    "7": "A",
+    "8": "A",
+    "9": "C"
+  },
+  "recommendationReasons": {
+    "1": "dogfooding 이 방법론 결함 발견에 가장 효과적이며 범위 폭주를 막는다.",
+    "2": "스캐폴더+검증기 조합이 cli-tool 의 본질적 가치 (생성+유지) 를 모두 커버한다.",
+    "3": "본인 + 소규모 OSS 가 포트폴리오 가치와 유지보수 부담 사이의 균형점.",
+    "4": "Node + TS 는 npm 배포 관례에 가장 부합하며 템플릿 처리가 쉽다.",
+    "5": "순수 CLI 가 cli-tool 정의 자체. TUI/clack 은 추후 UX 개선 단계.",
+    "6": "MVP 는 stateless. 이력/통계가 필요해지면 JSON → SQLite 순으로 승급.",
+    "7": "오프라인 원칙은 cli-tool.md 의 핵심 금기 (매 실행 네트워크 체크 금지) 와 일관.",
+    "8": "npm publish 만으로 충분히 배포 관례를 만족한다. brew/바이너리는 사용자 수가 늘면 검토.",
+    "9": "cli-tool 은 생성 결과 자체가 제품이므로 골든+E2E 의 회귀 방어가 특히 가치 있다."
+  },
+  "scoring": {
+    "exactThreshold": 0.85,
+    "closeThreshold": 0.6,
+    "rules": [
+      {
+        "questionId": "1",
+        "comment": "목적은 cli-tool 적합도와 약한 상관 — 모든 옵션 허용",
+        "scores": { "A": 0.9, "B": 1.0, "C": 0.8, "OTHER": 0.6 }
+      },
+      {
+        "questionId": "2",
+        "comment": "스캐폴더+검증기가 cli-tool 의 정의에 가장 부합",
+        "scores": { "A": 1.0, "B": 1.0, "C": 0.7, "OTHER": 0.6 }
+      },
+      {
+        "questionId": "3",
+        "comment": "사용자 규모는 cli-tool 적합도와 무관",
+        "scores": { "A": 1.0, "B": 1.0, "C": 1.0, "OTHER": 0.8 }
+      },
+      {
+        "questionId": "4",
+        "comment": "주요 CLI 언어 모두 OK",
+        "scores": { "A": 1.0, "B": 1.0, "C": 1.0, "OTHER": 0.7 }
+      },
+      {
+        "questionId": "5",
+        "comment": "프론트엔드 없음이 cli-tool 의 핵심 시그널",
+        "scores": { "A": 1.0, "B": 0.4, "C": 0.7, "OTHER": 0.3 }
+      },
+      {
+        "questionId": "6",
+        "comment": "stateless 가 cli-tool 의 일반 패턴",
+        "scores": { "A": 1.0, "B": 0.7, "C": 0.8, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "7",
+        "comment": "오프라인이 cli-tool.md 의 명시적 권장",
+        "scores": { "A": 1.0, "B": 0.8, "C": 0.2, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "8",
+        "comment": "패키지 매니저 / 바이너리 배포 모두 cli-tool 친화",
+        "scores": { "A": 0.95, "B": 1.0, "C": 1.0, "OTHER": 0.6 }
+      },
+      {
+        "questionId": "9",
+        "comment": "골든+E2E 가 cli-tool.md 권장",
+        "scores": { "A": 0.7, "B": 1.0, "C": 1.0, "OTHER": 0.5 }
+      }
+    ]
+  }
+}
