@@ -4,8 +4,8 @@ import { ExitCode, HarnessError } from "../common/errors/index.js";
 import {
   buildProjectSpec,
   displayMatchMode,
-  type Answer,
   type MatchResult,
+  type ProjectSpec,
 } from "../domain/index.js";
 import {
   loadAllPlaybooks,
@@ -17,23 +17,33 @@ import {
   type Prompter,
 } from "../service/interview/index.js";
 import { matchPlaybooks } from "../service/matcher/index.js";
+import { scaffold } from "../service/scaffolder/index.js";
 
 const TRELLIS_VERSION = "0.0.0";
+
+interface NewOptions {
+  dryRun?: boolean;
+  force?: boolean;
+}
 
 export function registerNewCommand(program: Command): void {
   program
     .command("new <projectName>")
-    .description(
-      "Run the harness interview and emit a ProjectSpec JSON. P1: no files generated yet.",
+    .description("Run the harness interview and scaffold a new project.")
+    .option("--dry-run", "Emit ProjectSpec JSON without writing files")
+    .option(
+      "--force",
+      "Allow writing into a non-empty target directory (overwrites)",
     )
-    .action(async (projectName: string) => {
-      await runNew(projectName, new InquirerPrompter());
+    .action(async (projectName: string, options: NewOptions) => {
+      await runNew(projectName, new InquirerPrompter(), options);
     });
 }
 
 export async function runNew(
   projectName: string,
   prompter: Prompter,
+  options: NewOptions = {},
 ): Promise<void> {
   validateProjectName(projectName);
   if (!process.stdin.isTTY) {
@@ -77,7 +87,14 @@ export async function runNew(
     trellisVersion: TRELLIS_VERSION,
     generatedAt: new Date().toISOString(),
   });
-  process.stdout.write(JSON.stringify(spec, null, 2) + "\n");
+
+  if (options.dryRun) {
+    process.stdout.write(JSON.stringify(spec, null, 2) + "\n");
+    return;
+  }
+
+  const tree = scaffold(spec, { force: options.force });
+  printSuccess(spec, tree.length);
 }
 
 function validateProjectName(name: string): void {
@@ -104,6 +121,12 @@ function printMatchSummary(match: MatchResult): void {
   process.stderr.write("\n");
 }
 
-// Suppress unused warning for the Answer type re-export pattern (used in
-// implicit return-type inference of runNew when called from cmd/index.ts).
-export type { Answer };
+function printSuccess(spec: ProjectSpec, fileCount: number): void {
+  process.stderr.write(`\n✓ ${fileCount} 개 파일 생성 완료\n`);
+  process.stderr.write(`  → ${spec.rootPath}\n\n`);
+  process.stderr.write(`다음 단계:\n`);
+  process.stderr.write(`  cd ${spec.projectName}\n`);
+  process.stderr.write(`  npm install\n`);
+  process.stderr.write(`  npm run build\n`);
+  process.stderr.write(`  ${spec.projectName} hello\n\n`);
+}
