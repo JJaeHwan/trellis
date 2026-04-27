@@ -28,8 +28,11 @@ export class InquirerPrompter implements Prompter {
     });
 
     if (question.allowFreeform) {
+      const nextLetter = String.fromCharCode(
+        "A".charCodeAt(0) + question.options.length,
+      );
       choices.push({
-        name: "D. 기타 (직접 입력)",
+        name: `${nextLetter}. 기타 (직접 입력)`,
         value: FREEFORM_OPTION_ID,
         description: "위 옵션에 없는 답변을 자유롭게 입력합니다.",
       });

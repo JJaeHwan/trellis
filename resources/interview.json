@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "questions": [
     {
       "id": "1",
@@ -32,30 +32,30 @@
     },
     {
       "id": "2",
-      "label": "도메인 — 무엇을 다루는가",
-      "description": "이 CLI/프로젝트가 해주는 핵심 영역 범위.",
+      "label": "도메인 카테고리",
+      "description": "이 프로젝트가 속하는 큰 카테고리.",
       "allowFreeform": true,
       "options": [
         {
           "id": "A",
-          "label": "스캐폴더 한정",
-          "description": "프로젝트 골격 생성에 한정",
-          "pros": ["범위 명확", "MVP 짧음"],
-          "cons": ["생성 후엔 손이 안 감"]
+          "label": "개발자 도구 / CLI",
+          "description": "터미널 도구, 스크립트, 빌드/마이그레이션 유틸",
+          "pros": ["범위 명확", "배포 단순"],
+          "cons": ["사용자가 개발자 한정"]
         },
         {
           "id": "B",
-          "label": "스캐폴더 + 검증기",
-          "description": "생성 + 사후 규칙 검사 (check / doctor)",
-          "pros": ["dogfooding 가치 ↑", "규칙 강제 자동화"],
-          "cons": ["언어별 어댑터 필요"]
+          "label": "SaaS / 웹 서비스",
+          "description": "로그인, 다중 사용자, 대시보드",
+          "pros": ["수익화 경로 명확"],
+          "cons": ["인프라·인증 복잡"]
         },
         {
           "id": "C",
-          "label": "풀 라이프사이클",
-          "description": "스캐폴더 + 검증기 + 엔트로피 자동 리팩토링 + 플러그인 레지스트리",
-          "pros": ["가장 포괄적"],
-          "cons": ["MVP 길어짐", "범위 폭주"]
+          "label": "AI / RAG 플랫폼",
+          "description": "문서 업로드 + LLM 응답 형태",
+          "pros": ["AI 트렌드 부합"],
+          "cons": ["LLM 비용·비결정성"]
         }
       ]
     },
@@ -76,72 +76,79 @@
           "id": "B",
           "label": "본인 + 지인 (소규모 OSS)",
           "description": "GitHub public + 기본 README/CONTRIBUTING",
-          "pros": ["포트폴리오 가치 확보", "유지보수 부담 낮음"],
+          "pros": ["포트폴리오 가치 확보"],
           "cons": ["피드백 루프 작음"]
         },
         {
           "id": "C",
           "label": "광범위 오픈소스",
-          "description": "풀 README, 기여 가이드, 이슈 템플릿, 릴리스 자동화",
+          "description": "풀 README, 기여 가이드, 이슈 템플릿",
           "pros": ["최대 노출"],
-          "cons": ["유지보수 부담 ↑", "MVP 지연"]
+          "cons": ["유지보수 부담 ↑"]
         }
       ]
     },
     {
       "id": "4",
-      "label": "백엔드/구현 스택",
-      "description": "이 프로젝트의 주 구현 언어/프레임워크.",
+      "label": "백엔드 스택",
+      "description": "주 구현 언어/프레임워크.",
       "allowFreeform": true,
       "options": [
         {
           "id": "A",
-          "label": "Node.js + TypeScript",
-          "description": "commander + @inquirer/prompts + handlebars",
-          "pros": ["npm 생태계 친화", "훈련셋 풍부"],
-          "cons": ["시작 속도 느림", "Node 런타임 필요"]
+          "label": "Java / Spring Boot",
+          "description": "엔터프라이즈 관례, 풍부한 생태계",
+          "pros": ["계층 분리 자연스러움", "성능 안정"],
+          "cons": ["기동 느림", "보일러플레이트"]
         },
         {
           "id": "B",
-          "label": "Go + cobra",
-          "description": "단일 바이너리 배포, survey/text-template",
-          "pros": ["배포 깔끔", "시작 빠름"],
-          "cons": ["템플릿 보일러플레이트"]
+          "label": "Python / FastAPI",
+          "description": "AI/ML 친화, 빠른 개발",
+          "pros": ["타입 힌트", "문서 자동"],
+          "cons": ["런타임 타입 약함"]
         },
         {
           "id": "C",
-          "label": "Python + typer",
-          "description": "questionary + jinja2",
-          "pros": ["빠른 프로토타입", "AI/ML 친화"],
-          "cons": ["배포 귀찮음", "버전 지옥"]
+          "label": "TypeScript / Node.js",
+          "description": "commander (CLI) / NestJS (SaaS)",
+          "pros": ["프론트와 언어 통일", "npm 생태계"],
+          "cons": ["시작 느림"]
+        },
+        {
+          "id": "D",
+          "label": "Go (단일 바이너리)",
+          "description": "cobra 기반 CLI 또는 net/http 서버",
+          "pros": ["배포 깔끔", "성능"],
+          "cons": ["템플릿 보일러플레이트"]
         }
       ]
     },
     {
       "id": "5",
       "label": "프론트엔드 스택",
-      "description": "터미널/브라우저 UI 전략.",
+      "description": "사용자 인터페이스 전략.",
       "allowFreeform": true,
       "options": [
         {
           "id": "A",
-          "label": "없음 (순수 CLI)",
-          "description": "기본 프롬프트만, 웹 UI 없음",
+          "label": "없음 (CLI / 백엔드 전용)",
+          "description": "터미널/API 만, 웹 UI 없음",
           "pros": ["구현 단순", "테스트 쉬움"],
-          "cons": ["복잡 인터랙션 한계"]
+          "cons": ["일반 사용자 접근 어려움"]
         },
         {
           "id": "B",
-          "label": "Ink (React-in-terminal) TUI",
-          "description": "멀티 스크린, 진행률, 네비게이션",
-          "pros": ["풍부한 UX"],
-          "cons": ["의존성 ↑", "렌더 버그"]
+          "label": "Next.js (React)",
+          "description": "App Router, 풀스택 가능",
+          "pros": ["가장 풍부한 생태계"],
+          "cons": ["빌드 시간 ↑"]
         },
         {
           "id": "C",
-          "label": "clack / prompts (중간 지점)",
-          "description": "예쁜 프롬프트, 가벼움",
-          "pros": ["UX·복잡도 균형"],
+          "label": "기타 SSR (SvelteKit / Remix / Astro)",
+          "description": "Next.js 외 SSR/MPA 프레임워크",
+          "pros": ["가벼움", "단순함"],
           "cons": ["생태계 작음"]
         }
       ]
@@ -156,22 +163,22 @@
           "id": "A",
           "label": "없음 (stateless)",
           "description": "파일 시스템만, 패키지 번들 리소스",
-          "pros": ["설치/제거 깔끔", "복원 불필요"],
+          "pros": ["설치/제거 깔끔"],
           "cons": ["이력/통계 없음"]
         },
         {
           "id": "B",
-          "label": "로컬 SQLite",
-          "description": "~/.config/<app>/db.sqlite",
-          "pros": ["풍부한 쿼리", "이력 가능"],
-          "cons": ["권한·마이그레이션 복잡도"]
+          "label": "PostgreSQL",
+          "description": "관계형 DB, pgvector 가능",
+          "pros": ["풍부한 기능", "AI 친화 (pgvector)"],
+          "cons": ["운영 복잡도"]
         },
         {
           "id": "C",
-          "label": "JSON 파일",
-          "description": "~/.config/<app>/config.json + history.json",
-          "pros": ["사용자 편집 가능", "단순"],
-          "cons": ["동시 실행 안전성 ↓"]
+          "label": "SQLite (로컬 파일)",
+          "description": "단일 파일 DB, 임베디드",
+          "pros": ["배포 단순", "테스트 쉬움"],
+          "cons": ["동시성 제한"]
         }
       ]
     },
@@ -183,24 +190,24 @@
       "options": [
         {
           "id": "A",
-          "label": "없음 — 완전 오프라인",
+          "label": "없음 (오프라인)",
           "description": "LLM/API/네트워크 호출 0건",
           "pros": ["속도 예측 가능", "테스트 쉬움"],
-          "cons": ["업데이트는 패키지 재설치"]
+          "cons": ["기능 제한"]
         },
         {
           "id": "B",
-          "label": "선택적 GitHub API",
-          "description": "원격 레지스트리/플레이북 추가 같은 부가 기능",
-          "pros": ["커뮤니티 자산화"],
-          "cons": ["인증·rate limit 처리"]
+          "label": "외부 REST API",
+          "description": "GitHub, Stripe, Slack 등 SaaS 통합",
+          "pros": ["기능 풍부"],
+          "cons": ["인증/rate limit 처리"]
         },
         {
           "id": "C",
-          "label": "LLM 연동",
-          "description": "자연어 인터뷰/자동 분류",
-          "pros": ["부드러운 UX"],
-          "cons": ["API 키 필수", "비결정론"]
+          "label": "LLM (OpenAI / Anthropic / Ollama)",
+          "description": "자연어 처리, RAG, 챗봇",
+          "pros": ["AI 능력 활용"],
+          "cons": ["비용", "비결정성"]
         }
       ]
     },
@@ -212,24 +219,24 @@
       "options": [
         {
           "id": "A",
-          "label": "npm publish 만",
-          "description": "`npm i -g <pkg>`",
+          "label": "npm publish (라이브러리/CLI)",
+          "description": "`npm i -g <pkg>` 로 설치",
           "pros": ["설정 1회", "release-please 자동화"],
           "cons": ["Node 런타임 전제"]
         },
         {
           "id": "B",
-          "label": "npm + Homebrew tap",
-          "description": "Mac 사용자에게 `brew install` 경험",
-          "pros": ["배지 효과"],
-          "cons": ["Tap 저장소 별도 관리"]
+          "label": "Docker + 클라우드 (PaaS)",
+          "description": "Vercel / Railway / Cloud Run / Heroku",
+          "pros": ["인프라 추상화"],
+          "cons": ["콜드 스타트", "비용"]
         },
         {
           "id": "C",
-          "label": "npm + Homebrew + GitHub Releases 바이너리",
-          "description": "단일 바이너리 (pkg/ncc) 까지 풀세팅",
-          "pros": ["설치 매트릭스 완성"],
-          "cons": ["빌드 매트릭스 복잡", "MVP 지연"]
+          "label": "단일 바이너리 (GitHub Releases)",
+          "description": "Go/Rust 등 컴파일 결과 OS 별 배포",
+          "pros": ["설치 단순", "런타임 불필요"],
+          "cons": ["빌드 매트릭스"]
         }
       ]
     },
