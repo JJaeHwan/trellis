@@ -20,7 +20,6 @@ jobs:
         id: release
         with:
           release-type: node
-          package-name: trellis
 
   publish:
     needs: release-please
