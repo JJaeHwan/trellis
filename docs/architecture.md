@@ -200,7 +200,7 @@ interface Playbook {
   templateSet: string;             // resources/templates/cli-tool/...
 }
 // 내부(TS 유니온)는 lowercase, 외부(사람 읽는 출력)는 Capitalize.
-// 변환은 common/match-mode.ts 의 단일 함수만 사용.
+// 변환은 domain/playbook.ts 의 displayMatchMode 함수만 사용 (L0 common 으로 끌어내리면 계층 위반).
 type MatchMode = "exact" | "close" | "hybrid" | "new";
 interface MatchResult {
   mode: MatchMode;
@@ -209,9 +209,10 @@ interface MatchResult {
   score: number;                   // 0.0 ~ 1.0
   diff: string[];                  // close 의 차이점
 }
-// common/match-mode.ts (요지)
-//   export const displayMatchMode = (m: MatchMode): string =>
-//     m[0].toUpperCase() + m.slice(1);   // "exact" → "Exact"
+// domain/playbook.ts (요지)
+//   export function displayMatchMode(m: MatchMode): string {
+//     return m[0].toUpperCase() + m.slice(1);   // "exact" → "Exact"
+//   }
 // 금지: CLI 출력에서 "exact" 소문자 그대로 표시
 
 // domain/project-spec.ts
