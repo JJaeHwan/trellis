@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/JJaeHwan/trellis/compare/v0.1.0...v0.2.0) (2026-04-27)
+
+
+### Features
+
+* **playbook:** fill out b2b-saas template (Next.js + Prisma + NextAuth) ([59b05cb](https://github.com/JJaeHwan/trellis/commit/59b05cbcd2d64def590ec920b978b4c9b29a3093))
+
+
+### Bug Fixes
+
+* **playbook:** b2b-saas template passes real npm install + tsc + lint + next build ([aaaf3bc](https://github.com/JJaeHwan/trellis/commit/aaaf3bcee856d29d47b80047486e2e95188fee64))
+
 ## 0.1.0 (2026-04-27)
 
 
