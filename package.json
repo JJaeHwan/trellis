@@ -4,10 +4,26 @@
   "description": "Trellis — CLI scaffolder and validator for the Harness Engineering methodology.",
   "license": "MIT",
   "author": "JJaeHwan",
+  "homepage": "https://github.com/JJaeHwan/trellis#readme",
+  "bugs": {
+    "url": "https://github.com/JJaeHwan/trellis/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/JJaeHwan/trellis.git"
   },
+  "keywords": [
+    "cli",
+    "scaffold",
+    "scaffolder",
+    "generator",
+    "harness-engineering",
+    "playbook",
+    "linter",
+    "architecture",
+    "layers",
+    "dependency-cruiser"
+  ],
   "type": "module",
   "bin": {
     "trellis": "./dist/cmd/index.js"
@@ -16,10 +32,15 @@
     "dist",
     "resources",
     "README.md",
-    "CLAUDE.md"
+    "CLAUDE.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "build": "tsup",
@@ -28,7 +49,8 @@
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings=0",
     "dep:check": "depcruise --config .dependency-cruiser.cjs src",
-    "hello": "node dist/cmd/index.js hello"
+    "hello": "node dist/cmd/index.js hello",
+    "prepublishOnly": "npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "dependencies": {
     "@inquirer/prompts": "^8.4.2",
