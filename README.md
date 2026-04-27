@@ -22,11 +22,11 @@ AI 에이전트와 함께 프로젝트를 만들 때 **예측 가능한 품질**
 
 ## 상태
 
-🚧 **개발 중 — Phase 4 (Doctor 준비)**
+🚧 **개발 중 — Phase 5 (Release 준비)**
 
-P3 (Validator) 완료 — `trellis check [dir]` 가 TypeScript 프로젝트의 계층 규칙
-위반을 자동 탐지. dogfooding 검증: `trellis check .` 자기 자신 통과 유지.
-다음: `trellis doctor` — 문서(CLAUDE.md / architecture.md) ↔ 코드 일관성 검사.
+P4 (Doctor) 완료 — `trellis doctor [dir]` 가 필수 파일 존재 + 플레이북
+sourceMdHash 동기화를 검사. dogfooding: 트렐리스 자신 + 3 플레이북 모두 통과.
+다음: npm publish 자동화, release-please, 첫 버전(0.1.0) 출시.
 로드맵은 [`docs/plans/`](docs/plans/).
 
 ---
