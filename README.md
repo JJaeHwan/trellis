@@ -2,10 +2,28 @@
 
 > 하네스 엔지니어링 방법론을 기계화하는 스캐폴딩 + 검증 CLI.
 
+[![npm](https://img.shields.io/npm/v/@woghks096/trellis.svg)](https://www.npmjs.com/package/@woghks096/trellis)
+[![license](https://img.shields.io/npm/l/@woghks096/trellis.svg)](LICENSE)
+
 ```bash
 $ trellis new my-project        # 방법론 준수 스켈레톤 생성
 $ trellis check .               # 계층 규칙 위반 탐지
 $ trellis doctor .              # 문서-코드 일관성 점검
+```
+
+---
+
+## 설치
+
+```bash
+npm i -g @woghks096/trellis
+trellis --version
+```
+
+또는 일회성 실행:
+
+```bash
+npx @woghks096/trellis new my-project
 ```
 
 ---
@@ -22,11 +40,10 @@ AI 에이전트와 함께 프로젝트를 만들 때 **예측 가능한 품질**
 
 ## 상태
 
-🚧 **개발 중 — Phase 5 (Release 준비)**
+✅ **Released v0.1.0** ([npm](https://www.npmjs.com/package/@woghks096/trellis))
 
-P4 (Doctor) 완료 — `trellis doctor [dir]` 가 필수 파일 존재 + 플레이북
-sourceMdHash 동기화를 검사. dogfooding: 트렐리스 자신 + 3 플레이북 모두 통과.
-다음: npm publish 자동화, release-please, 첫 버전(0.1.0) 출시.
+P0~P4 (스캐폴딩, 인터뷰, 생성기, 검증기, 닥터) + P5 (npm publish 자동화) 완료.
+release-please 가 main 으로의 `feat:`/`fix:` 커밋을 추적해 자동 release PR 을 만든다.
 로드맵은 [`docs/plans/`](docs/plans/).
 
 ---
