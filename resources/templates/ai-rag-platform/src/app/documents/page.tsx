@@ -1,4 +1,5 @@
 import { db } from "@/lib/external/db";
+import { UploadForm } from "./upload-form";
 
 export const dynamic = "force-dynamic";
 
@@ -12,8 +13,9 @@ export default async function DocumentsPage() {
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 px-6 py-12">
       <h1 className="text-3xl font-bold">Documents</h1>
       <p className="text-sm text-gray-500">
-        업로드는 P1 (Session B) 에서 폼 + multipart 핸들러로 활성화. 현재는 목록만.
+        PDF / DOCX / TXT / MD 업로드 시 파싱 → 임베딩 파이프라인이 백그라운드로 실행됩니다.
       </p>
+      <UploadForm />
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b">

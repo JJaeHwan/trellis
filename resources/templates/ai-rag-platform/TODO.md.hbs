@@ -14,13 +14,13 @@
 - [x] Vector search (`vector-search.ts`)
 - [x] CI workflow (Postgres service container)
 
-## P1 — Upload + Background Pipeline
+## P1 — Upload + Background Pipeline (완료)
 
-- [ ] `app/api/documents/route.ts` POST 구현 (multipart/form-data)
-- [ ] 파일 디스크 저장 (`uploads/` 또는 S3)
-- [ ] `processDocument()` fire-and-forget 호출 (status 갱신)
-- [ ] 업로드 폼 UI (`app/documents/upload-form.tsx`)
-- [ ] 처리 상태 폴링 또는 SSE
+- [x] `app/api/documents/route.ts` POST 구현 (multipart/form-data)
+- [x] 파일 디스크 저장 (`UPLOAD_DIR`, S3 는 P4)
+- [x] `processDocument()` fire-and-forget 호출 (status 갱신)
+- [x] 업로드 폼 UI (`app/documents/upload-form.tsx`)
+- [ ] 처리 상태 실시간 폴링 또는 SSE (현재는 새로고침)
 
 ## P2 — Document 상세 + 검색 UX
 
@@ -29,10 +29,10 @@
 - [ ] 청크 미리보기 / 페이지 네비게이션
 - [ ] 검색 결과의 출처 강조
 
-## P3 — Multi-document Chat
+## P3 — Multi-document Chat (부분 완료)
 
-- [ ] 세션 생성 시 문서 다중 선택 UI
-- [ ] `chat` 페이지에서 활성 세션 표시
+- [x] 세션 생성 시 문서 다중 선택 UI
+- [x] `chat` 페이지에서 실제 세션 생성 + documentIds 바인딩
 - [ ] 사이드바 — 세션 목록
 - [ ] 메시지 히스토리 UI + 출처 접이식
 

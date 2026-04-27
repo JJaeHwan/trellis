@@ -6,6 +6,8 @@ const embedderProviderSchema = z.enum(["ollama", "openai"]);
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
 
+  UPLOAD_DIR: z.string().min(1).default("uploads"),
+
   LLM_PROVIDER: llmProviderSchema.default("ollama"),
   EMBEDDER_PROVIDER: embedderProviderSchema.default("ollama"),
   EMBEDDING_DIM: z.coerce.number().int().positive().default(1024),

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { db } from "@/lib/external/db";
 import { answerWithRag } from "@/lib/service/chat/rag-chat";
 import type { LlmMessage } from "@/lib/domain/chat";
 
@@ -16,9 +17,23 @@ const messageSchema = z.object({
     .optional(),
 });
 
+async function resolveDocumentIds(
+  sessionId: string,
+  override: readonly string[] | undefined,
+): Promise<readonly string[] | null> {
+  if (override !== undefined) return override;
+  const session = await db.chatSession.findUnique({
+    where: { id: sessionId },
+  });
+  if (!session) return null;
+  const raw = session.documentIds;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((v): v is string => typeof v === "string");
+}
+
 export async function POST(
   req: Request,
-  _ctx: { params: { id: string } },
+  ctx: { params: { id: string } },
 ) {
   let body: unknown;
   try {
@@ -31,8 +46,14 @@ export async function POST(
     return new Response("invalid input", { status: 400 });
   }
 
-  // P1 (Session B): resolve session.documentIds from DB when override absent.
-  const documentIds = parsed.data.documentIds ?? [];
+  const documentIds = await resolveDocumentIds(
+    ctx.params.id,
+    parsed.data.documentIds,
+  );
+  if (documentIds === null) {
+    return new Response("session not found", { status: 404 });
+  }
+
   const history: LlmMessage[] = parsed.data.history ?? [];
 
   const { stream, sources } = await answerWithRag({
