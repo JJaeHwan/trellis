@@ -2,10 +2,11 @@ import { Command } from "commander";
 import { HarnessError, ExitCode } from "../common/errors/index.js";
 import { logger } from "../common/logger/index.js";
 import { registerHelloCommand } from "./hello.js";
+import { registerNewCommand } from "./new.js";
 
 const VERSION = "0.0.0";
 
-function main(argv: string[]): void {
+async function main(argv: string[]): Promise<void> {
   const program = new Command();
 
   program
@@ -14,18 +15,19 @@ function main(argv: string[]): void {
     .version(VERSION);
 
   registerHelloCommand(program);
+  registerNewCommand(program);
 
-  program.parse(argv);
+  await program.parseAsync(argv);
 }
 
-try {
-  main(process.argv);
-} catch (error) {
+main(process.argv).catch((error: unknown) => {
   if (error instanceof HarnessError) {
     process.stderr.write(`${error.message}\n`);
     process.exit(error.exitCode);
   }
   logger.error({ err: error }, "unhandled-error");
-  process.stderr.write("Unexpected error. Re-run with HARNESS_DEBUG=1 for details.\n");
+  process.stderr.write(
+    "Unexpected error. Re-run with HARNESS_DEBUG=1 for details.\n",
+  );
   process.exit(ExitCode.GeneralError);
-}
+});

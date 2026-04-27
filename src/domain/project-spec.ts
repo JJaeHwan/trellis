@@ -5,7 +5,7 @@
  */
 
 import type { Answer } from "./interview.js";
-import type { MatchMode } from "./playbook.js";
+import type { MatchResult, MatchMode } from "./playbook.js";
 
 export interface ProjectSpec {
   readonly projectName: string;
@@ -21,4 +21,35 @@ export interface ProjectSpec {
   /** ISO-8601. */
   readonly generatedAt: string;
   readonly trellisVersion: string;
+}
+
+export interface BuildProjectSpecInput {
+  readonly projectName: string;
+  /** 호출자가 process.cwd() 등으로 미리 절대 경로화한 값. */
+  readonly rootPath: string;
+  readonly matchResult: MatchResult;
+  readonly answers: readonly Answer[];
+  readonly trellisVersion: string;
+  /** ISO-8601. 호출자가 new Date().toISOString() 등으로 결정. */
+  readonly generatedAt: string;
+}
+
+/**
+ * 순수 함수: 입력만으로 ProjectSpec 을 만든다.
+ *
+ * 환경(process.cwd, Date.now)에 의존하지 않으므로 단위/골든 테스트에서
+ * 결정론적으로 호출 가능하다.
+ */
+export function buildProjectSpec(input: BuildProjectSpecInput): ProjectSpec {
+  return {
+    projectName: input.projectName,
+    rootPath: input.rootPath,
+    playbookId: input.matchResult.primary.id,
+    matchMode: input.matchResult.mode,
+    matchScore: input.matchResult.score,
+    answers: [...input.answers],
+    placeholders: {},
+    generatedAt: input.generatedAt,
+    trellisVersion: input.trellisVersion,
+  };
 }

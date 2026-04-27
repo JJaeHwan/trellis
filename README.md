@@ -22,10 +22,12 @@ AI 에이전트와 함께 프로젝트를 만들 때 **예측 가능한 품질**
 
 ## 상태
 
-🚧 **개발 중 — Phase 1 (인터뷰 엔진 준비)**
+🚧 **개발 중 — Phase 2 (Generator 준비)**
 
-P0 (스켈레톤) 완료 — `trellis hello` 동작, CI 골격 부착, 계층 검증 통과.
-다음: `trellis new` 의 9문항 인터뷰 + 플레이북 매칭. 로드맵은 [`docs/plans/`](docs/plans/).
+P1 (인터뷰 엔진) 완료 — `trellis new <name>` 가 9문항 인터뷰 → cli-tool 매칭
+→ ProjectSpec JSON (stdout) 까지 동작. 골든 스냅샷 1건 부착.
+다음: 템플릿 렌더링 + 실제 파일 트리 생성 + 추가 플레이북 (b2b-saas, ai-rag-platform).
+로드맵은 [`docs/plans/`](docs/plans/).
 
 ---
 

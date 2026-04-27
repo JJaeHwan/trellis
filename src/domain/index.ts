@@ -18,4 +18,5 @@ export type {
 export { MATCH_MODES, displayMatchMode } from "./playbook.js";
 export type { MatchMode } from "./playbook.js";
 
-export type { ProjectSpec } from "./project-spec.js";
+export type { BuildProjectSpecInput, ProjectSpec } from "./project-spec.js";
+export { buildProjectSpec } from "./project-spec.js";
