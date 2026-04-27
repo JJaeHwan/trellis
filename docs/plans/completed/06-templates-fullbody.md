@@ -149,12 +149,12 @@ P6 종료 시점:
 
 ## 7. 완료 기준 (Definition of Done)
 
-- [ ] 옵션 결정 + 본 문서 사용자 승인
-- [ ] 두 플레이북 모두 풀 트리 생성
-- [ ] 골든 + E2E 테스트 통과
-- [ ] `trellis check . && trellis doctor .` 둘 다 통과
-- [ ] release-please 가 v0.2.0 PR 생성 → 머지 → npm 배포
-- [ ] 본 파일을 `docs/plans/completed/06-templates-fullbody.md` 로 이동
+- [x] 옵션 결정 + 본 문서 사용자 승인 (옵션 B — TS-only)
+- [x] 두 플레이북 모두 풀 트리 생성 (b2b-saas 36 파일, ai-rag-platform 45 파일)
+- [x] 골든 + E2E 테스트 통과 (79/79)
+- [x] `trellis check . && trellis doctor .` 둘 다 통과
+- [x] release-please 가 v0.2.0 PR 생성 → 머지 → npm 배포 (Session B 추가분은 v0.3.0+ 로 후속)
+- [x] 본 파일을 `docs/plans/completed/06-templates-fullbody.md` 로 이동
 
 ---
 
