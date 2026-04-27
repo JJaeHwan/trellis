@@ -9,12 +9,14 @@ import { describe, it } from "vitest";
 import type { ProjectSpec } from "../../src/domain/index.js";
 import { scaffold } from "../../src/service/scaffolder/index.js";
 
-const TARGET = process.env.SCAFFOLD_TARGET ?? "/tmp/trellis-verify-saas";
+const TARGET = process.env.SCAFFOLD_TARGET ?? "/tmp/trellis-verify";
+const PLAYBOOK = process.env.SCAFFOLD_PLAYBOOK ?? "b2b-saas";
+const NAME = process.env.SCAFFOLD_NAME ?? "verify-app";
 
 const spec: ProjectSpec = {
-  projectName: "verify-saas",
+  projectName: NAME,
   rootPath: TARGET,
-  playbookId: "b2b-saas",
+  playbookId: PLAYBOOK,
   matchMode: "exact",
   matchScore: 1,
   answers: [],
@@ -24,7 +26,7 @@ const spec: ProjectSpec = {
 };
 
 describe("manual verify — scaffold to fixed path", () => {
-  it("writes b2b-saas to SCAFFOLD_TARGET", () => {
+  it(`writes ${PLAYBOOK} to SCAFFOLD_TARGET`, () => {
     rmSync(TARGET, { recursive: true, force: true });
     mkdirSync(TARGET, { recursive: true });
     scaffold(spec);

@@ -1,0 +1,135 @@
+# Architecture — {{projectName}}
+
+---
+
+## 1. 시스템 구성도
+
+```
+[Browser]
+   ↓ HTTPS
+[Next.js (App Router)]
+   ├── /documents, /chat pages
+   ├── /api/documents      → upload + list
+   ├── /api/chat/sessions  → create, append message (SSE)
+   └── (no middleware required for skeleton)
+       ↓
+[lib/service/*]            ← RAG pipeline
+       ├── document/{parser,chunker,pipeline}
+       ├── search/vector-search
+       └── chat/rag-chat
+       ↓
+[lib/external/*]           ← adapters
+       ├── db.ts           → Prisma client
+       ├── llm/{ollama,openai,anthropic}
+       └── embedder/{ollama,openai}
+       ↓
+[Postgres + pgvector]      ←→ [Ollama / OpenAI / Anthropic]
+```
+
+---
+
+## 2. 계층 구조
+
+```
+src/
+├── lib/
+│   ├── common/             # L0 — errors
+│   ├── config/             # L1 — env.ts (zod, provider 선택)
+│   ├── domain/             # L2 — Document, Chunk, ChatMessage, LlmMessage
+│   ├── external/           # L3
+│   │   ├── db.ts
+│   │   ├── llm/{interface,ollama,openai,anthropic,factory}.ts
+│   │   └── embedder/{interface,ollama,openai,factory}.ts
+│   └── service/            # L4
+│       ├── document/{parser,chunker,pipeline}.ts
+│       ├── search/vector-search.ts
+│       └── chat/rag-chat.ts
+└── app/                    # L5
+    ├── page.tsx, layout.tsx, globals.css
+    ├── documents/page.tsx
+    ├── chat/page.tsx
+    └── api/
+        ├── documents/route.ts
+        └── chat/sessions/{route,[id]/messages/route}.ts
+```
+
+---
+
+## 3. 의존성 규칙
+
+| ID | 규칙 |
+|----|------|
+| DEP-01 | Layer N 은 Layer 0..N-1 만 import |
+| DEP-02 | common(L0) 은 써드파티 프레임워크 의존 금지 |
+| DEP-03 | domain(L2) 은 순수 타입 — I/O 금지 |
+| DEP-04 | external(L3) 은 어댑터 — 비즈니스 로직 금지 |
+| DEP-05 | service(L4) 는 인터페이스에만 의존 — 구체 provider 클래스 import 금지 |
+
+---
+
+## 4. RAG 파이프라인
+
+### 4.1 인덱싱 (업로드 시)
+
+```
+file → parser (pdf-parse / mammoth)
+     → chunker (1000자 + 200 overlap)
+     → embedder.embed(chunk) for each
+     → INSERT INTO DocumentChunk (embedding=vector)
+```
+
+### 4.2 검색 (질문 시)
+
+```
+question → embedder.embed(question)
+         → SELECT id, content, embedding <-> $vector AS distance
+              FROM DocumentChunk
+              WHERE documentId IN (...)
+              ORDER BY distance LIMIT $topK
+         → context 조립
+         → llm.chat([system, history..., user(question + context)])
+         → AsyncIterable<string> → SSE response
+```
+
+### 4.3 상태 머신
+
+```
+UPLOADED → PARSING → PARSED → EMBEDDING → READY
+                          └─→ FAILED
+```
+
+각 단계 실패 시 `Document.status = FAILED` 로 갱신, `errorMessage` 기록.
+
+---
+
+## 5. Provider 추상화
+
+`lib/external/llm/interface.ts`:
+```typescript
+interface LlmService {
+  readonly providerName: string;
+  chat(messages: LlmMessage[]): AsyncIterable<string>;
+}
+```
+
+`lib/external/llm/factory.ts`:
+환경변수 `LLM_PROVIDER` 에 따라 인스턴스 1회 생성, 캐시.
+
+새 provider 추가:
+1. `lib/external/llm/<name>.ts` 작성 — `LlmService` 구현
+2. `factory.ts` 의 switch 에 분기 추가
+3. `env.ts` 의 `llmProviderSchema` enum 에 추가
+
+---
+
+## 6. 테스트 전략
+
+| 종류 | 위치 | 도구 |
+|------|------|------|
+| 단위 | `src/**/*.test.ts` | vitest |
+| 통합 | `tests/integration/` | vitest + Postgres docker service |
+| E2E | `tests/e2e/` | (수동 실행, Ollama 필요) |
+
+---
+
+생성: trellis {{trellisVersion}} on {{generatedAt}}

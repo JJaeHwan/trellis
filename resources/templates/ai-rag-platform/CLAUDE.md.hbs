@@ -1,54 +1,147 @@
 # {{projectName}} — Project Rules (ai-rag-platform)
 
+> 이 문서는 하네스 엔지니어링의 핵심입니다.
+> 에이전트(AI)가 코드를 생성할 때 반드시 이 규칙을 따라야 합니다.
+
+---
+
 ## 1. 프로젝트 개요
 
 - **이름**: {{projectName}}
-- **플레이북**: ai-rag-platform
+- **플레이북**: ai-rag-platform (TS 변형 — Next.js + Prisma + pgvector + Provider 추상화)
 - **생성**: trellis {{trellisVersion}} on {{generatedAt}}
 
-## 2. service 서브패키지
+### 기술 스택
+
+| 계층 | 선택 |
+|------|------|
+| 런타임 | Node.js ≥ 20 |
+| 언어 | TypeScript 5 (strict) |
+| 프레임워크 | Next.js 14 (App Router) |
+| ORM | Prisma |
+| DB | PostgreSQL + pgvector |
+| LLM | Ollama / OpenAI / Anthropic (인터페이스 + 3 구현) |
+| Embedding | Ollama / OpenAI (인터페이스 + 2 구현) |
+| 파싱 | pdf-parse, mammoth |
+| 테스트 | vitest |
+
+---
+
+## 2. 아키텍처 계층
 
 ```
-service/
-├── ai/
-│   ├── LlmService            (인터페이스)
-│   ├── EmbeddingService
-│   ├── OllamaLlmService
-│   └── prompt/               (프롬프트 상수)
-├── document/
-│   ├── DocumentUploadService
-│   ├── DocumentParsingService
-│   └── DocumentProcessingService (async)
-├── chat/
-│   └── ChatService
-└── knowledge/                (선택 — 보조 지식)
+src/
+├── lib/
+│   ├── common/            # L0 — AppError, ProviderError, ...
+│   ├── config/            # L1 — env.ts (provider 선택 + 키 검증)
+│   ├── domain/            # L2 — Document, Chunk, ChatSession, LlmMessage
+│   ├── external/          # L3 — Prisma + provider 어댑터
+│   │   ├── llm/           # 인터페이스 + Ollama/OpenAI/Anthropic
+│   │   └── embedder/      # 인터페이스 + Ollama/OpenAI
+│   └── service/           # L4 — 비즈니스 로직
+│       ├── document/      # parser + chunker + pipeline
+│       ├── search/        # vector-search (pgvector raw SQL)
+│       └── chat/          # rag-chat (검색 + LLM 스트리밍)
+├── app/                   # L5 — 라우트 + API (얇게)
+└── middleware.ts          # 선택 — 보호 라우트
 ```
 
-## 3. 상태 머신 (문서 처리)
+### 의존성 규칙
+
+| ID | 규칙 |
+|----|------|
+| DEP-01 | Layer N 은 Layer 0..N-1 만 import |
+| DEP-02 | common(L0) 은 써드파티 프레임워크 의존 금지 |
+| DEP-03 | domain(L2) 은 순수 타입 — I/O 금지 |
+| DEP-04 | external(L3) 은 어댑터 — 비즈니스 로직 금지 |
+| DEP-05 | service(L4) 는 인터페이스에만 의존 — 구체 provider 클래스 import 금지 (factory 경유) |
+| DEP-06 | app/* (L5) 은 service 호출 + 응답 직렬화만 |
+
+---
+
+## 3. Provider 추상화 규약
+
+- 새 LLM 추가 시: `lib/external/llm/<name>.ts` + `factory.ts` 의 switch 분기 추가
+- 새 Embedder 추가 시: 동일 패턴
+- service 코드는 절대 `OpenAiLlm` 같은 구체 클래스 직접 import 금지 — 항상 `getLlmService()`
+- 차원 (`EMBEDDING_DIM`) 변경 시 임베딩 캐시 전체 무효화 필요 — README 에 마이그레이션 가이드
+
+---
+
+## 4. 환경변수 (Provider 선택)
+
+| 키 | 필수 | 설명 |
+|----|------|------|
+| `DATABASE_URL` | ✅ | Postgres + pgvector |
+| `LLM_PROVIDER` | ✅ | `ollama` / `openai` / `anthropic` |
+| `EMBEDDER_PROVIDER` | ✅ | `ollama` / `openai` |
+| `EMBEDDING_DIM` | ✅ | 모델 차원 — 컬럼과 일치해야 함 |
+| `OLLAMA_URL` | LLM/Embedder 가 ollama 일 때 | 기본 `http://localhost:11434` |
+| `OPENAI_API_KEY` | LLM/Embedder 가 openai 일 때 | — |
+| `ANTHROPIC_API_KEY` | LLM 이 anthropic 일 때 | — |
+
+검증은 `lib/config/env.ts` 의 zod 스키마.
+
+---
+
+## 5. RAG 파이프라인 규칙
+
+### 문서 처리 상태 머신
 
 ```
 UPLOADED → PARSING → PARSED → EMBEDDING → READY
-                          └─→ FAILED
+                          └─→ FAILED (각 단계에서 전이 가능)
 ```
 
-## 4. 핵심 API
+### 검색 파이프라인
 
-| Method | Path | 설명 |
-|--------|------|------|
-| POST | `/api/v1/documents` | 업로드 |
-| GET | `/api/v1/documents` | 목록 |
-| POST | `/api/v1/chat/sessions` | 다중 문서 세션 |
-| POST | `/api/v1/chat/sessions/{id}/messages` | 질문 (SSE 스트리밍) |
+```
+질문 → 임베딩 → pgvector <-> 검색 (Top-K)
+     → 컨텍스트 조립 → LLM 스트리밍 → SSE 응답
+     → 근거 청크 IDs 함께 반환
+```
 
-## 5. 주의점
+### 핵심 규칙
 
-- **LLM 응답 비결정** — 테스트는 구조 검증, 정확 매칭 금지
-- **임베딩 모델 변경 시 차원 수 바뀜** → 마이그레이션
-- **컨텍스트 윈도우 한계** — 청크 크기 + Top-N 조율
-- **Provider 추상화 필수** — 로컬/클라우드 전환 가능하게
+- 컨텍스트 윈도우 폭발 방지: Top-K 는 보통 **5~10**, 청크 길이 1000자
+- LLM 응답은 **결정론 아님** → 테스트는 구조 검증 (배열 길이, source 포함 여부)
+- 검색 결과가 0 이면 LLM 호출 전에 짧은 답변으로 우회 ("관련 문서 없음")
+- 임베딩 실패해도 다른 청크 처리는 계속 (best-effort)
 
-## 6. 금지
+---
+
+## 6. 코딩 컨벤션
+
+- 타입: PascalCase, 함수/변수: camelCase, 상수: UPPER_SNAKE_CASE
+- 파일명: kebab-case (`vector-search.ts`)
+- 예외: `lib/common/errors.ts` 의 `AppError` 계열
+- `any` 금지
+- LLM 응답 파싱은 항상 try/catch — provider 가 토큰 변경 시 실패 가능
+
+---
+
+## 7. 보안 / 비밀
+
+- API 키 절대 코드/리포지토리 커밋 금지
+- 사용자 업로드 파일은 `uploads/` (개발) 또는 S3/GCS (프로덕션) — 직접 노출 금지
+- 검색 결과를 그대로 토큰으로 전달하지 말 것 (PII 마스킹 검토)
+
+---
+
+## 8. 테스트 전략
+
+- 단위: parser/chunker — 결정론적이라 쉬움
+- 통합: 별도 Postgres 컨테이너 + 작은 시드 문서
+- LLM 호출: `StubLlm` (고정 텍스트 yield) 로 mock
+- E2E (수동): 실제 Ollama 띄우고 /chat 흐름 확인
+
+---
+
+## 9. 금지
 
 - [ ] LLM API 키 코드/리포지토리 커밋
-- [ ] 임베딩 결과 캐시 무효화 없이 모델 교체
-- [ ] 벡터 검색 결과를 LLM 컨텍스트에 무한정 투입 (윈도우 폭발)
+- [ ] 임베딩 모델 변경하면서 캐시 무효화 안 함
+- [ ] 벡터 검색 결과를 LLM 컨텍스트에 무한정 투입
+- [ ] service 가 provider 구체 클래스 직접 import (factory 경유 필수)
+- [ ] LLM 응답을 정확 텍스트로 단언하는 테스트
+- [ ] `any` 타입

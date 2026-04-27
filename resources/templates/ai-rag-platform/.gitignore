@@ -1,36 +1,35 @@
-# Python (FastAPI / 임베딩 스크립트)
-__pycache__/
-*.py[cod]
-.venv/
-.pytest_cache/
-.mypy_cache/
-
-# Node / Frontend
+# Dependencies
 node_modules/
+
+# Next.js
 .next/
-dist/
-build/
+out/
 *.tsbuildinfo
+next-env.d.ts
 
-# 임베딩 결과 / 모델 캐시
-*.bin
-*.gguf
-embeddings_cache/
-ollama_models/
-
-# 업로드된 사용자 문서 (개발용)
-uploads/
-documents/
+# Test artifacts
+coverage/
+.vitest-cache/
 
 # Editor / OS
 .DS_Store
 .idea/
 .vscode/
+*.swp
 
 # Logs
 *.log
+npm-debug.log*
 
 # Env — API 키 절대 커밋 금지
 .env
 .env.local
 .env.*.local
+
+# Uploaded documents (default upload dir)
+uploads/
+
+# Embedding caches
+*.bin
+*.gguf
+embeddings_cache/

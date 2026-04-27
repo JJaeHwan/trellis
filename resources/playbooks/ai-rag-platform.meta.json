@@ -1,7 +1,7 @@
 {
   "id": "ai-rag-platform",
   "sourceMd": "harness-engineering/playbooks/ai-rag-platform.md",
-  "sourceMdHash": "64faf3b15b0321a0424a6683a093e74a771a00fb60eb930c6ca1072fa22d322f",
-  "lastSyncedAt": "2026-04-27T01:50:32Z",
-  "trellisVersion": "0.0.0"
+  "sourceMdHash": "25bdcc2e4ad7c93de80d32b51bfd66a8a2117e2bce22fbc007026e15df1dc54f",
+  "lastSyncedAt": "2026-04-27T16:50:00Z",
+  "trellisVersion": "0.2.0"
 }

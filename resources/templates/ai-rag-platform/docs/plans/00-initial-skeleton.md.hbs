@@ -1,0 +1,69 @@
+# P0 — Initial Skeleton
+
+> trellis 가 생성한 ai-rag-platform 스켈레톤을 로컬에서 동작 확인.
+> P1 (업로드 파이프라인) 시작 가능한 상태로 만든다.
+
+---
+
+## 1. 목표
+
+P0 종료 시점:
+
+- Postgres + pgvector 가 떠 있고 schema 적용됨
+- Ollama (또는 클라우드 키) 가 응답 가능
+- `npm run dev` → `localhost:3000` 의 `/`, `/documents`, `/chat` 동작
+- `/chat` 에서 빈 documentIds 로 SSE 스트리밍 수신 OK
+- CI 그린
+
+---
+
+## 2. 작업 체크리스트
+
+### 인프라
+
+- [ ] Postgres + pgvector docker container 실행
+  ```bash
+  docker run -d --name pgvector -p 5432:5432 \
+    -e POSTGRES_PASSWORD=postgres pgvector/pgvector:pg16
+  ```
+- [ ] DB 생성 + extension 활성화
+- [ ] Ollama 로컬 실행 (또는 OPENAI/ANTHROPIC 키 준비)
+  ```bash
+  ollama serve
+  ollama pull llama3.1
+  ollama pull bge-m3
+  ```
+
+### 환경
+
+- [ ] `npm install`
+- [ ] `cp .env.example .env.local`
+- [ ] `DATABASE_URL`, `OLLAMA_URL`, 모델 이름 확인
+
+### 스키마
+
+- [ ] `npx prisma generate`
+- [ ] `npx prisma db push`
+
+### 검증
+
+- [ ] `npm run typecheck` — 통과
+- [ ] `npm run lint` — 통과
+- [ ] `npm run test` — 통과
+- [ ] `npm run build` — 통과
+- [ ] `npm run dev` — 시작 후 `/` 접속 OK
+- [ ] `/chat` 에서 질문 입력 → SSE 응답 stream 됨 (검색 결과 0 이지만 LLM 자체는 동작)
+
+### 후속
+
+- [ ] 본 파일을 `docs/plans/completed/00-initial-skeleton.md` 로 이동
+- [ ] `docs/plans/01-upload-pipeline.md` 작성
+
+---
+
+## 3. 다음 (P1)
+
+- 업로드 multipart 핸들러 구현
+- 파일 → 파싱 → 청킹 → 임베딩 비동기 파이프라인 활성화
+- 업로드 폼 UI
+- 처리 상태 표시
