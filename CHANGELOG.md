@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/JJaeHwan/trellis/compare/v0.2.0...v0.3.0) (2026-04-27)
+
+
+### Features
+
+* **playbook:** fill out ai-rag-platform skeleton (Next.js + pgvector + LLM/embedder abstractions) ([f37e9b2](https://github.com/JJaeHwan/trellis/commit/f37e9b2c6db12a95cf3dd0625cd6d11806abb826))
+* **playbook:** wire ai-rag-platform Session B (upload + multi-doc chat) ([18dfff4](https://github.com/JJaeHwan/trellis/commit/18dfff40f3f9458241b9d0274317b09aec63ce6c))
+
 ## [0.2.0](https://github.com/JJaeHwan/trellis/compare/v0.1.0...v0.2.0) (2026-04-27)
 
 
