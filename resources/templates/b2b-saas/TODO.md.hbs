@@ -1,0 +1,29 @@
+# {{projectName}} — TODO
+
+> 이 SaaS 의 첫 작업 체크리스트.
+
+## P0 — 스켈레톤
+
+- [ ] 백엔드 스택 결정 (Spring Boot / NestJS / FastAPI)
+- [ ] 프론트엔드 `frontend/` 디렉토리에 Next.js 초기화
+- [ ] 백엔드 `backend/` 디렉토리에 선택한 프레임워크 초기화
+- [ ] PostgreSQL 컨테이너 (docker-compose) 작성
+- [ ] health check API + UI 페이지 1개
+- [ ] CI: 백엔드 + 프론트엔드 각각 빌드/테스트
+
+## P1 — 인증
+
+- [ ] 회원가입 / 로그인 API (JWT)
+- [ ] 비밀번호 해시 (bcrypt/argon2)
+- [ ] Refresh token 회전
+- [ ] 프론트 `/login`, `/register` 페이지
+
+## P2 — 코어 도메인
+
+- [ ] 이 SaaS 의 핵심 리소스 (예: Project, Document, …) 모델/CRUD
+- [ ] 권한 체크 (소유자만 수정/삭제)
+
+## 참고
+
+- 방법론 원본: harness-engineering/playbooks/b2b-saas.md
+- 보안 체크리스트: CLAUDE.md § 3

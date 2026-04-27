@@ -1,0 +1,18 @@
+{
+  "projectName": "my-test",
+  "playbookId": "ai-rag-platform",
+  "matchMode": "exact",
+  "matchScore": 1,
+  "answers": [
+    { "questionId": "1", "selectedOptionId": "A" },
+    { "questionId": "2", "selectedOptionId": "C" },
+    { "questionId": "3", "selectedOptionId": "B" },
+    { "questionId": "4", "selectedOptionId": "B" },
+    { "questionId": "5", "selectedOptionId": "B" },
+    { "questionId": "6", "selectedOptionId": "B" },
+    { "questionId": "7", "selectedOptionId": "C" },
+    { "questionId": "8", "selectedOptionId": "B" },
+    { "questionId": "9", "selectedOptionId": "B" }
+  ],
+  "placeholders": {}
+}

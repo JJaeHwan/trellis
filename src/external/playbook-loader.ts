@@ -8,7 +8,11 @@ function getPlaybooksRoot(): string {
   return resolve(here, "../../resources/playbooks");
 }
 
-export const SUPPORTED_PLAYBOOK_IDS = ["cli-tool"] as const;
+export const SUPPORTED_PLAYBOOK_IDS = [
+  "cli-tool",
+  "b2b-saas",
+  "ai-rag-platform",
+] as const;
 
 export type SupportedPlaybookId = (typeof SUPPORTED_PLAYBOOK_IDS)[number];
 

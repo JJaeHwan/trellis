@@ -1,0 +1,80 @@
+{
+  "id": "b2b-saas",
+  "title": "B2B SaaS",
+  "version": 1,
+  "description": "인증 + 다중 사용자 + 관리자 UI + 구독 가능한 일반적 SaaS.",
+  "sourceMd": "harness-engineering/playbooks/b2b-saas.md",
+  "recommendations": {
+    "1": "A",
+    "2": "B",
+    "3": "B",
+    "4": "C",
+    "5": "B",
+    "6": "B",
+    "7": "B",
+    "8": "B",
+    "9": "B"
+  },
+  "recommendationReasons": {
+    "1": "SaaS 는 포트폴리오 가치가 높고 외부 노출 동기가 자연스럽다.",
+    "2": "SaaS / 웹 서비스 카테고리가 b2b-saas 의 정의 자체.",
+    "3": "본인 + 지인 OSS 가 MVP 검증 단계에서 균형점.",
+    "4": "TypeScript/Node 가 Next.js 와 풀스택 통일 + 시작 단순. Java/Spring 도 1순위 동등.",
+    "5": "Next.js 가 SaaS 의 표준 풀스택 프레임워크.",
+    "6": "PostgreSQL 이 관계형 SaaS 의 표준 + JSONB 등 유연성.",
+    "7": "외부 인증/결제(OAuth, Stripe) 가 일반적 — 제로 외부는 비현실적.",
+    "8": "Docker + 클라우드(Vercel/Railway) 가 SaaS 배포 관례.",
+    "9": "단위 + 골든이 충분. E2E 는 DB 셋업 부담 ↑."
+  },
+  "scoring": {
+    "exactThreshold": 0.85,
+    "closeThreshold": 0.6,
+    "rules": [
+      {
+        "questionId": "1",
+        "comment": "포트폴리오/실사용 모두 SaaS 에 자연스럽다",
+        "scores": { "A": 1.0, "B": 0.9, "C": 0.7, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "2",
+        "comment": "SaaS 카테고리가 강한 시그널",
+        "scores": { "A": 0.2, "B": 1.0, "C": 0.4, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "3",
+        "comment": "사용자 규모는 SaaS 적합도와 무관",
+        "scores": { "A": 0.7, "B": 1.0, "C": 1.0, "OTHER": 0.7 }
+      },
+      {
+        "questionId": "4",
+        "comment": "Java/TS 가 SaaS 표준. Python 도 가능. Go 는 SaaS 비전형",
+        "scores": { "A": 1.0, "B": 0.8, "C": 1.0, "D": 0.4, "OTHER": 0.6 }
+      },
+      {
+        "questionId": "5",
+        "comment": "프론트엔드 없음은 SaaS 정의에 어긋남",
+        "scores": { "A": 0.3, "B": 1.0, "C": 0.9, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "6",
+        "comment": "관계형 DB 가 SaaS 표준. stateless 는 SaaS 가 아님",
+        "scores": { "A": 0.2, "B": 1.0, "C": 0.6, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "7",
+        "comment": "외부 API(인증/결제) 가 일반적",
+        "scores": { "A": 0.7, "B": 1.0, "C": 0.6, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "8",
+        "comment": "Docker + 클라우드가 SaaS 배포 관례",
+        "scores": { "A": 0.4, "B": 1.0, "C": 0.5, "OTHER": 0.6 }
+      },
+      {
+        "questionId": "9",
+        "comment": "B 또는 C 둘 다 SaaS 에 적합",
+        "scores": { "A": 0.6, "B": 1.0, "C": 0.95, "OTHER": 0.5 }
+      }
+    ]
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "id": "ai-rag-platform",
+  "title": "AI RAG Platform",
+  "version": 1,
+  "description": "문서 업로드 → 파싱 → 임베딩 → 검색 → LLM 응답 형태의 AI 플랫폼.",
+  "sourceMd": "harness-engineering/playbooks/ai-rag-platform.md",
+  "recommendations": {
+    "1": "A",
+    "2": "C",
+    "3": "B",
+    "4": "B",
+    "5": "B",
+    "6": "B",
+    "7": "C",
+    "8": "B",
+    "9": "B"
+  },
+  "recommendationReasons": {
+    "1": "AI 플랫폼은 포트폴리오 노출과 트렌드 반영에 가치가 크다.",
+    "2": "AI / RAG 카테고리가 ai-rag-platform 의 정의 자체.",
+    "3": "본인 + 지인 OSS 가 MVP 검증에 적합.",
+    "4": "Python 이 AI/ML 생태계의 표준. Java 도 Spring AI 등 가능.",
+    "5": "Next.js 가 풀스택 SSR 표준 — 채팅 UI, SSE 스트리밍 친화.",
+    "6": "PostgreSQL + pgvector 가 RAG 의 핵심 인프라.",
+    "7": "LLM 연동이 ai-rag-platform 의 정의 자체 — 외부 의존성 필수.",
+    "8": "Docker + 클라우드가 AI 추론 배포 관례 (GPU 인스턴스 등).",
+    "9": "단위 + 골든이 적합. LLM 비결정성 때문에 E2E 어려움."
+  },
+  "scoring": {
+    "exactThreshold": 0.85,
+    "closeThreshold": 0.6,
+    "rules": [
+      {
+        "questionId": "1",
+        "comment": "AI 플랫폼은 포트폴리오 동기가 자연스럽다",
+        "scores": { "A": 1.0, "B": 0.9, "C": 0.7, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "2",
+        "comment": "AI/RAG 카테고리가 강한 시그널",
+        "scores": { "A": 0.2, "B": 0.5, "C": 1.0, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "3",
+        "comment": "사용자 규모는 RAG 적합도와 무관",
+        "scores": { "A": 0.7, "B": 1.0, "C": 1.0, "OTHER": 0.7 }
+      },
+      {
+        "questionId": "4",
+        "comment": "Python 이 AI 표준. Java 도 가능. Go 는 AI 비전형",
+        "scores": { "A": 0.9, "B": 1.0, "C": 0.8, "D": 0.3, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "5",
+        "comment": "Next.js 가 채팅/스트리밍 UI 에 적합. 없음도 일부 가능 (API only RAG)",
+        "scores": { "A": 0.5, "B": 1.0, "C": 0.9, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "6",
+        "comment": "pgvector 가 RAG 의 핵심. stateless 는 불가능",
+        "scores": { "A": 0.1, "B": 1.0, "C": 0.5, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "7",
+        "comment": "LLM 연동이 RAG 의 정의 — 오프라인은 RAG 가 아님",
+        "scores": { "A": 0.1, "B": 0.6, "C": 1.0, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "8",
+        "comment": "Docker + 클라우드가 AI 배포 관례",
+        "scores": { "A": 0.3, "B": 1.0, "C": 0.5, "OTHER": 0.5 }
+      },
+      {
+        "questionId": "9",
+        "comment": "단위 + 골든이 LLM 비결정성에 적합",
+        "scores": { "A": 0.6, "B": 1.0, "C": 0.9, "OTHER": 0.5 }
+      }
+    ]
+  }
+}

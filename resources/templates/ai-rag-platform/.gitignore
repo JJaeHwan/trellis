@@ -1,0 +1,36 @@
+# Python (FastAPI / 임베딩 스크립트)
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+
+# Node / Frontend
+node_modules/
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+# 임베딩 결과 / 모델 캐시
+*.bin
+*.gguf
+embeddings_cache/
+ollama_models/
+
+# 업로드된 사용자 문서 (개발용)
+uploads/
+documents/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Env — API 키 절대 커밋 금지
+.env
+.env.local
+.env.*.local

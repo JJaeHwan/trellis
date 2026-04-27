@@ -1,0 +1,32 @@
+# Node / Frontend
+node_modules/
+.next/
+dist/
+build/
+*.tsbuildinfo
+coverage/
+
+# JVM / Backend (Spring Boot 사용 시)
+target/
+*.class
+.gradle/
+
+# Python (FastAPI 사용 시)
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+
+# Env (절대 커밋하지 말 것)
+.env
+.env.local
+.env.*.local

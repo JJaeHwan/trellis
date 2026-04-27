@@ -22,11 +22,11 @@ AI 에이전트와 함께 프로젝트를 만들 때 **예측 가능한 품질**
 
 ## 상태
 
-🚧 **개발 중 — Phase 2 (Generator 준비)**
+🚧 **개발 중 — Phase 3 (Validator 준비)**
 
-P1 (인터뷰 엔진) 완료 — `trellis new <name>` 가 9문항 인터뷰 → cli-tool 매칭
-→ ProjectSpec JSON (stdout) 까지 동작. 골든 스냅샷 1건 부착.
-다음: 템플릿 렌더링 + 실제 파일 트리 생성 + 추가 플레이북 (b2b-saas, ai-rag-platform).
+P2 (Generator) 완료 — `trellis new <name>` 가 인터뷰 → 매칭 → **실제 파일 트리 생성**
+까지 동작. 3개 플레이북 (cli-tool / b2b-saas / ai-rag-platform) 매처 + 골든 부착.
+다음: `trellis check <dir>` — 계층 규칙 위반 자동 탐지 (dependency-cruiser 래핑).
 로드맵은 [`docs/plans/`](docs/plans/).
 
 ---

@@ -1,0 +1,54 @@
+# {{projectName}} — Project Rules (ai-rag-platform)
+
+## 1. 프로젝트 개요
+
+- **이름**: {{projectName}}
+- **플레이북**: ai-rag-platform
+- **생성**: trellis {{trellisVersion}} on {{generatedAt}}
+
+## 2. service 서브패키지
+
+```
+service/
+├── ai/
+│   ├── LlmService            (인터페이스)
+│   ├── EmbeddingService
+│   ├── OllamaLlmService
+│   └── prompt/               (프롬프트 상수)
+├── document/
+│   ├── DocumentUploadService
+│   ├── DocumentParsingService
+│   └── DocumentProcessingService (async)
+├── chat/
+│   └── ChatService
+└── knowledge/                (선택 — 보조 지식)
+```
+
+## 3. 상태 머신 (문서 처리)
+
+```
+UPLOADED → PARSING → PARSED → EMBEDDING → READY
+                          └─→ FAILED
+```
+
+## 4. 핵심 API
+
+| Method | Path | 설명 |
+|--------|------|------|
+| POST | `/api/v1/documents` | 업로드 |
+| GET | `/api/v1/documents` | 목록 |
+| POST | `/api/v1/chat/sessions` | 다중 문서 세션 |
+| POST | `/api/v1/chat/sessions/{id}/messages` | 질문 (SSE 스트리밍) |
+
+## 5. 주의점
+
+- **LLM 응답 비결정** — 테스트는 구조 검증, 정확 매칭 금지
+- **임베딩 모델 변경 시 차원 수 바뀜** → 마이그레이션
+- **컨텍스트 윈도우 한계** — 청크 크기 + Top-N 조율
+- **Provider 추상화 필수** — 로컬/클라우드 전환 가능하게
+
+## 6. 금지
+
+- [ ] LLM API 키 코드/리포지토리 커밋
+- [ ] 임베딩 결과 캐시 무효화 없이 모델 교체
+- [ ] 벡터 검색 결과를 LLM 컨텍스트에 무한정 투입 (윈도우 폭발)
