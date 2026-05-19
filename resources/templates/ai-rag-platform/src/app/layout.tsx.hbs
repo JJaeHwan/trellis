@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Sidebar from "@/components/Sidebar";
+import { navItems } from "@/lib/nav-items";
 
 export const metadata: Metadata = {
   title: "{{projectName}}",
@@ -14,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-        {children}
+        <div className="flex min-h-screen">
+          <Sidebar items={navItems} />
+          <main className="flex-1">{children}</main>
+        </div>
       </body>
     </html>
   );
