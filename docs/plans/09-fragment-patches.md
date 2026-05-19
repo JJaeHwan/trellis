@@ -1,15 +1,18 @@
-# P8 — fragment 의 기존 파일 수정 (patches)
+# P9 — fragment 의 기존 파일 수정 (patches)
 
 > P7 `trellis add` 는 insert-only — 새 파일만 생성한다.
 > 결과적으로 사용자가 fragment 를 add 한 후, **사이드바에 메뉴 항목 추가**나
 > **라우터에 새 핸들러 등록** 같은 부수 작업을 손으로 해야 한다.
-> P8 은 fragment 가 기존 파일을 안전·멱등하게 수정할 수 있도록 한다.
+> P9 는 fragment 가 기존 파일을 안전·멱등하게 수정할 수 있도록 한다.
+>
+> P8 (풀바디 네비게이션 보완) 으로 `Sidebar.tsx` + `nav-items.ts` 가 풀바디에
+> 들어오면서 patch 대상 파일이 마련됨 — 본 플랜의 토양 확보됨.
 
 ---
 
 ## 1. 목표
 
-P8 종료 시점:
+P9 종료 시점:
 
 - fragment 가 기존 파일에 **명시된 위치** 에서 텍스트를 삽입할 수 있다
 - 동일 이름으로 두 번 add 해도 파일 내용이 **중복되지 않는다** (멱등)
@@ -78,20 +81,20 @@ trellis add page reports   # ✅ src/app/(authed)/reports/page.tsx 생성
 
 | Phase | 작업 | 완료 조건 |
 |-------|------|----------|
-| P8.0 | 본 문서 + 사용자 합의 (Q-A/B/C 결정) | 본 문서 § 3 의 미결정 3개 마감 |
-| P8.1 | `FragmentMeta.patches` 타입 정의 + 로더 확장 | 단위 테스트 |
-| P8.2 | b2b-saas 풀바디에 marker 주입 (`Sidebar.tsx`, `nav-items.ts`) | 풀바디 골든 갱신 |
-| P8.3 | ai-rag-platform 풀바디에 marker 주입 (해당 위치 식별 후) | 풀바디 골든 갱신 |
-| P8.4 | `service/fragment/patcher.ts` — 파일 읽기 → slot 찾기 → entryKey 멱등 검사 → 삽입 | 단위 테스트 |
-| P8.5 | `cmd/add.ts` 에 patch 단계 통합 (writeTree → patchFiles → patchPackageJson 순서) | 통합 |
-| P8.6 | b2b-saas `_fragments/page/meta.json` 에 sidebar patch 선언 | 단위 + E2E |
-| P8.7 | ai-rag-platform fragment 의 적절한 patch 추가 (해당 시) | E2E |
-| P8.8 | E2E: 동일 add 두 번 → 멱등 확인 (메뉴 중복 X) | 통과 |
-| P8.9 | E2E: slot 누락 시 fail-fast + 친절한 메시지 | 통과 |
-| P8.10 | doctor 규칙 신설: 풀바디 템플릿이 marker 를 잃지 않았는지 검사 | 통과 |
-| P8.11 | `trellis check .` / `doctor .` 자기 검증 통과 + `architecture.md` / `CLAUDE.md` / README 갱신 | 통과 |
-| P8.12 | release-please v0.6.0 PR 머지 → npm 배포 | npm 0.6.0 노출 |
-| P8.13 | 본 파일을 `docs/plans/completed/` 로 이동 | 완료 |
+| P9.0 | 본 문서 + 사용자 합의 (Q-A/B/C 결정) | 본 문서 § 3 의 미결정 3개 마감 |
+| P9.1 | `FragmentMeta.patches` 타입 정의 + 로더 확장 | 단위 테스트 |
+| P9.2 | b2b-saas 풀바디에 marker 주입 (`Sidebar.tsx`, `nav-items.ts`) | 풀바디 골든 갱신 |
+| P9.3 | ai-rag-platform 풀바디에 marker 주입 (해당 위치 식별 후) | 풀바디 골든 갱신 |
+| P9.4 | `service/fragment/patcher.ts` — 파일 읽기 → slot 찾기 → entryKey 멱등 검사 → 삽입 | 단위 테스트 |
+| P9.5 | `cmd/add.ts` 에 patch 단계 통합 (writeTree → patchFiles → patchPackageJson 순서) | 통합 |
+| P9.6 | b2b-saas `_fragments/page/meta.json` 에 sidebar patch 선언 | 단위 + E2E |
+| P9.7 | ai-rag-platform fragment 의 적절한 patch 추가 (해당 시) | E2E |
+| P9.8 | E2E: 동일 add 두 번 → 멱등 확인 (메뉴 중복 X) | 통과 |
+| P9.9 | E2E: slot 누락 시 fail-fast + 친절한 메시지 | 통과 |
+| P9.10 | doctor 규칙 신설: 풀바디 템플릿이 marker 를 잃지 않았는지 검사 | 통과 |
+| P9.11 | `trellis check .` / `doctor .` 자기 검증 통과 + `architecture.md` / `CLAUDE.md` / README 갱신 | 통과 |
+| P9.12 | release-please v0.7.0 PR 머지 → npm 배포 | npm 0.7.0 노출 |
+| P9.13 | 본 파일을 `docs/plans/completed/` 로 이동 | 완료 |
 
 ---
 
@@ -145,5 +148,5 @@ trellis add page reports   # ✅ src/app/(authed)/reports/page.tsx 생성
 - [ ] 멱등 (동일 add 두 번 → 단 1회 반영)
 - [ ] doctor 의 marker presence 규칙 통과
 - [ ] 자동/수동 검증 모두 통과
-- [ ] release-please v0.6.0 머지 → npm 배포
-- [ ] 본 파일을 `docs/plans/completed/08-fragment-patches.md` 로 이동
+- [ ] release-please v0.7.0 머지 → npm 배포
+- [ ] 본 파일을 `docs/plans/completed/09-fragment-patches.md` 로 이동
