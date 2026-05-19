@@ -9,7 +9,8 @@ import type { Finding } from "../types.js";
  * cmd/new.ts 와 동일한 방식으로 하드코딩한다.
  * package.json 을 런타임에 읽으면 번들 후 경로가 달라질 수 있고,
  * import.meta 로 주입하려면 tsup config 변경이 필요하다.
- * release-please 가 package.json version bump 시 이 값도 함께 갱신해야 한다.
+ * release-please 가 `// x-release-please-version` 마커로 자동 갱신한다
+ * (release-please-config.json 의 extra-files 참조).
  */
 const CURRENT_TRELLIS_VERSION = "0.9.0"; // x-release-please-version
 
