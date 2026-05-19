@@ -11,7 +11,7 @@
  ┌─────────────────────────────────────────────────┐
  │  trellis (Node.js CLI, 오프라인)            │
  │                                                 │
- │  L5 cmd/       new · add · check · doctor · hello │
+ │  L5 cmd/       new · add · list · check · doctor · hello │
  │     │                                           │
  │  L4 service/   interview · matcher · generator  │
  │     │          · scaffolder · validator         │
@@ -80,6 +80,7 @@ src/
     ├── index.ts      # 메인 엔트리 (bin)
     ├── new.ts
     ├── add.ts        # `trellis add [type] [name]`
+    ├── list.ts       # `trellis list [type]` — fragment 목록/상세/JSON (P12)
     ├── check.ts
     ├── doctor.ts
     └── hello.ts      # P0 sanity check용
@@ -108,6 +109,8 @@ resources/
 │           └── <type>/         # add 가 렌더하는 부분 단위 (meta.json + *.hbs)
 │                               # b2b-saas: api, page, model, service, form, admin
 │                               # ai-rag-platform: api, page
+│                               # cli-tool: command (imports+commands 2슬롯 multi-slot patch),
+│                               #           service-module (src/service/<name>/ 4파일, patches 없음)
 └── playbooks/
     ├── cli-tool.json          # 매처 입력 — 기계 판독용 스펙
     ├── cli-tool.meta.json     # 원본 MD 경로 + 버전 기록
@@ -225,6 +228,25 @@ service/fragment/patcher (P9)
 - 실패는 `HarnessError` 로 전파되며 메시지 끝에 `→ <다음 명령 예시>` 형식의 actionable hint 가 붙는다 (slot 누락 / 파일 충돌 / spec.json 부재 등).
 - `trellis new <projectName> --json` (P11) — 동일한 패턴. stdout 에 결과 단일 라인 JSON (`{ ok, command: "new", projectName, playbookId, matchMode, created, trellisVersion }`), stderr 에 인터뷰 프롬프트와 매칭 요약. 실패 시 `{ ok: false, command: "new", error: { code, message, hint? } }`. 자동화 파이프라인이 매칭 결과와 생성 파일 목록을 그대로 파싱할 수 있다.
 
+### 3.3 `trellis list [type]` 흐름
+
+```
+cmd/list.ts
+  ↓  파싱 (commander) + `.trellis/spec.json` 존재 가드
+external/spec-loader
+  ↓  ProjectSpec 복원 (playbookId)
+external/fragment-types-loader
+  ↓  resources/templates/<playbookId>/_fragments/ 디렉토리 열거
+  ↓  (type 인자 있으면 해당 type 의 meta.json 로드 → 상세 모드)
+cmd/list.ts
+  ↓  --json: stdout 단일 라인 JSON, 없으면 사람 읽기 좋은 표 출력
+  ↓  exit code: 0=성공, 1=오류 (spec.json 부재 등)
+```
+
+- **목록 모드** (`trellis list`) — 현재 프로젝트 플레이북에서 사용 가능한 fragment 타입 목록 출력
+- **상세 모드** (`trellis list <type>`) — 해당 fragment 의 `meta.json` 설명 + patches 정보 상세 출력
+- **`--json`** — 두 모드 모두 stdout 단일 라인 JSON 지원 (UNIX 파이프 친화)
+
 ### 3.3 `trellis check <dir>` 흐름
 
 ```
@@ -243,7 +265,7 @@ cmd/check.ts
   ↓  exit code: 위반 0건 → 0, 1건+ → 1
 ```
 
-### 3.4 `trellis doctor <dir>` 흐름
+### 3.5 `trellis doctor <dir>` 흐름
 
 ```
 cmd/doctor.ts
@@ -351,6 +373,7 @@ interface ProjectSpec {
 - `trellis doctor` 의 `patch-marker-presence` 규칙 (P9) — 번들 템플릿이 fragment `meta.patches` 가 가리키는 slot marker 를 잃지 않았는지 검사하여 회귀를 차단
 - `trellis doctor` 의 `trellis-version-compat` 규칙 (P10) — 대상 프로젝트의 `.trellis/spec.json.trellisVersion` 이 현재 실행 중인 trellis 와 semver minor 단위로 호환되는지 검사. major 가 다르면 warning, spec.json 부재 시 no-op
 - `trellis doctor` 의 `handlebars-token-valid` 규칙 (P11) — 번들 `resources/templates/` 하위 모든 `.hbs` 파일을 스캔하여, 사용된 `{{token}}` / `{{helper arg}}` 가 컨텍스트 (풀바디 = `GeneratorContext`, fragment = `FragmentContext`) 에 정의된 키/헬퍼인지 검증. 풀바디·fragment 별로 허용 키가 분리되어 있고, 미정의 토큰 (오탈자, 신규 fragment 의 컨텍스트 누락) 을 사전 차단
+- `trellis doctor` 의 `playbook-still-supported` 규칙 (P12) — 대상 프로젝트의 `.trellis/spec.json.playbookId` 가 현재 번들된 playbooks/ 에 존재하는지 검사. 알 수 없는 playbookId 를 가진 프로젝트를 조기 탐지하여 `add` / `check` 실패 전 경고
 - 설정 파일(`~/.config/trellis/`)에 비밀값 저장 금지
 
 ---
@@ -381,7 +404,7 @@ Node.js ≥ 20, OS: macOS / Linux (Windows 는 Phase 2+ 검증).
 - CI 에서 `npm run dep:check` 로 L0..L5 역방향 의존성 0건 확인 (dependency-cruiser 래핑)
 - Phase 3 이후: `trellis check .` 를 자신에게 실행 → 통과 유지
 - Phase 4 이후: `trellis doctor .` 자기 자신에게 실행 → 통과 유지
-- `trellis add` 는 b2b-saas / ai-rag-platform 플레이북에만 fragment 가 정의되어 있다. trellis 본체는 `cli-tool` 플레이북이고 cli-tool fragment 는 별도 단계로 분리되어 있으므로 본체에 대한 `add` 자기 적용 사례는 현재 없다.
+- `trellis add` 자기 적용 (P12): cli-tool 풀바디에 `_fragments/command/` 와 `_fragments/service-module/` 이 추가되어, trellis 본체에 `trellis add command <name>` / `trellis add service-module <name>` 을 직접 실행할 수 있다. cli-tool dogfooding 완성 — `src/cmd/index.ts` 의 imports/commands 슬롯에 multi-slot patch 로 자동 등록.
 
 ---
 
@@ -393,3 +416,4 @@ Node.js ≥ 20, OS: macOS / Linux (Windows 는 Phase 2+ 검증).
 - P9 (2026-05-19): fragment patches — meta.json.patches, block-style marker, applyPatches, doctor 규칙
 - P10 (2026-05-19): b2b-saas model + service fragment, multi-slot patch 검증, trellis add --json, actionable errors, doctor trellis-version-compat
 - P11 (2026-05-19): b2b-saas form + admin fragment (multi-slot patch), admin-items + breadcrumb slot 인프라, trellis new --json, 풀바디 dep-cruiser, doctor handlebars-token-valid
+- P12 (2026-05-19): trellis list 추가 (목록·상세·--json), cli-tool _fragments/command (imports+commands 2슬롯 multi-slot patch) + _fragments/service-module (src/service/<name>/ 4파일), doctor playbook-still-supported, actionable error 일관성 마무리
