@@ -54,6 +54,7 @@ export function patchPackageJson(
     throw new HarnessError(
       `package.json not found at ${pkgPath}`,
       ExitCode.ValidationFailure,
+      `프로젝트 루트에 package.json 이 있는지 확인하세요. npm init 으로 생성할 수 있습니다.`,
     );
   }
 
@@ -64,6 +65,7 @@ export function patchPackageJson(
     throw new HarnessError(
       `package.json not found at ${pkgPath}`,
       ExitCode.ValidationFailure,
+      `프로젝트 루트에 package.json 이 있는지 확인하세요. npm init 으로 생성할 수 있습니다.`,
     );
   }
 
@@ -74,6 +76,7 @@ export function patchPackageJson(
     throw new HarnessError(
       `package.json 파싱 실패: ${pkgPath}`,
       ExitCode.GeneralError,
+      `${pkgPath} 파일이 올바른 JSON 형식인지 확인하세요.`,
     );
   }
 

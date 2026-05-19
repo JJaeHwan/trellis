@@ -184,6 +184,7 @@ function validateProjectName(name: string): void {
     throw new HarnessError(
       `잘못된 프로젝트 이름: "${name}". 알파벳/숫자/대시/언더스코어만 사용하세요.`,
       ExitCode.UserInputError,
+      `trellis new <프로젝트명> 형식으로 입력하세요. 예: trellis new my-project`,
     );
   }
 }

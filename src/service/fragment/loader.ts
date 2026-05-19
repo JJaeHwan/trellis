@@ -33,6 +33,7 @@ export function loadFragment(
     throw new HarnessError(
       `unknown fragment: ${playbookId}/${type}`,
       ExitCode.UserInputError,
+      `trellis list 로 사용 가능한 fragment 타입을 확인하세요.`,
     );
   }
 
@@ -42,6 +43,7 @@ export function loadFragment(
     throw new HarnessError(
       `unknown fragment: ${playbookId}/${type}`,
       ExitCode.UserInputError,
+      `trellis list 로 사용 가능한 fragment 타입을 확인하세요.`,
     );
   }
 

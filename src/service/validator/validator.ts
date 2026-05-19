@@ -19,6 +19,7 @@ export async function validateProject(
     throw new HarnessError(
       `'${lang}' 언어는 아직 지원하지 않습니다 (P3 MVP: TypeScript/JavaScript only).`,
       ExitCode.UserInputError,
+      `TypeScript 또는 JavaScript 프로젝트 디렉토리에서 trellis check <dir> 을 실행하세요.`,
     );
   }
 
@@ -27,6 +28,7 @@ export async function validateProject(
     throw new HarnessError(
       `${configPath} 가 없습니다. trellis cli-tool 템플릿이 기본으로 포함합니다.`,
       ExitCode.UserInputError,
+      `trellis new <디렉토리> 로 생성된 프로젝트에서 실행하거나, .dependency-cruiser.cjs 파일을 직접 추가하세요.`,
     );
   }
 

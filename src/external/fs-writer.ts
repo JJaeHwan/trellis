@@ -30,12 +30,14 @@ export function flush(
       throw new HarnessError(
         `대상 경로가 파일입니다: ${absDir}`,
         ExitCode.UserInputError,
+        `다른 디렉토리 이름을 지정하거나, 해당 파일을 먼저 삭제한 후 trellis new <디렉토리> 를 실행하세요.`,
       );
     }
     if (!fs.isEmptyDirectory(absDir) && !options.force) {
       throw new HarnessError(
         `디렉토리가 비어있지 않습니다: ${absDir}. --force 로 덮어쓰기를 허용하세요.`,
         ExitCode.UserInputError,
+        `trellis new <디렉토리> --force 로 덮어쓰거나, 빈 디렉토리를 지정하세요.`,
       );
     }
   }
