@@ -1,0 +1,3 @@
+{
+  "description": "Next.js App Router page component under (authed) route group with getServerSession auth guard, basic layout, and placeholder UI."
+}

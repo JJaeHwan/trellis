@@ -1,0 +1,3 @@
+{
+  "description": "AI RAG API route — zod-validated input/output, vector search + LLM streaming. All required packages (next, zod, @prisma/client, @anthropic-ai/sdk, openai) are already declared in the full-body package.json."
+}

@@ -1,0 +1,82 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { z } from "zod";
+import { authOptions } from "@/lib/service/auth";
+import { db } from "@/lib/external/db";
+import { AppError } from "@/lib/common/errors";
+
+// ---------------------------------------------------------------------------
+// Input schema
+// ---------------------------------------------------------------------------
+
+const create{{namePascal}}Schema = z.object({
+  // TODO: define fields for {{namePascal}}
+  name: z.string().min(1),
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/{{nameKebab}}
+// ---------------------------------------------------------------------------
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  try {
+    // RLS: scope query to the authenticated user's tenant/org
+    const items = await db.{{nameCamel}}.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json({ {{nameCamel}}s: items });
+  } catch (e) {
+    if (e instanceof AppError) {
+      return NextResponse.json({ error: e.message }, { status: e.statusCode });
+    }
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// POST /api/{{nameKebab}}
+// ---------------------------------------------------------------------------
+
+export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "invalid json" }, { status: 400 });
+  }
+
+  const parsed = create{{namePascal}}Schema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "invalid input", details: parsed.error.flatten() },
+      { status: 400 },
+    );
+  }
+
+  try {
+    // RLS: always attach the authenticated user's id
+    const created = await db.{{nameCamel}}.create({
+      data: {
+        ...parsed.data,
+        userId: session.user.id,
+      },
+    });
+    return NextResponse.json({ {{nameCamel}}: created }, { status: 201 });
+  } catch (e) {
+    if (e instanceof AppError) {
+      return NextResponse.json({ error: e.message }, { status: e.statusCode });
+    }
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
+  }
+}

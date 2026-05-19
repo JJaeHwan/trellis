@@ -1,0 +1,207 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface DocumentRow {
+  id: string;
+  filename: string;
+  originalName: string;
+  status: string;
+  pageCount: number | null;
+  createdAt: string;
+}
+
+interface ChunkRef {
+  chunkId: string;
+  documentId: string;
+  content: string;
+  pageNumber: number | null;
+  chunkIndex: number;
+  distance?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Page component
+// ---------------------------------------------------------------------------
+
+export default function {{namePascal}}Page() {
+  const [docs, setDocs] = useState<DocumentRow[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [sources, setSources] = useState<ChunkRef[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load READY documents on mount
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch("/api/documents");
+        const data = (await res.json()) as { documents: DocumentRow[] };
+        setDocs(data.documents.filter((d) => d.status === "READY"));
+      } catch {
+        setError("문서 목록을 불러오지 못했습니다.");
+      }
+    })();
+  }, []);
+
+  function toggleDoc(id: string) {
+    setSelectedIds((cur) =>
+      cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
+    );
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!question.trim() || selectedIds.length === 0) return;
+
+    setError(null);
+    setBusy(true);
+    setAnswer("");
+    setSources([]);
+
+    try {
+      const res = await fetch("/api/{{nameKebab}}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question, documentIds: selectedIds }),
+      });
+
+      if (!res.ok) {
+        setError(`요청 실패 (${res.status})`);
+        return;
+      }
+
+      if (!res.body) {
+        setAnswer("(no stream)");
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Extract SSE `event: sources` frame if present
+        const sourcesMatch = /event: sources\ndata: ([^\n]+)\n\n/.exec(buffer);
+        if (sourcesMatch) {
+          try {
+            setSources(JSON.parse(sourcesMatch[1]) as ChunkRef[]);
+          } catch {
+            // ignore parse error — sources are optional context
+          }
+          buffer = buffer.replace(sourcesMatch[0], "");
+        }
+
+        setAnswer((prev) => prev + buffer);
+        buffer = "";
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const canSubmit = !busy && question.trim().length > 0 && selectedIds.length > 0;
+
+  return (
+    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-6 py-12">
+      <h1 className="text-3xl font-bold">{{namePascal}}</h1>
+
+      {/* Document selector */}
+      <section>
+        <h2 className="mb-2 text-sm font-semibold text-gray-600">
+          질의 대상 문서 ({selectedIds.length} 선택됨)
+        </h2>
+        {docs.length === 0 ? (
+          <p className="text-sm text-gray-400">
+            준비된 문서가 없습니다. 먼저{" "}
+            <a href="/documents" className="underline">
+              /documents
+            </a>
+            에서 업로드하세요.
+          </p>
+        ) : (
+          <ul className="flex flex-wrap gap-2">
+            {docs.map((d) => {
+              const checked = selectedIds.includes(d.id);
+              return (
+                <li key={d.id}>
+                  <button
+                    type="button"
+                    onClick={() => toggleDoc(d.id)}
+                    className={`rounded border px-3 py-1 text-xs ${
+                      checked
+                        ? "border-gray-900 bg-gray-900 text-white"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {d.originalName}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      {/* Question form */}
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <input
+          type="text"
+          required
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder="질문을 입력하세요…"
+          className="flex-1 rounded border px-3 py-2"
+          disabled={busy}
+        />
+        <button
+          type="submit"
+          disabled={!canSubmit}
+          className="rounded bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+        >
+          {busy ? "…" : "검색"}
+        </button>
+      </form>
+
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+
+      {/* Streaming answer */}
+      <pre className="whitespace-pre-wrap rounded bg-gray-50 p-4 text-sm dark:bg-gray-900">
+        {answer || "(답변이 여기에 스트리밍됩니다)"}
+      </pre>
+
+      {/* Source chunks */}
+      {sources.length > 0 ? (
+        <section>
+          <h2 className="mb-2 text-sm font-semibold text-gray-600">
+            참조 청크 ({sources.length})
+          </h2>
+          <ul className="flex flex-col gap-2">
+            {sources.map((s, i) => (
+              <li
+                key={s.chunkId}
+                className="rounded border border-gray-200 p-3 text-xs dark:border-gray-700"
+              >
+                <span className="font-mono text-gray-400">[{i + 1}]</span>{" "}
+                {s.pageNumber != null ? `p.${s.pageNumber} · ` : ""}
+                {s.content.slice(0, 200)}
+                {s.content.length > 200 ? "…" : ""}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+    </main>
+  );
+}

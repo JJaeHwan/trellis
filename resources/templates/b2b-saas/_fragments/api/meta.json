@@ -1,0 +1,6 @@
+{
+  "description": "Next.js App Router API route with getServerSession auth guard, zod input validation, and RLS-aware Prisma boilerplate.",
+  "dependencies": {
+    "zod": "^3.22.4"
+  }
+}

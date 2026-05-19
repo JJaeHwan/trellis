@@ -1,0 +1,3 @@
+{
+  "description": "AI RAG page component — React client component with search/chat UI (document selection, question input, streaming answer). All required packages (next, react, react-dom) are already declared in the full-body package.json."
+}
