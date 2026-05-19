@@ -7,6 +7,7 @@
 
 ```bash
 $ trellis new my-project        # 방법론 준수 스켈레톤 생성
+$ trellis add api users         # 기존 프로젝트에 fragment 추가
 $ trellis check .               # 계층 규칙 위반 탐지
 $ trellis doctor .              # 문서-코드 일관성 점검
 ```

@@ -11,13 +11,15 @@
  ┌─────────────────────────────────────────────────┐
  │  trellis (Node.js CLI, 오프라인)            │
  │                                                 │
- │  L5 cmd/       new · check · doctor · hello    │
+ │  L5 cmd/       new · add · check · doctor · hello │
  │     │                                           │
  │  L4 service/   interview · matcher · generator  │
- │     │          · validator · doctor             │
+ │     │          · scaffolder · validator         │
+ │     │          · doctor · fragment              │
  │     │                                           │
  │  L3 external/  FileSystem · TemplateLoader      │
- │     │          · PlaybookLoader                 │
+ │     │          · PlaybookLoader · SpecLoader    │
+ │     │          · FragmentTypesLoader            │
  │     │                                           │
  │  L2 domain/    Interview · Playbook · ProjectSpec│
  │     │                                           │
@@ -27,9 +29,10 @@
  └─────────────────────────────────────────────────┘
       │                    │
       ▼                    ▼
- [Bundled Resources]   [User Filesystem]
-  templates/            ./my-project/ (new)
-  playbooks/            ./any-project/ (check, doctor)
+ [Bundled Resources]       [User Filesystem]
+  templates/                ./my-project/ (new — `.trellis/spec.json` 기록)
+   <id>/_fragments/         ./existing-project/ (add — `.trellis/spec.json` 읽기)
+  playbooks/                ./any-project/ (check, doctor)
 ```
 
 데이터베이스, 웹 서버, 외부 API 호출 — **없음**.
@@ -55,20 +58,28 @@ src/
 │   └── project-spec.ts # ProjectSpec (생성 입력 결과)
 │
 ├── external/         # L3 — I/O 어댑터
-│   ├── fs-adapter.ts         # 파일 시스템 래퍼 (테스트 대체 가능)
-│   ├── template-loader.ts    # 번들 templates/ 읽기
-│   └── playbook-loader.ts    # 번들 playbooks/ 읽기
+│   ├── fs-adapter.ts            # 파일 시스템 래퍼 (테스트 대체 가능)
+│   ├── fs-writer.ts             # VirtualTree → 디스크 쓰기
+│   ├── template-loader.ts       # 번들 templates/ 읽기
+│   ├── playbook-loader.ts       # 번들 playbooks/ 읽기
+│   ├── interview-loader.ts      # 번들 questions.json 읽기
+│   ├── lang-detector.ts         # 언어 감지 (package.json/pom.xml/…)
+│   ├── spec-loader.ts           # `.trellis/spec.json` 읽기 (add 진입점)
+│   └── fragment-types-loader.ts # `_fragments/<type>/` 디렉토리 열거
 │
 ├── service/          # L4 — 핵심 로직
 │   ├── interview/    # 9문항 정의 + 답변 수집 루프
 │   ├── matcher/      # 답변 → 플레이북 매칭 (Exact/Close/Hybrid/New)
 │   ├── generator/    # Handlebars 템플릿 → 파일 트리 생성
+│   ├── scaffolder/   # `new` 오케스트레이션 + `.trellis/spec.json` 직렬화
 │   ├── validator/    # `check` — 계층 규칙 검사
-│   └── doctor/       # `doctor` — 문서-코드 일관성 검사
+│   ├── doctor/       # `doctor` — 문서-코드 일관성 검사
+│   └── fragment/     # `add` — fragment 로드/렌더 + package.json dep merge
 │
 └── cmd/              # L5 — commander 엔트리
     ├── index.ts      # 메인 엔트리 (bin)
     ├── new.ts
+    ├── add.ts        # `trellis add [type] [name]`
     ├── check.ts
     ├── doctor.ts
     └── hello.ts      # P0 sanity check용
@@ -83,7 +94,10 @@ resources/
 │   ├── architecture.md.hbs
 │   ├── plan-00.md.hbs
 │   ├── gitignore.hbs
-│   └── ci.yml.hbs
+│   ├── ci.yml.hbs
+│   └── <playbookId>/
+│       └── _fragments/
+│           └── <type>/        # add 가 렌더하는 부분 단위 (meta.json + *.hbs)
 └── playbooks/
     ├── cli-tool.json          # 매처 입력 — 기계 판독용 스펙
     ├── cli-tool.meta.json     # 원본 MD 경로 + 버전 기록
@@ -133,7 +147,34 @@ external/fs-adapter
 [완료 메시지 + 다음 단계 안내]
 ```
 
-### 3.2 `trellis check <dir>` 흐름
+### 3.2 `trellis add [type] [name]` 흐름
+
+```
+[사용자]
+  ↓  trellis add api users   (in existing trellis project)
+cmd/add.ts
+  ↓  파싱 (commander) + `.trellis/spec.json` 존재 가드
+external/spec-loader
+  ↓  ProjectSpec 복원 (playbookId + placeholders)
+external/fragment-types-loader
+  ↓  resources/templates/<playbookId>/_fragments/ 디렉토리 열거
+  ↓  (type / name 인자 누락 시 인터랙티브 fallback)
+service/fragment/loader
+  ↓  _fragments/<type>/meta.json + *.hbs 로드
+service/fragment/renderer
+  ↓  buildFragmentContext({name, namePascal, nameKebab, nameCamel, nameSnake, ...spec})
+  ↓  Handlebars 렌더 → VirtualTree
+cmd/add.ts (checkConflicts)
+  ↓  기존 파일 존재 시 fail-fast (--force 로 덮어쓰기)
+external/fs-adapter
+  ↓  파일 트리 쓰기 (insert-only — 기존 파일 수정 X)
+service/fragment/dep-patcher
+  ↓  meta.dependencies 가 있으면 package.json JSON merge
+  ↓  버전 충돌은 경고만 출력하고 기존 값 유지
+[완료 메시지]
+```
+
+### 3.3 `trellis check <dir>` 흐름
 
 ```
 cmd/check.ts
@@ -151,7 +192,7 @@ cmd/check.ts
   ↓  exit code: 위반 0건 → 0, 1건+ → 1
 ```
 
-### 3.3 `trellis doctor <dir>` 흐름
+### 3.4 `trellis doctor <dir>` 흐름
 
 ```
 cmd/doctor.ts
@@ -247,6 +288,8 @@ interface ProjectSpec {
 
 - 생성 대상 경로는 **사용자가 명시적으로 지정**해야 함 (`trellis new <dir>`)
 - 기존 디렉토리 덮어쓰기는 `--force` 플래그 필수
+- `trellis add` 의 충돌 정책 — 기존 파일이 있으면 fail-fast, `--force` 가 있을 때만 덮어쓰기. fragment 는 insert-only (기존 파일 수정 금지, P8 로 분리)
+- `trellis add` 의 dep merge — fragment `meta.json` 의 `dependencies` 는 `package.json` 에 JSON merge. 같은 이름이 이미 있고 버전이 다르면 stderr 경고만 출력하고 기존 값을 유지
 - 설정 파일(`~/.config/trellis/`)에 비밀값 저장 금지
 
 ---
@@ -277,3 +320,4 @@ Node.js ≥ 20, OS: macOS / Linux (Windows 는 Phase 2+ 검증).
 - CI 에서 `npm run dep:check` 로 L0..L5 역방향 의존성 0건 확인 (dependency-cruiser 래핑)
 - Phase 3 이후: `trellis check .` 를 자신에게 실행 → 통과 유지
 - Phase 4 이후: `trellis doctor .` 자기 자신에게 실행 → 통과 유지
+- `trellis add` 는 b2b-saas / ai-rag-platform 플레이북에만 fragment 가 정의되어 있다. trellis 본체는 `cli-tool` 플레이북이고 cli-tool fragment 는 P8 로 분리되어 있으므로 본체에 대한 `add` 자기 적용 사례는 현재 없다.

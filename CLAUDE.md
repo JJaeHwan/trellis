@@ -44,8 +44,8 @@ Layer 0: common     (타입, 예외, 유틸리티 — 프레임워크 의존 금
 Layer 1: config     (설정 로드 — 우선순위 상세는 § 5 참조)
 Layer 2: domain     (Interview / Playbook / ProjectSpec 등 순수 모델)
 Layer 3: external   (파일 시스템, 번들 리소스 접근 — repository 역할)
-Layer 4: service    (interview / matcher / generator / validator / doctor)
-Layer 5: cmd        (서브커맨드 엔트리 — new / check / doctor / hello)
+Layer 4: service    (interview / matcher / generator / validator / doctor / scaffolder / fragment)
+Layer 5: cmd        (서브커맨드 엔트리 — new / add / check / doctor / hello)
 ```
 
 ### 의존성 규칙
@@ -66,8 +66,10 @@ service/
 ├── interview/    # 9문항 정의 + 답변 수집
 ├── matcher/      # 답변 → 플레이북 판정 (Exact / Close / Hybrid / New)
 ├── generator/    # 템플릿 + 답변 → 파일 트리 렌더
+├── scaffolder/   # `trellis new` — 인터뷰 → 매칭 → 생성 오케스트레이션 + `.trellis/spec.json` 직렬화
 ├── validator/    # `trellis check` — 계층 규칙 위반 탐지
-└── doctor/       # `trellis doctor` — 문서-코드 일관성 점검
+├── doctor/       # `trellis doctor` — 문서-코드 일관성 점검
+└── fragment/     # `trellis add` — 플레이북 fragment 로드/렌더/dep merge
 ```
 
 ---
@@ -88,6 +90,11 @@ service/
 
 ## 4. CLI 규칙 (cli-tool.md 준수)
 
+- **서브커맨드**: `new` / `add` / `check` / `doctor` / `hello`
+  - `new <dir>` — 인터뷰 후 플레이북 매칭, 새 프로젝트 트리 생성 + `.trellis/spec.json` 기록
+  - `add [type] [name]` — 기존 trellis 프로젝트(=`.trellis/spec.json` 보유)에 fragment 추가. insert-only, 충돌 시 fail-fast / `--force` 로 덮어쓰기, fragment `meta.json` 의 dependencies 는 `package.json` 에 JSON merge
+  - `check <dir>` — 계층 규칙 위반 탐지
+  - `doctor <dir>` — 문서-코드 일관성 점검
 - **stdin/stdout 1등 시민** — 파이프 친화적
 - **exit code**: `0`=성공, `1`=일반 오류, `2`=사용자 입력 오류, `3+`=도구 고유
 - `--json` 플래그로 구조화 출력 제공 (특히 `check`)
@@ -171,4 +178,6 @@ service/
 - `trellis` 저장소 자체가 `cli-tool.md` 플레이북의 구조를 **정확히** 따른다
 - CI 에서 `npm run dep:check` 로 계층 규칙을 자기 검증 (dependency-cruiser 래핑)
 - `trellis check .` 를 자기 자신에게 실행해도 통과해야 한다 (Phase 3 이후)
+- `trellis doctor .` 를 자기 자신에게 실행해도 통과해야 한다 (Phase 4 이후)
+- `trellis add` 의 자기참조성: trellis 본체는 `cli-tool` 플레이북을 따르고, 현재 MVP 에선 cli-tool fragment 는 P8 로 분리되어 있으므로 자기 자신에 적용할 fragment 가 아직 없다 — 본체 dogfooding 측면에선 현 시점 NA. b2b-saas / ai-rag 플레이북 사용자에게만 의미가 있다.
 - 방법론 문서(`harness-engineering/`)의 규칙과 충돌이 생기면 그것은 **문서의 결함** — 문서를 고친다
