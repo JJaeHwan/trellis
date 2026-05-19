@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.0](https://github.com/JJaeHwan/trellis/compare/v0.9.0...v0.10.0) (2026-05-19)
+
+
+### Features
+
+* **cmd:** add 'trellis list' command for fragment discovery ([aec9d2b](https://github.com/JJaeHwan/trellis/commit/aec9d2be49bc0c647cec14ca1b4469065d266956))
+* **doctor:** add playbook-still-supported rule ([38e6dee](https://github.com/JJaeHwan/trellis/commit/38e6dee8a81c4c6c23eaf025e7d2a63749a6ef32))
+* expand actionable hints across HarnessError sites ([fd60727](https://github.com/JJaeHwan/trellis/commit/fd607270d30ae51a70545bd0ff150204173ed88d))
+* **playbook:** add command + service-module fragments to cli-tool ([cf3ee60](https://github.com/JJaeHwan/trellis/commit/cf3ee6024c1de7f2f4c8d64f5594d591e4b92727))
+* **playbook:** add imports + commands slots to cli-tool fullbody ([8d4e00c](https://github.com/JJaeHwan/trellis/commit/8d4e00c21d1b57dffd84487fdd02382cf70c2aa3))
+
 ## [0.9.0](https://github.com/JJaeHwan/trellis/compare/v0.8.0...v0.9.0) (2026-05-19)
 
 
