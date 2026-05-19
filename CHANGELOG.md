@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.0](https://github.com/JJaeHwan/trellis/compare/v0.6.0...v0.7.0) (2026-05-19)
+
+
+### Features
+
+* **cmd:** wire applyPatches into trellis add with --verbose ([a07d27d](https://github.com/JJaeHwan/trellis/commit/a07d27d36d8be84baf31163e16ee7a9ec95461b3))
+* **doctor:** add patch-marker-presence rule ([5cda57c](https://github.com/JJaeHwan/trellis/commit/5cda57c826f0a72e920e37d66180fe611fff11d5))
+* **fragment:** add PatchDecl type, loader parsing, and patcher service ([0abf1b3](https://github.com/JJaeHwan/trellis/commit/0abf1b35a293fb4bbb51f5c27c1e4141ba8bb030))
+* **playbook:** inject nav-items markers and declare patches in page fragments ([edd769a](https://github.com/JJaeHwan/trellis/commit/edd769a61c8ab1eea98993cb1f3fc0d3c44f898d))
+
 ## [0.6.0](https://github.com/JJaeHwan/trellis/compare/v0.5.0...v0.6.0) (2026-05-19)
 
 
