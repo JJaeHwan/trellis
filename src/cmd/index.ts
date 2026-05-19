@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { HarnessError, ExitCode } from "../common/errors/index.js";
 import { logger } from "../common/logger/index.js";
+import { registerAddCommand } from "./add.js";
 import { registerCheckCommand } from "./check.js";
 import { registerDoctorCommand } from "./doctor.js";
 import { registerHelloCommand } from "./hello.js";
@@ -18,6 +19,7 @@ async function main(argv: string[]): Promise<void> {
 
   registerHelloCommand(program);
   registerNewCommand(program);
+  registerAddCommand(program);
   registerCheckCommand(program);
   registerDoctorCommand(program);
 
