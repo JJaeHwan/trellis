@@ -2,6 +2,8 @@ import { Command } from "commander";
 import { AppError, ExitCode } from "../common/errors/index.js";
 import { logger } from "../common/logger/index.js";
 import { registerHelloCommand } from "./hello.js";
+// trellis:slot:imports:start
+// trellis:slot:imports:end
 
 const VERSION = "0.0.0";
 
@@ -14,6 +16,8 @@ async function main(argv: string[]): Promise<void> {
     .version(VERSION);
 
   registerHelloCommand(program);
+  // trellis:slot:commands:start
+  // trellis:slot:commands:end
 
   await program.parseAsync(argv);
 }
