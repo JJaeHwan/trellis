@@ -99,11 +99,14 @@ resources/
 │       ├── src/                # 풀바디 산출물 (b2b-saas, ai-rag-platform)
 │       │   ├── app/            # Next.js App Router 라우트
 │       │   ├── components/     # Sidebar.tsx.hbs 등 공용 컴포넌트
-│       │   └── lib/            # nav-items.ts.hbs, services.ts.hbs (b2b-saas)
+│       │   └── lib/            # nav-items.ts.hbs (nav-items + admin-items slot),
+│       │                        # breadcrumb-map.ts.hbs (breadcrumb slot, b2b-saas P11),
+│       │                        # services.ts.hbs (b2b-saas)
 │       │                        # db/, zod/, service/ 등 fragment 가 채우는 서브디렉토리
+│       ├── .dependency-cruiser.cjs  # 풀바디 자체 계층 검증 (b2b-saas P11)
 │       └── _fragments/
 │           └── <type>/         # add 가 렌더하는 부분 단위 (meta.json + *.hbs)
-│                               # b2b-saas: api, page, model, service
+│                               # b2b-saas: api, page, model, service, form, admin
 │                               # ai-rag-platform: api, page
 └── playbooks/
     ├── cli-tool.json          # 매처 입력 — 기계 판독용 스펙
@@ -211,14 +214,16 @@ service/fragment/patcher (P9)
 - patch 는 insert-only — replace/delete 없음.
 - rollback 없음 — 실패 시 부분 적용 상태가 남을 수 있으므로 git 으로 복구한다.
 - **Multi-slot patch (P10)** — 하나의 fragment 가 `meta.patches` 배열로 여러 파일/슬롯을 동시에 갱신할 수 있다. 예: `model` fragment 가 `prisma/schema.prisma` 의 `prisma-models` 슬롯과 `src/lib/services.ts` 의 `services` 슬롯을 한 번의 add 로 함께 패치. 각 entry 는 독립적으로 멱등 검사된다.
+- **Multi-slot patch — admin fragment 예시 (P11)** — `admin` fragment 는 `src/lib/nav-items.ts` 의 `admin-items` 슬롯과 `src/lib/breadcrumb-map.ts` 의 `breadcrumb` 슬롯을 한 번의 add 로 동시에 패치한다 (사이드바 admin 메뉴 + breadcrumb 라벨 동시 등록). 두 entry 모두 `/admin/{{nameKebab}}` 를 `entryKey` 로 사용하여 멱등성을 보장.
 - Prisma 슬롯 호환성 — `// trellis:slot:<name>:start/end` 는 Prisma 가 한 줄 주석을 허용하므로 schema 파싱에 영향이 없다.
 
-#### `--json` / `--verbose` 출력 (P10)
+#### `--json` / `--verbose` 출력 (P10, P11 확장)
 
 - `trellis add <type> <name> --json` — stdout 에 결과 단일 라인 JSON, stderr 에 진행 로그. UNIX 파이프 친화 (`trellis add model Invoice --json | jq ...`).
 - 스키마: `{ "command": "add", "created": string[], "patches": { applied: number, skipped: number, conflicts: string[] } }`.
 - `--verbose` — 멱등 skip 된 entry 도 stderr 에 표시 (디버깅용).
 - 실패는 `HarnessError` 로 전파되며 메시지 끝에 `→ <다음 명령 예시>` 형식의 actionable hint 가 붙는다 (slot 누락 / 파일 충돌 / spec.json 부재 등).
+- `trellis new <projectName> --json` (P11) — 동일한 패턴. stdout 에 결과 단일 라인 JSON (`{ ok, command: "new", projectName, playbookId, matchMode, created, trellisVersion }`), stderr 에 인터뷰 프롬프트와 매칭 요약. 실패 시 `{ ok: false, command: "new", error: { code, message, hint? } }`. 자동화 파이프라인이 매칭 결과와 생성 파일 목록을 그대로 파싱할 수 있다.
 
 ### 3.3 `trellis check <dir>` 흐름
 
@@ -321,6 +326,12 @@ interface ProjectSpec {
 향후 확장 여지 (지금 구현 안 함):
 - GitHub API — `trellis playbook add github:user/repo`
 
+### 풀바디 자체 dependency-cruiser (P11)
+
+- b2b-saas 풀바디 템플릿은 자체 `.dependency-cruiser.cjs` 를 포함한다 (`resources/templates/b2b-saas/.dependency-cruiser.cjs`). `trellis new` 로 생성된 사용자 프로젝트에 그대로 복사되어, 사용자가 `npm run dep:check` (또는 trellis check) 시 `src/lib/{common,config,domain,external,db,zod,service}` 와 `src/{app,components}` 사이의 단방향 의존성을 검증한다.
+- 본체(trellis) 의 `.dependency-cruiser.cjs` 와는 별개 — 본체는 자신의 L0..L5 를 검증하고, 풀바디용 cjs 는 사용자 프로젝트의 b2b-saas 계층을 검증한다.
+- fragment add 결과 (model: zod+db, service: service, form: components+zod, admin: app(authed)/admin) 가 이 규칙을 만족하도록 fragment 가 작성되어 있다 — 사용자 프로젝트에서 fragment 결과를 dep-cruiser 가 즉시 회귀 차단.
+
 ---
 
 ## 6. 파이프라인 / 비동기 처리
@@ -339,6 +350,7 @@ interface ProjectSpec {
 - `trellis add` 의 patch — fragment `meta.json` 의 `patches` 는 풀바디의 block-style marker (`// trellis:slot:<name>:start/end`) 사이에 삽입. `entryKey` 로 멱등 보장, slot 누락 시 fail-fast (--force 무관)
 - `trellis doctor` 의 `patch-marker-presence` 규칙 (P9) — 번들 템플릿이 fragment `meta.patches` 가 가리키는 slot marker 를 잃지 않았는지 검사하여 회귀를 차단
 - `trellis doctor` 의 `trellis-version-compat` 규칙 (P10) — 대상 프로젝트의 `.trellis/spec.json.trellisVersion` 이 현재 실행 중인 trellis 와 semver minor 단위로 호환되는지 검사. major 가 다르면 warning, spec.json 부재 시 no-op
+- `trellis doctor` 의 `handlebars-token-valid` 규칙 (P11) — 번들 `resources/templates/` 하위 모든 `.hbs` 파일을 스캔하여, 사용된 `{{token}}` / `{{helper arg}}` 가 컨텍스트 (풀바디 = `GeneratorContext`, fragment = `FragmentContext`) 에 정의된 키/헬퍼인지 검증. 풀바디·fragment 별로 허용 키가 분리되어 있고, 미정의 토큰 (오탈자, 신규 fragment 의 컨텍스트 누락) 을 사전 차단
 - 설정 파일(`~/.config/trellis/`)에 비밀값 저장 금지
 
 ---
@@ -380,3 +392,4 @@ Node.js ≥ 20, OS: macOS / Linux (Windows 는 Phase 2+ 검증).
 - P8 — 풀바디 네비게이션 보완 (Sidebar / nav-items / authed layout)
 - P9 (2026-05-19): fragment patches — meta.json.patches, block-style marker, applyPatches, doctor 규칙
 - P10 (2026-05-19): b2b-saas model + service fragment, multi-slot patch 검증, trellis add --json, actionable errors, doctor trellis-version-compat
+- P11 (2026-05-19): b2b-saas form + admin fragment (multi-slot patch), admin-items + breadcrumb slot 인프라, trellis new --json, 풀바디 dep-cruiser, doctor handlebars-token-valid

@@ -91,7 +91,7 @@ service/
 ## 4. CLI 규칙 (cli-tool.md 준수)
 
 - **서브커맨드**: `new` / `add` / `check` / `doctor` / `hello`
-  - `new <dir>` — 인터뷰 후 플레이북 매칭, 새 프로젝트 트리 생성 + `.trellis/spec.json` 기록
+  - `new <dir>` — 인터뷰 후 플레이북 매칭, 새 프로젝트 트리 생성 + `.trellis/spec.json` 기록. `--json` 옵션 시 stdout=결과 단일 라인 JSON (`{ ok, command, projectName, playbookId, matchMode, created, trellisVersion }`) / stderr=인터뷰 프롬프트와 매칭 요약 (UNIX 파이프 친화)
   - `add [type] [name]` — 기존 trellis 프로젝트(=`.trellis/spec.json` 보유)에 fragment 추가. 새 파일은 insert-only, 충돌 시 fail-fast / `--force` 로 덮어쓰기, fragment `meta.json` 의 dependencies 는 `package.json` 에 JSON merge, `patches` 는 풀바디의 block-style slot marker (`// trellis:slot:<name>:start/end`) 사이에 멱등 삽입 (slot 누락 시 fail-fast, `--force` 무관). `--json` 옵션 시 stdout=결과 JSON 단일 라인 / stderr=진행 로그 (UNIX 파이프 친화), `--verbose` 로 멱등 skip entry 도 stderr 노출. 모든 `HarnessError` 메시지에는 `→ <다음 명령 예시>` 형식의 actionable hint 가 포함된다 (slot 누락 / 파일 충돌 / spec.json 부재 등)
   - `check <dir>` — 계층 규칙 위반 탐지
   - `doctor <dir>` — 문서-코드 일관성 점검
@@ -183,4 +183,5 @@ service/
 - 풀바디 보완(P8): b2b-saas / ai-rag-platform 풀바디는 사이드바(`Sidebar.tsx` + `nav-items.ts`) 와 라우트 그룹 레이아웃을 포함한다. 본체(cli-tool) 의 계층 규칙에는 영향 없음 — `resources/templates/` 내부 산출물.
 - Fragment patches (P9): b2b-saas / ai-rag-platform 풀바디의 `nav-items.ts` 에 block-style marker 가 심어져 있고, `page` fragment 가 add 될 때 `applyPatches` 로 사이드바 메뉴가 자동 등록된다. doctor 의 `patch-marker-presence` 규칙이 marker 회귀를 차단. 본체(cli-tool) 에는 patch 대상 풀바디가 없어 자기 자신에 대한 영향 없음.
 - Fragment 카탈로그 확장(P10): b2b-saas 풀바디에 `_fragments/model/` (Prisma 모델 + Zod + Repository + 테스트, prisma-models / services 2개 슬롯 동시 patch) 과 `_fragments/service/` (서비스 클래스 + 테스트, services 슬롯 patch) 가 추가됨. 풀바디에는 `prisma/schema.prisma` 끝의 `prisma-models` 슬롯과 `src/lib/services.ts` 의 `services` 슬롯이 미리 심어져 있다. 본체(cli-tool) 적용 대상 없음.
+- Fragment 카탈로그 확장(P11): b2b-saas 풀바디에 `_fragments/form/` (Form 컴포넌트 + Server Action + Zod 한 묶음) 과 `_fragments/admin/` (CRUD 페이지 = page + Table + Filter + actions, `admin-items` + `breadcrumb` 2슬롯 동시 multi-slot patch) 가 추가됨. 풀바디에는 `src/lib/nav-items.ts` 의 `admin-items` 슬롯과 `src/lib/breadcrumb-map.ts` (신규) 의 `breadcrumb` 슬롯이 미리 심어져 있고, 풀바디 자체 `.dependency-cruiser.cjs` 가 fragment 결과의 계층 규칙을 검증한다. doctor `handlebars-token-valid` 규칙이 `.hbs` 토큰을 사전 검증. 본체(cli-tool) 적용 대상 없음.
 - 방법론 문서(`harness-engineering/`)의 규칙과 충돌이 생기면 그것은 **문서의 결함** — 문서를 고친다
