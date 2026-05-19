@@ -29,6 +29,9 @@ async function main(argv: string[]): Promise<void> {
 main(process.argv).catch((error: unknown) => {
   if (error instanceof HarnessError) {
     process.stderr.write(`${error.message}\n`);
+    if (error.hint !== undefined) {
+      process.stderr.write(`→ ${error.hint}\n`);
+    }
     process.exit(error.exitCode);
   }
   logger.error({ err: error }, "unhandled-error");
