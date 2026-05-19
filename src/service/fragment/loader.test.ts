@@ -253,4 +253,157 @@ describe("loadFragment", () => {
 
     expect(paths).toEqual(["a-first.ts.hbs", "m-middle.ts.hbs", "z-last.ts.hbs"]);
   });
+
+  // ---------------------------------------------------------------------------
+  // patches field
+  // ---------------------------------------------------------------------------
+
+  it("loadFragment_noPatchesField_patchesIsUndefined", () => {
+    const fs = makeFakeAdapterForFragment({
+      playbookId: "b2b-saas",
+      type: "api",
+      meta: JSON.stringify({ description: "No patches" }),
+    });
+
+    const fragment = loadFragment("b2b-saas", "api", fs);
+
+    expect(fragment.meta.patches).toBeUndefined();
+  });
+
+  it("loadFragment_singlePatch_returnsSingleElementArray", () => {
+    const meta = JSON.stringify({
+      description: "With one patch",
+      patches: [
+        {
+          file: "src/lib/nav-items.ts",
+          slot: "sidebar-items",
+          entryKey: "reports",
+          content: "{ label: 'Reports', href: '/reports' },",
+        },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({
+      playbookId: "b2b-saas",
+      type: "page",
+      meta,
+    });
+
+    const fragment = loadFragment("b2b-saas", "page", fs);
+
+    expect(fragment.meta.patches).toHaveLength(1);
+    expect(fragment.meta.patches![0]).toEqual({
+      file: "src/lib/nav-items.ts",
+      slot: "sidebar-items",
+      entryKey: "reports",
+      content: "{ label: 'Reports', href: '/reports' },",
+    });
+  });
+
+  it("loadFragment_multiplePatches_returnsAllElements", () => {
+    const meta = JSON.stringify({
+      description: "With two patches",
+      patches: [
+        { file: "src/lib/nav-items.ts", slot: "sidebar-items", entryKey: "reports", content: "nav" },
+        { file: "src/app/routes.ts", slot: "routes", entryKey: "reports-route", content: "route" },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({
+      playbookId: "b2b-saas",
+      type: "page",
+      meta,
+    });
+
+    const fragment = loadFragment("b2b-saas", "page", fs);
+
+    expect(fragment.meta.patches).toHaveLength(2);
+    expect(fragment.meta.patches![0]!.entryKey).toBe("reports");
+    expect(fragment.meta.patches![1]!.entryKey).toBe("reports-route");
+  });
+
+  it("loadFragment_patchMissingFile_throwsHarnessError", () => {
+    const meta = JSON.stringify({
+      description: "Bad patch",
+      patches: [
+        { slot: "sidebar-items", entryKey: "reports", content: "nav" },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({
+      playbookId: "b2b-saas",
+      type: "page",
+      meta,
+    });
+
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrowError(HarnessError);
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrow(/file/);
+  });
+
+  it("loadFragment_patchMissingSlot_throwsHarnessError", () => {
+    const meta = JSON.stringify({
+      description: "Bad patch",
+      patches: [
+        { file: "src/lib/nav-items.ts", entryKey: "reports", content: "nav" },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({
+      playbookId: "b2b-saas",
+      type: "page",
+      meta,
+    });
+
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrowError(HarnessError);
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrow(/slot/);
+  });
+
+  it("loadFragment_patchMissingEntryKey_throwsHarnessError", () => {
+    const meta = JSON.stringify({
+      description: "Bad patch",
+      patches: [
+        { file: "src/lib/nav-items.ts", slot: "sidebar-items", content: "nav" },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({
+      playbookId: "b2b-saas",
+      type: "page",
+      meta,
+    });
+
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrowError(HarnessError);
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrow(/entryKey/);
+  });
+
+  it("loadFragment_patchFileIsAbsolutePath_throwsHarnessError", () => {
+    const meta = JSON.stringify({
+      description: "Absolute path patch",
+      patches: [
+        { file: "/foo/bar.ts", slot: "sidebar-items", entryKey: "reports", content: "nav" },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({
+      playbookId: "b2b-saas",
+      type: "page",
+      meta,
+    });
+
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrowError(HarnessError);
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrow(/file/);
+  });
+
+  it("loadFragment_patchContentEmptyString_doesNotThrow", () => {
+    const meta = JSON.stringify({
+      description: "Empty content patch",
+      patches: [
+        { file: "src/lib/nav-items.ts", slot: "sidebar-items", entryKey: "reports", content: "" },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({
+      playbookId: "b2b-saas",
+      type: "page",
+      meta,
+    });
+
+    const fragment = loadFragment("b2b-saas", "page", fs);
+
+    expect(fragment.meta.patches).toHaveLength(1);
+    expect(fragment.meta.patches![0]!.content).toBe("");
+  });
 });

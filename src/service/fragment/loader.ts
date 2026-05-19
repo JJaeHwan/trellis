@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { ExitCode, HarnessError } from "../../common/errors/index.js";
 import type { Template } from "../../domain/index.js";
 import { realFsAdapter, type FsAdapter } from "../../external/fs-adapter.js";
-import type { Fragment, FragmentMeta } from "./types.js";
+import type { Fragment, FragmentMeta, PatchDecl } from "./types.js";
 
 const META_FILENAME = "meta.json";
 
@@ -48,7 +48,7 @@ export function loadFragment(
   let meta: FragmentMeta;
   try {
     const raw: unknown = JSON.parse(fs.readFile(metaPath));
-    meta = parseFragmentMeta(raw);
+    meta = parseFragmentMeta(raw, playbookId, type);
   } catch (err) {
     if (err instanceof HarnessError) throw err;
     throw new HarnessError(
@@ -86,7 +86,7 @@ function collectTemplates(
   return result;
 }
 
-function parseFragmentMeta(raw: unknown): FragmentMeta {
+function parseFragmentMeta(raw: unknown, playbookId: string, type: string): FragmentMeta {
   if (
     raw === null ||
     typeof raw !== "object" ||
@@ -106,11 +106,13 @@ function parseFragmentMeta(raw: unknown): FragmentMeta {
 
   const dependencies = parseOptionalStringRecord(obj["dependencies"], "dependencies");
   const devDependencies = parseOptionalStringRecord(obj["devDependencies"], "devDependencies");
+  const patches = parsePatches(obj["patches"], playbookId, type);
 
   return {
     description: obj["description"],
     ...(dependencies !== undefined && { dependencies }),
     ...(devDependencies !== undefined && { devDependencies }),
+    ...(patches !== undefined && { patches }),
   };
 }
 
@@ -135,4 +137,82 @@ function parseOptionalStringRecord(
     }
   }
   return obj as Record<string, string>;
+}
+
+function parsePatches(
+  value: unknown,
+  playbookId: string,
+  type: string,
+): readonly PatchDecl[] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (!Array.isArray(value)) {
+    throw new HarnessError(
+      `invalid patch declaration in ${playbookId}/${type}/meta.json: 'patches' must be an array`,
+      ExitCode.GeneralError,
+    );
+  }
+  return value.map((item, index) => parsePatchDecl(item, playbookId, type, index));
+}
+
+function parsePatchDecl(
+  item: unknown,
+  playbookId: string,
+  type: string,
+  index: number,
+): PatchDecl {
+  const context = `${playbookId}/${type}/meta.json`;
+
+  if (item === null || typeof item !== "object" || Array.isArray(item)) {
+    throw new HarnessError(
+      `invalid patch declaration in ${context}: item[${index}] must be an object`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  const obj = item as Record<string, unknown>;
+
+  // validate file
+  if (typeof obj["file"] !== "string" || obj["file"].length === 0) {
+    throw new HarnessError(
+      `invalid patch declaration in ${context}: file`,
+      ExitCode.GeneralError,
+    );
+  }
+  if (obj["file"].startsWith("/")) {
+    throw new HarnessError(
+      `invalid patch declaration in ${context}: file`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  // validate slot
+  if (typeof obj["slot"] !== "string" || obj["slot"].length === 0) {
+    throw new HarnessError(
+      `invalid patch declaration in ${context}: slot`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  // validate entryKey
+  if (typeof obj["entryKey"] !== "string" || obj["entryKey"].length === 0) {
+    throw new HarnessError(
+      `invalid patch declaration in ${context}: entryKey`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  // validate content — empty string is allowed but meaningless
+  if (typeof obj["content"] !== "string") {
+    throw new HarnessError(
+      `invalid patch declaration in ${context}: content`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  return {
+    file: obj["file"],
+    slot: obj["slot"],
+    entryKey: obj["entryKey"],
+    content: obj["content"],
+  };
 }
