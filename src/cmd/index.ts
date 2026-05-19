@@ -5,6 +5,7 @@ import { registerAddCommand } from "./add.js";
 import { registerCheckCommand } from "./check.js";
 import { registerDoctorCommand } from "./doctor.js";
 import { registerHelloCommand } from "./hello.js";
+import { registerListCommand } from "./list.js";
 import { registerNewCommand } from "./new.js";
 
 const VERSION = "0.0.0";
@@ -22,6 +23,7 @@ async function main(argv: string[]): Promise<void> {
   registerAddCommand(program);
   registerCheckCommand(program);
   registerDoctorCommand(program);
+  registerListCommand(program);
 
   await program.parseAsync(argv);
 }
