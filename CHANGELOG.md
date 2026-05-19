@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0](https://github.com/JJaeHwan/trellis/compare/v0.5.0...v0.6.0) (2026-05-19)
+
+
+### Features
+
+* **playbook:** add sidebar and (authed) layout to b2b-saas fullbody ([41ee2e1](https://github.com/JJaeHwan/trellis/commit/41ee2e13548234354837aab19ddae6051beac127))
+* **playbook:** add sidebar to ai-rag-platform fullbody ([9911092](https://github.com/JJaeHwan/trellis/commit/9911092cc93f55ea81daceb14b5ac28c02bb3812))
+
 ## [0.5.0](https://github.com/JJaeHwan/trellis/compare/v0.4.0...v0.5.0) (2026-05-19)
 
 
