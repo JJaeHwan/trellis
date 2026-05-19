@@ -1,16 +1,19 @@
 import { resolve } from "node:path";
 import { input, select } from "@inquirer/prompts";
+import Handlebars from "handlebars";
 import type { Command } from "commander";
 import { ExitCode, HarnessError } from "../common/errors/index.js";
 import type { ProjectSpec } from "../domain/index.js";
 import { listFragmentTypes, loadSpec } from "../external/index.js";
 import {
+  applyPatches,
   buildFragmentContext,
   loadFragment,
   patchPackageJson,
   renderFragment,
 } from "../service/fragment/index.js";
-import type { PatchResult } from "../service/fragment/index.js";
+import type { DepPatchResult, PatchResult } from "../service/fragment/index.js";
+import { registerHelpers } from "../service/generator/handlebars-helpers.js";
 import { realFsAdapter, type FsAdapter } from "../external/fs-adapter.js";
 import type { VirtualTree } from "../domain/index.js";
 
@@ -19,6 +22,16 @@ const NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9\-_]*$/;
 
 interface AddOptions {
   force?: boolean;
+  verbose?: boolean;
+}
+
+/**
+ * Handlebars 컴파일러 (helpers 등록) — 단순 문자열 치환용.
+ */
+function renderHandlebars(template: string, context: Record<string, string>): string {
+  const hbs = Handlebars.create();
+  registerHelpers(hbs);
+  return hbs.compile(template, { noEscape: true })(context);
 }
 
 export function registerAddCommand(program: Command): void {
@@ -28,6 +41,7 @@ export function registerAddCommand(program: Command): void {
       "기존 trellis 프로젝트에 플레이북 fragment 를 추가합니다. (예: trellis add api users)",
     )
     .option("--force", "기존 파일을 덮어씁니다")
+    .option("--verbose", "스킵된 patch 도 표시합니다")
     .action(async (type: string | undefined, name: string | undefined, options: AddOptions) => {
       await runAdd(type, name, options);
     });
@@ -73,7 +87,19 @@ export async function runAdd(
     printDepResult(depResult);
   }
 
-  // 8. 성공 출력
+  // 8. patches 적용 (fragment.meta.patches 가 있을 때만)
+  if (fragment.meta.patches !== undefined && fragment.meta.patches.length > 0) {
+    const renderedPatches = fragment.meta.patches.map((p) => ({
+      file: renderHandlebars(p.file, context),
+      slot: p.slot,
+      entryKey: renderHandlebars(p.entryKey, context),
+      content: renderHandlebars(p.content, context),
+    }));
+    const patchResult = applyPatches(projectDir, renderedPatches, fs);
+    printPatchResult(patchResult, options.verbose ?? false);
+  }
+
+  // 9. 성공 출력
   printSuccess(tree);
 }
 
@@ -191,7 +217,7 @@ function printSuccess(tree: VirtualTree): void {
   }
 }
 
-function printDepResult(result: PatchResult): void {
+function printDepResult(result: DepPatchResult): void {
   if (result.added.length > 0) {
     process.stdout.write(`Added dependencies: ${result.added.join(", ")}\n`);
   }
@@ -199,5 +225,20 @@ function printDepResult(result: PatchResult): void {
     process.stderr.write(
       `⚠ Skipped (version conflict): ${conflict.name} (have ${conflict.existing}, fragment wants ${conflict.requested})\n`,
     );
+  }
+}
+
+function printPatchResult(result: PatchResult, verbose: boolean): void {
+  if (result.applied.length > 0) {
+    process.stdout.write("Patched files:\n");
+    for (const p of result.applied) {
+      process.stdout.write(`  - ${p.file} (slot: ${p.slot}, entry: ${p.entryKey})\n`);
+    }
+  }
+  if (verbose && result.skipped.length > 0) {
+    process.stdout.write("Skipped patches (already applied):\n");
+    for (const p of result.skipped) {
+      process.stdout.write(`  - ${p.file} (slot: ${p.slot}, entry: ${p.entryKey})\n`);
+    }
   }
 }

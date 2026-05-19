@@ -66,6 +66,8 @@ function makeFakeFs(opts: {
   fragmentType?: string;
   fragmentTemplates?: Record<string, string>;
   existingFiles?: string[];
+  patches?: Array<{ file: string; slot: string; entryKey: string; content: string }>;
+  patchTargetFiles?: Record<string, string>;
 }): FsAdapter {
   const {
     projectDir,
@@ -76,6 +78,8 @@ function makeFakeFs(opts: {
       "app/api/{{nameKebab}}/route.ts.hbs": 'export const route = "{{name}}";',
     },
     existingFiles = [],
+    patches,
+    patchTargetFiles = {},
   } = opts;
 
   const specPath = `${projectDir}/.trellis/spec.json`;
@@ -92,7 +96,11 @@ function makeFakeFs(opts: {
   });
 
   const fragSuffix = `resources/templates/${playbookId}/_fragments/${fragmentType}`;
-  const metaJson = JSON.stringify({ description: "test fragment" });
+  const metaMeta: Record<string, unknown> = { description: "test fragment" };
+  if (patches !== undefined) {
+    metaMeta["patches"] = patches;
+  }
+  const metaJson = JSON.stringify(metaMeta);
 
   // Build fake file map with suffix-based matching via a custom adapter
   const staticFiles: FakeFiles = {};
@@ -101,6 +109,10 @@ function makeFakeFs(opts: {
   }
   for (const path of existingFiles) {
     staticFiles[`${projectDir}/${path}`] = "existing content";
+  }
+  // patch target files (absolute paths relative to projectDir)
+  for (const [rel, content] of Object.entries(patchTargetFiles)) {
+    staticFiles[`${projectDir}/${rel}`] = content;
   }
 
   // We need a custom adapter because fragment paths are resolved via import.meta.url
@@ -307,6 +319,241 @@ describe("runAdd", () => {
 
     const expectedPath = `${PROJECT_DIR}/src/UserProfile/index.ts`;
     expect(writtenFiles[expectedPath]).toBe("export class UserProfile {}");
+  });
+
+  // ---------------------------------------------------------------------------
+  // P9.5 — applyPatches integration
+  // ---------------------------------------------------------------------------
+
+  describe("patch integration", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    const SLOT_FILE = "src/lib/nav-items.ts";
+    const SLOT_CONTENT = [
+      "// trellis:slot:nav-items:start",
+      "// trellis:slot:nav-items:end",
+    ].join("\n");
+
+    it("runAdd_withPatches_appliesPatchAndPrintsStdout", async () => {
+      const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      const fs = makeFakeFs({
+        projectDir: PROJECT_DIR,
+        patches: [
+          {
+            file: SLOT_FILE,
+            slot: "nav-items",
+            entryKey: "users",
+            content: "{ label: 'Users', href: '/users' },",
+          },
+        ],
+        patchTargetFiles: { [SLOT_FILE]: SLOT_CONTENT },
+      });
+
+      await runAdd("api", "users", {}, fs, PROJECT_DIR);
+
+      const stdout = stdoutSpy.mock.calls.map((c) => c[0] as string).join("");
+      expect(stdout).toContain("Patched files:");
+      expect(stdout).toContain(SLOT_FILE);
+      expect(stdout).toContain("slot: nav-items");
+      expect(stdout).toContain("entry: users");
+    });
+
+    it("runAdd_withPatches_fileContentUpdated", async () => {
+      vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      const writtenFiles: Record<string, string> = {};
+      const fs = makeFakeFs({
+        projectDir: PROJECT_DIR,
+        patches: [
+          {
+            file: SLOT_FILE,
+            slot: "nav-items",
+            entryKey: "users",
+            content: "{ label: 'Users', href: '/users' },",
+          },
+        ],
+        patchTargetFiles: { [SLOT_FILE]: SLOT_CONTENT },
+      });
+      const wrappedFs: FsAdapter = {
+        ...fs,
+        writeFile(path: string, content: string): void {
+          writtenFiles[path] = content;
+          fs.writeFile(path, content);
+        },
+      };
+
+      await runAdd("api", "users", {}, wrappedFs, PROJECT_DIR);
+
+      const patched = writtenFiles[`${PROJECT_DIR}/${SLOT_FILE}`];
+      expect(patched).toBeDefined();
+      expect(patched).toContain("{ label: 'Users', href: '/users' },");
+    });
+
+    it("runAdd_withPatches_idempotent_secondRunSkips", async () => {
+      vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      const fs = makeFakeFs({
+        projectDir: PROJECT_DIR,
+        patches: [
+          {
+            file: SLOT_FILE,
+            slot: "nav-items",
+            entryKey: "users",
+            content: "{ label: 'Users', href: '/users' },",
+          },
+        ],
+        patchTargetFiles: { [SLOT_FILE]: SLOT_CONTENT },
+      });
+
+      // First run — applies
+      await runAdd("api", "users", {}, fs, PROJECT_DIR);
+
+      // Second run — file already has entryKey → skip
+      const writtenAfterSecond: string[] = [];
+      const wrappedFs: FsAdapter = {
+        ...fs,
+        writeFile(path: string, content: string): void {
+          writtenAfterSecond.push(path);
+          fs.writeFile(path, content);
+        },
+      };
+
+      const stdoutSpy2 = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      await runAdd("api", "users", { force: true }, wrappedFs, PROJECT_DIR);
+
+      // patch target file should NOT be written again
+      const slotFileAbs = `${PROJECT_DIR}/${SLOT_FILE}`;
+      expect(writtenAfterSecond).not.toContain(slotFileAbs);
+
+      // stdout should NOT contain "Patched files:" for the second run
+      const stdout2 = stdoutSpy2.mock.calls.map((c) => c[0] as string).join("");
+      expect(stdout2).not.toContain("Patched files:");
+    });
+
+    it("runAdd_withPatches_missingSlot_throwsHarnessError", async () => {
+      vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      const noSlotContent = "export const navItems = [];\n";
+      const fs = makeFakeFs({
+        projectDir: PROJECT_DIR,
+        patches: [
+          {
+            file: SLOT_FILE,
+            slot: "nav-items",
+            entryKey: "users",
+            content: "{ label: 'Users', href: '/users' },",
+          },
+        ],
+        patchTargetFiles: { [SLOT_FILE]: noSlotContent },
+      });
+
+      await expect(
+        runAdd("api", "users", {}, fs, PROJECT_DIR),
+      ).rejects.toThrow(HarnessError);
+
+      await expect(
+        runAdd("api", "users", {}, fs, PROJECT_DIR),
+      ).rejects.toMatchObject({ exitCode: 3 });
+    });
+
+    it("runAdd_withPatches_forceDoesNotBypassIdempotency", async () => {
+      vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      const fs = makeFakeFs({
+        projectDir: PROJECT_DIR,
+        patches: [
+          {
+            file: SLOT_FILE,
+            slot: "nav-items",
+            entryKey: "users",
+            content: "{ label: 'Users', href: '/users' },",
+          },
+        ],
+        patchTargetFiles: { [SLOT_FILE]: SLOT_CONTENT },
+      });
+
+      // First run applies the patch
+      await runAdd("api", "users", {}, fs, PROJECT_DIR);
+
+      // Read the patched file content
+      const afterFirst = fs.readFile(`${PROJECT_DIR}/${SLOT_FILE}`);
+      const occurrences = (afterFirst.match(/users/g) ?? []).length;
+
+      // Second run with --force: entryKey already present → still skip
+      await runAdd("api", "users", { force: true }, fs, PROJECT_DIR);
+
+      const afterSecond = fs.readFile(`${PROJECT_DIR}/${SLOT_FILE}`);
+      const occurrencesAfterForce = (afterSecond.match(/users/g) ?? []).length;
+
+      // entryKey count must not increase (no duplicate insertion)
+      expect(occurrencesAfterForce).toBe(occurrences);
+    });
+
+    it("runAdd_withPatches_handlebarsTokensRendered", async () => {
+      vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      const writtenFiles: Record<string, string> = {};
+      const fs = makeFakeFs({
+        projectDir: PROJECT_DIR,
+        patches: [
+          {
+            file: SLOT_FILE,
+            slot: "nav-items",
+            entryKey: "{{nameKebab}}",
+            content: "{ label: '{{namePascal}}', href: '/{{nameKebab}}' },",
+          },
+        ],
+        patchTargetFiles: { [SLOT_FILE]: SLOT_CONTENT },
+      });
+      const wrappedFs: FsAdapter = {
+        ...fs,
+        writeFile(path: string, content: string): void {
+          writtenFiles[path] = content;
+          fs.writeFile(path, content);
+        },
+      };
+
+      await runAdd("api", "user-profile", {}, wrappedFs, PROJECT_DIR);
+
+      const patched = writtenFiles[`${PROJECT_DIR}/${SLOT_FILE}`];
+      expect(patched).toContain("UserProfile");
+      expect(patched).toContain("user-profile");
+    });
+
+    it("runAdd_withPatches_verbose_showsSkipped", async () => {
+      const fs = makeFakeFs({
+        projectDir: PROJECT_DIR,
+        patches: [
+          {
+            file: SLOT_FILE,
+            slot: "nav-items",
+            entryKey: "users",
+            content: "{ label: 'Users', href: '/users' },",
+          },
+        ],
+        patchTargetFiles: { [SLOT_FILE]: SLOT_CONTENT },
+      });
+
+      // First run to apply
+      const spy1 = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      await runAdd("api", "users", {}, fs, PROJECT_DIR);
+      spy1.mockRestore();
+
+      // Second run with --verbose: skipped should be printed
+      const spy2 = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      await runAdd("api", "users", { force: true, verbose: true }, fs, PROJECT_DIR);
+
+      const stdout = spy2.mock.calls.map((c) => c[0] as string).join("");
+      expect(stdout).toContain("Skipped patches");
+      expect(stdout).toContain(SLOT_FILE);
+    });
+
+    it("runAdd_withoutPatches_noStdoutForPatch", async () => {
+      const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      const fs = makeFakeFs({ projectDir: PROJECT_DIR });
+
+      await runAdd("api", "users", {}, fs, PROJECT_DIR);
+
+      const stdout = stdoutSpy.mock.calls.map((c) => c[0] as string).join("");
+      expect(stdout).not.toContain("Patched files:");
+    });
   });
 
   // ---------------------------------------------------------------------------
