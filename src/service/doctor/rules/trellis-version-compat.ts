@@ -12,7 +12,7 @@ import type { Finding } from "../types.js";
  * release-please 가 `// x-release-please-version` 마커로 자동 갱신한다
  * (release-please-config.json 의 extra-files 참조).
  */
-const CURRENT_TRELLIS_VERSION = "0.9.0"; // x-release-please-version
+const CURRENT_TRELLIS_VERSION = "0.10.0"; // x-release-please-version
 
 interface SemVer {
   readonly major: number;

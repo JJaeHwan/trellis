@@ -8,7 +8,7 @@ import { registerHelloCommand } from "./hello.js";
 import { registerListCommand } from "./list.js";
 import { registerNewCommand } from "./new.js";
 
-const VERSION = "0.9.0"; // x-release-please-version
+const VERSION = "0.10.0"; // x-release-please-version
 
 async function main(argv: string[]): Promise<void> {
   const program = new Command();
