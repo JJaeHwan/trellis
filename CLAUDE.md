@@ -92,7 +92,7 @@ service/
 
 - **서브커맨드**: `new` / `add` / `check` / `doctor` / `hello`
   - `new <dir>` — 인터뷰 후 플레이북 매칭, 새 프로젝트 트리 생성 + `.trellis/spec.json` 기록
-  - `add [type] [name]` — 기존 trellis 프로젝트(=`.trellis/spec.json` 보유)에 fragment 추가. insert-only, 충돌 시 fail-fast / `--force` 로 덮어쓰기, fragment `meta.json` 의 dependencies 는 `package.json` 에 JSON merge
+  - `add [type] [name]` — 기존 trellis 프로젝트(=`.trellis/spec.json` 보유)에 fragment 추가. 새 파일은 insert-only, 충돌 시 fail-fast / `--force` 로 덮어쓰기, fragment `meta.json` 의 dependencies 는 `package.json` 에 JSON merge, `patches` 는 풀바디의 block-style slot marker (`// trellis:slot:<name>:start/end`) 사이에 멱등 삽입 (slot 누락 시 fail-fast, `--force` 무관)
   - `check <dir>` — 계층 규칙 위반 탐지
   - `doctor <dir>` — 문서-코드 일관성 점검
 - **stdin/stdout 1등 시민** — 파이프 친화적
@@ -181,4 +181,5 @@ service/
 - `trellis doctor .` 를 자기 자신에게 실행해도 통과해야 한다 (Phase 4 이후)
 - `trellis add` 의 자기참조성: trellis 본체는 `cli-tool` 플레이북을 따르고, 현재 MVP 에선 cli-tool fragment 가 별도 단계로 분리되어 있으므로 자기 자신에 적용할 fragment 가 아직 없다 — 본체 dogfooding 측면에선 현 시점 NA. b2b-saas / ai-rag 플레이북 사용자에게만 의미가 있다.
 - 풀바디 보완(P8): b2b-saas / ai-rag-platform 풀바디는 사이드바(`Sidebar.tsx` + `nav-items.ts`) 와 라우트 그룹 레이아웃을 포함한다. 본체(cli-tool) 의 계층 규칙에는 영향 없음 — `resources/templates/` 내부 산출물.
+- Fragment patches (P9): b2b-saas / ai-rag-platform 풀바디의 `nav-items.ts` 에 block-style marker 가 심어져 있고, `page` fragment 가 add 될 때 `applyPatches` 로 사이드바 메뉴가 자동 등록된다. doctor 의 `patch-marker-presence` 규칙이 marker 회귀를 차단. 본체(cli-tool) 에는 patch 대상 풀바디가 없어 자기 자신에 대한 영향 없음.
 - 방법론 문서(`harness-engineering/`)의 규칙과 충돌이 생기면 그것은 **문서의 결함** — 문서를 고친다

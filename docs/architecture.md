@@ -186,12 +186,27 @@ service/fragment/renderer
 cmd/add.ts (checkConflicts)
   ↓  기존 파일 존재 시 fail-fast (--force 로 덮어쓰기)
 external/fs-adapter
-  ↓  파일 트리 쓰기 (insert-only — 기존 파일 수정 X)
+  ↓  writeTree — 파일 트리 쓰기 (insert-only — 기존 파일 수정 X)
 service/fragment/dep-patcher
-  ↓  meta.dependencies 가 있으면 package.json JSON merge
+  ↓  patchPackageJson — meta.dependencies 가 있으면 package.json JSON merge
   ↓  버전 충돌은 경고만 출력하고 기존 값 유지
+service/fragment/patcher (P9)
+  ↓  applyPatches — meta.patches 가 있으면 풀바디의 block-style slot marker 에 삽입
+  ↓  entryKey 멱등 검사로 두 번 적용해도 중복 X
+  ↓  slot marker 누락 시 fail-fast (--force 무관)
 [완료 메시지]
 ```
+
+#### Patch 적용 흐름 (P9)
+
+- 풀바디 템플릿이 미리 심어둔 block-style marker 사이에 fragment 가 텍스트를 삽입한다.
+  - 형식: `// trellis:slot:<name>:start` ... `// trellis:slot:<name>:end`
+  - 같은 슬롯 이름이 한 파일에 두 번 있으면 첫 번째 쌍에만 삽입한다 (단순화).
+- `entryKey` 멱등성 — start..end 사이에 같은 `entryKey` 가 이미 있으면 silent skip (정상 케이스). `--verbose` 로 표시.
+- slot 누락 시 fail-fast — 풀바디 템플릿 자체의 버그로 간주하며 `--force` 로 우회 불가.
+- `--force` 는 파일 충돌 한정 — entry 중복 멱등성은 우회하지 않는다 (UI 데이터 손상 방지).
+- patch 는 insert-only — replace/delete 없음.
+- rollback 없음 — 실패 시 부분 적용 상태가 남을 수 있으므로 git 으로 복구한다.
 
 ### 3.3 `trellis check <dir>` 흐름
 
@@ -307,8 +322,10 @@ interface ProjectSpec {
 
 - 생성 대상 경로는 **사용자가 명시적으로 지정**해야 함 (`trellis new <dir>`)
 - 기존 디렉토리 덮어쓰기는 `--force` 플래그 필수
-- `trellis add` 의 충돌 정책 — 기존 파일이 있으면 fail-fast, `--force` 가 있을 때만 덮어쓰기. fragment 는 insert-only (기존 파일 수정 금지, P8 로 분리)
+- `trellis add` 의 충돌 정책 — 새로 생성하는 파일이 이미 있으면 fail-fast, `--force` 가 있을 때만 덮어쓰기. 기존 파일 수정은 명시된 `patches` 슬롯에 한해 허용 (P9)
 - `trellis add` 의 dep merge — fragment `meta.json` 의 `dependencies` 는 `package.json` 에 JSON merge. 같은 이름이 이미 있고 버전이 다르면 stderr 경고만 출력하고 기존 값을 유지
+- `trellis add` 의 patch — fragment `meta.json` 의 `patches` 는 풀바디의 block-style marker (`// trellis:slot:<name>:start/end`) 사이에 삽입. `entryKey` 로 멱등 보장, slot 누락 시 fail-fast (--force 무관)
+- `trellis doctor` 의 `patch-marker-presence` 규칙 (P9) — 번들 템플릿이 fragment `meta.patches` 가 가리키는 slot marker 를 잃지 않았는지 검사하여 회귀를 차단
 - 설정 파일(`~/.config/trellis/`)에 비밀값 저장 금지
 
 ---
@@ -348,3 +365,4 @@ Node.js ≥ 20, OS: macOS / Linux (Windows 는 Phase 2+ 검증).
 - P6 — b2b-saas / ai-rag-platform 풀바디 템플릿 초도 작성
 - P7 — `trellis add` (fragment) 명령 도입
 - P8 — 풀바디 네비게이션 보완 (Sidebar / nav-items / authed layout)
+- P9 (2026-05-19): fragment patches — meta.json.patches, block-style marker, applyPatches, doctor 규칙
