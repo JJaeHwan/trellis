@@ -48,16 +48,16 @@ L4 의 마지막 통증 3가지:
 | 5 | **cli-tool 풀바디에 slot 추가**: `src/cmd/index.ts` 에 commander 등록 slot, `src/service/index.ts` (있다면) 에 service barrel slot | command/service-module fragment 의 대상 |
 | 6 | **doctor `playbook-still-supported`**: spec.json 의 playbookId 가 현재 trellis 의 지원 목록에 있음 — 사라진 플레이북 사용 중인 프로젝트 감지 | 미래 호환성 |
 
-### 핵심 미결정 (사용자 승인 필요)
+### 결정 완료 (사용자 승인 2026-05-19)
 
-> **Q-A. `trellis list` 의 기본 출력 형식?**
-> 권장: **컬러 텍스트 (TTY) / plain 텍스트 (파이프)** — 기존 check/doctor 와 일관. `--json` 으로 구조화 출력.
+> **Q-A. `trellis list` 의 기본 출력 형식?** → **A1 채택**
+> 컬러 텍스트 (TTY) / plain 텍스트 (파이프), `--json` 으로 구조화 출력. 기존 check/doctor 와 일관, CLAUDE.md §4 의 TTY 감지 규칙 준수.
 >
-> **Q-B. cli-tool 의 `src/cmd/index.ts` slot 위치?**
-> 권장: commander 등록 부분 끝에 `// trellis:slot:commands:start/end` — `program.command(...)` 호출이 모이는 곳.
+> **Q-B. cli-tool 의 `src/cmd/index.ts` slot 위치?** → **B1 채택**
+> commander 등록부 끝 (`registerHelloCommand(program);` 직후) 에 `// trellis:slot:commands:start/end`. fragment 는 `cmd/<name>.ts` 안에 `registerXxxCommand` export 를 만들고 slot 에는 한 줄 호출만 삽입. import 는 fragment 자체 파일에 자체 포함되므로 추가 slot 불필요. 기존 `hello` 패턴과 동형.
 >
-> **Q-C. service-module fragment 가 만드는 파일 구성?**
-> 권장: `src/service/<name>/{index.ts, types.ts, <name>.ts, <name>.test.ts}` — 기존 interview/matcher 패턴.
+> **Q-C. service-module fragment 가 만드는 파일 구성?** → **C1 채택**
+> `src/service/<name>/{index.ts, types.ts, <name>.ts, <name>.test.ts}`. CLAUDE.md §2 의 service 서브패키지 컨벤션 (interview/matcher/generator 와 동형) 과 일치 — dogfooding 원칙 (§10) 준수.
 
 ---
 
