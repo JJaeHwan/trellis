@@ -1,0 +1,25 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`golden — scaffold writes .trellis/spec.json > .trellis/spec.json content matches snapshot (volatile fields normalized) 1`] = `
+"{
+  "projectName": "golden-spec-test",
+  "rootPath": "/ROOTPATH_PLACEHOLDER",
+  "playbookId": "cli-tool",
+  "matchMode": "exact",
+  "matchScore": 1,
+  "answers": [
+    {
+      "questionId": "1",
+      "selectedOptionId": "B"
+    },
+    {
+      "questionId": "2",
+      "selectedOptionId": "A"
+    }
+  ],
+  "placeholders": {},
+  "generatedAt": "2026-01-01T00:00:00.000Z",
+  "trellisVersion": "0.0.0-golden"
+}
+"
+`;

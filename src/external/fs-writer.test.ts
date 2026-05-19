@@ -37,6 +37,30 @@ class FakeFs implements FsAdapter {
   writeFile(path: string, content: string): void {
     this.files.set(path, content);
   }
+  readFile(path: string): string {
+    const content = this.files.get(path);
+    if (content === undefined) throw new Error(`File not found: ${path}`);
+    return content;
+  }
+  listDir(path: string): readonly string[] {
+    const prefix = path.endsWith("/") ? path : path + "/";
+    const entries = new Set<string>();
+    for (const f of this.files.keys()) {
+      if (f.startsWith(prefix)) {
+        const rest = f.slice(prefix.length);
+        const name = rest.split("/")[0];
+        if (name) entries.add(name);
+      }
+    }
+    for (const d of this.dirs) {
+      if (d.startsWith(prefix)) {
+        const rest = d.slice(prefix.length);
+        const name = rest.split("/")[0];
+        if (name) entries.add(name);
+      }
+    }
+    return [...entries];
+  }
 }
 
 describe("flush", () => {

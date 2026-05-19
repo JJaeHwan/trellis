@@ -1,4 +1,4 @@
-import type { ProjectSpec, VirtualTree } from "../../domain/index.js";
+import type { ProjectSpec, VirtualFile, VirtualTree } from "../../domain/index.js";
 import { flush, loadTemplates, realFsAdapter, type FsAdapter } from "../../external/index.js";
 import { buildContext, renderTree } from "../generator/index.js";
 
@@ -10,9 +10,23 @@ export interface ScaffoldOptions {
 }
 
 /**
+ * ProjectSpec 을 `.trellis/spec.json` 으로 직렬화한 VirtualFile 을 만든다.
+ *
+ * rootPath 는 환경 의존적 절대 경로이므로 그대로 포함한다.
+ * 골든 테스트에서는 호출 측이 placeholder 로 정규화한다.
+ */
+function buildSpecFile(spec: ProjectSpec): VirtualFile {
+  return {
+    path: ".trellis/spec.json",
+    content: JSON.stringify(spec, null, 2) + "\n",
+  };
+}
+
+/**
  * ProjectSpec → 템플릿 로드 → 렌더 → (선택적) 디스크 flush.
  *
- * dryRun 모드에서는 fs 인자를 사용하지 않는다.
+ * 렌더된 트리에 `.trellis/spec.json` 을 추가한다.
+ * dryRun 모드에서도 트리에 포함되므로 검증 가능하다.
  * fs 인자는 테스트에서 in-memory fake 로 교체 가능.
  */
 export function scaffold(
@@ -22,7 +36,8 @@ export function scaffold(
 ): VirtualTree {
   const templates = loadTemplates(spec.playbookId);
   const ctx = buildContext(spec);
-  const tree = renderTree(templates, ctx);
+  const templateTree = renderTree(templates, ctx);
+  const tree: VirtualTree = [...templateTree, buildSpecFile(spec)];
 
   if (!options.dryRun) {
     flush(tree, spec.rootPath, { force: options.force ?? false }, fs);

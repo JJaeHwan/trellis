@@ -2,6 +2,7 @@ import {
   existsSync,
   mkdirSync,
   readdirSync,
+  readFileSync,
   statSync,
   writeFileSync,
 } from "node:fs";
@@ -15,6 +16,9 @@ export interface FsAdapter {
   isEmptyDirectory(path: string): boolean;
   ensureDir(path: string): void;
   writeFile(path: string, content: string): void;
+  readFile(path: string): string;
+  /** 디렉토리 내 항목 이름 목록 반환 (재귀 X). */
+  listDir(path: string): readonly string[];
 }
 
 export const realFsAdapter: FsAdapter = {
@@ -34,5 +38,11 @@ export const realFsAdapter: FsAdapter = {
   },
   writeFile(path, content) {
     writeFileSync(path, content, "utf-8");
+  },
+  readFile(path) {
+    return readFileSync(path, "utf-8");
+  },
+  listDir(path) {
+    return readdirSync(path);
   },
 };
