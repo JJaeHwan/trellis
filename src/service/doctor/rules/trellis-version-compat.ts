@@ -11,7 +11,7 @@ import type { Finding } from "../types.js";
  * import.meta 로 주입하려면 tsup config 변경이 필요하다.
  * release-please 가 package.json version bump 시 이 값도 함께 갱신해야 한다.
  */
-const CURRENT_TRELLIS_VERSION = "0.7.0";
+const CURRENT_TRELLIS_VERSION = "0.9.0"; // x-release-please-version
 
 interface SemVer {
   readonly major: number;
