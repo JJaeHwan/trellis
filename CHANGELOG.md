@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.0](https://github.com/JJaeHwan/trellis/compare/v0.8.0...v0.9.0) (2026-05-19)
+
+
+### Features
+
+* **cmd:** add --json output to trellis new ([d1141cc](https://github.com/JJaeHwan/trellis/commit/d1141cc03416219f486dc14d4156167ee63fc9c2))
+* **doctor:** add handlebars-token-valid rule ([a371cc9](https://github.com/JJaeHwan/trellis/commit/a371cc9eff464a7b426b1e5c4594322768b845f5))
+* **fragment:** add hint to patcher slot-missing error ([f2b1b3e](https://github.com/JJaeHwan/trellis/commit/f2b1b3e4becd2367064c5487f048a43c9129567d))
+* **playbook:** add admin-items + breadcrumb slot infrastructure (b2b-saas) ([36825ca](https://github.com/JJaeHwan/trellis/commit/36825cad6471ff5d8b7a93f71176ba1176616a54))
+* **playbook:** add dependency-cruiser config to b2b-saas fullbody ([beeef21](https://github.com/JJaeHwan/trellis/commit/beeef21d1aaa9628f8eca079180e41e0b7289338))
+* **playbook:** add form + admin fragments with multi-slot patches (b2b-saas) ([ce02c23](https://github.com/JJaeHwan/trellis/commit/ce02c23019dd048229ee7bb2d36d8bbd35869685))
+
 ## [0.8.0](https://github.com/JJaeHwan/trellis/compare/v0.7.0...v0.8.0) (2026-05-19)
 
 
