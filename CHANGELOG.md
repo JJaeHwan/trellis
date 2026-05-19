@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.8.0](https://github.com/JJaeHwan/trellis/compare/v0.7.0...v0.8.0) (2026-05-19)
+
+
+### Features
+
+* **cmd:** add --json output and actionable hints to trellis add ([a44e6cc](https://github.com/JJaeHwan/trellis/commit/a44e6cccbc9f774f905b78711d50bc20a8c3497d))
+* **common:** add hint field to HarnessError for actionable suggestions ([e8aa9bc](https://github.com/JJaeHwan/trellis/commit/e8aa9bc3f8b77fa4453884ecc35c29571bd78867))
+* **doctor:** add trellis-version-compat rule ([1191075](https://github.com/JJaeHwan/trellis/commit/1191075909c5e7f056b82d49b5566fbe8db4513b))
+* **playbook:** add model + service fragments with multi-slot patches (b2b-saas) ([3d4a913](https://github.com/JJaeHwan/trellis/commit/3d4a9139ffe6f5d2813ec322eb44429653ad8289))
+* **playbook:** inject prisma-models + services slot markers in b2b-saas fullbody ([599a017](https://github.com/JJaeHwan/trellis/commit/599a017889ece0d31639a059738deafa7f1d011b))
+
 ## [0.7.0](https://github.com/JJaeHwan/trellis/compare/v0.6.0...v0.7.0) (2026-05-19)
 
 
