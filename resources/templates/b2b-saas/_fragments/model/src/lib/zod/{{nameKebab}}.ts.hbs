@@ -1,0 +1,13 @@
+import { z } from "zod";
+
+/**
+ * {{namePascal}} domain Zod schema — 입력/검증/타입 추론.
+ */
+export const {{nameCamel}}Schema = z.object({
+  id: z.string(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  // TODO: add your fields
+});
+
+export type {{namePascal}} = z.infer<typeof {{nameCamel}}Schema>;

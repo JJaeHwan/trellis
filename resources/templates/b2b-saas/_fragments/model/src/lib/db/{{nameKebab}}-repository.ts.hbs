@@ -1,0 +1,28 @@
+import { db } from "../external/db.js";
+import type { {{namePascal}} } from "../zod/{{nameKebab}}.js";
+
+/**
+ * {{namePascal}} repository — Prisma client 위에 얇은 도메인 추상화.
+ * Service 가 inject 받아 사용.
+ */
+export class {{namePascal}}Repository {
+  async findById(id: string): Promise<{{namePascal}} | null> {
+    return db.{{nameCamel}}.findUnique({ where: { id } });
+  }
+
+  async list(): Promise<readonly {{namePascal}}[]> {
+    return db.{{nameCamel}}.findMany({ orderBy: { createdAt: "desc" } });
+  }
+
+  async create(data: Omit<{{namePascal}}, "id" | "createdAt" | "updatedAt">): Promise<{{namePascal}}> {
+    return db.{{nameCamel}}.create({ data });
+  }
+
+  async update(id: string, data: Partial<{{namePascal}}>): Promise<{{namePascal}}> {
+    return db.{{nameCamel}}.update({ where: { id }, data });
+  }
+
+  async delete(id: string): Promise<void> {
+    await db.{{nameCamel}}.delete({ where: { id } });
+  }
+}

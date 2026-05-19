@@ -1,0 +1,11 @@
+{
+  "description": "Service class for business logic. 보통 model fragment 와 함께 사용 권장 — Repository 를 inject.",
+  "patches": [
+    {
+      "file": "src/lib/services.ts",
+      "slot": "services",
+      "entryKey": "{{namePascal}}Service",
+      "content": "export { {{namePascal}}Service } from \"./service/{{nameKebab}}.js\";"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+import { describe, it, expect, vi } from "vitest";
+import { {{namePascal}}Repository } from "./{{nameKebab}}-repository.js";
+
+vi.mock("../external/db.js", () => ({
+  db: {
+    {{nameCamel}}: {
+      findUnique: vi.fn(),
+      findMany: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+  },
+}));
+
+describe("{{namePascal}}Repository", () => {
+  it("instantiates without error", () => {
+    const repo = new {{namePascal}}Repository();
+    expect(repo).toBeDefined();
+  });
+
+  // TODO: add your repository tests
+});

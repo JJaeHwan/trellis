@@ -1,0 +1,20 @@
+{
+  "description": "Prisma model + Zod schema + Repository class — 새 도메인 모델 한 묶음. 보통 service fragment 와 함께 사용 권장.",
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "patches": [
+    {
+      "file": "prisma/schema.prisma",
+      "slot": "prisma-models",
+      "entryKey": "model {{namePascal}}",
+      "content": "model {{namePascal}} {\n  id        String   @id @default(cuid())\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  // TODO: add your fields\n}"
+    },
+    {
+      "file": "src/lib/services.ts",
+      "slot": "services",
+      "entryKey": "{{namePascal}}Repository",
+      "content": "export { {{namePascal}}Repository } from \"./db/{{nameKebab}}-repository.js\";"
+    }
+  ]
+}
