@@ -53,6 +53,7 @@ describe("golden — b2b-saas template tree", () => {
     expect(sourcePaths).toContain("src/components/Sidebar.tsx.hbs");
     // Lib layer
     expect(sourcePaths).toContain("src/lib/nav-items.ts.hbs");
+    expect(sourcePaths).toContain("src/lib/services.ts.hbs");
     expect(sourcePaths).toContain("src/lib/common/errors.ts");
     expect(sourcePaths).toContain("src/lib/config/env.ts");
     expect(sourcePaths).toContain("src/lib/domain/user.ts");
@@ -120,5 +121,24 @@ describe("golden — b2b-saas template tree", () => {
     expect(navItems).toBeDefined();
     expect(navItems!.content).toContain("// trellis:slot:nav-items:start");
     expect(navItems!.content).toContain("// trellis:slot:nav-items:end");
+  });
+
+  it("schema.prisma contains trellis slot markers for prisma-models", () => {
+    const templates = loadTemplates("b2b-saas");
+    const tree = renderTree(templates, buildContext(baseSpec));
+    const schema = tree.find((f) => f.path === "prisma/schema.prisma");
+    expect(schema).toBeDefined();
+    expect(schema!.content).toContain("// trellis:slot:prisma-models:start");
+    expect(schema!.content).toContain("// trellis:slot:prisma-models:end");
+  });
+
+  it("services.ts exists and contains trellis slot markers for services", () => {
+    const templates = loadTemplates("b2b-saas");
+    const tree = renderTree(templates, buildContext(baseSpec));
+    const services = tree.find((f) => f.path === "src/lib/services.ts");
+    expect(services).toBeDefined();
+    expect(services!.content).toContain("// trellis:slot:services:start");
+    expect(services!.content).toContain("// trellis:slot:services:end");
+    expect(services!.content).toContain("export const services");
   });
 });

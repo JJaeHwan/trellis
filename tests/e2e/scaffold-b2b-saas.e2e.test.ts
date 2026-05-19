@@ -108,4 +108,19 @@ describe("E2E — scaffold b2b-saas to a real temp directory", () => {
     expect(navItems).toContain("// trellis:slot:nav-items:start");
     expect(navItems).toContain("// trellis:slot:nav-items:end");
   });
+
+  it("schema.prisma contains trellis slot markers for prisma-models", () => {
+    const schema = readFileSync(join(projectDir, "prisma/schema.prisma"), "utf-8");
+    expect(schema).toContain("// trellis:slot:prisma-models:start");
+    expect(schema).toContain("// trellis:slot:prisma-models:end");
+  });
+
+  it("services.ts exists and contains trellis slot markers for services", () => {
+    const servicesPath = join(projectDir, "src/lib/services.ts");
+    expect(existsSync(servicesPath)).toBe(true);
+    const services = readFileSync(servicesPath, "utf-8");
+    expect(services).toContain("// trellis:slot:services:start");
+    expect(services).toContain("// trellis:slot:services:end");
+    expect(services).toContain("export const services");
+  });
 });
