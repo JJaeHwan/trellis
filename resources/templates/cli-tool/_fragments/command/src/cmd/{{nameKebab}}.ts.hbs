@@ -1,0 +1,10 @@
+import type { Command } from "commander";
+
+export function register{{namePascal}}Command(program: Command): void {
+  program
+    .command("{{nameKebab}}")
+    .description("TODO: describe {{name}} subcommand.")
+    .action(() => {
+      process.stdout.write("Running {{nameKebab}}\n");
+    });
+}

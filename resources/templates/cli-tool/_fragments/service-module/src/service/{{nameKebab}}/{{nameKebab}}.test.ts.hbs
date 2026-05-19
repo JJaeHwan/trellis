@@ -1,0 +1,9 @@
+import { describe, it, expect } from "vitest";
+import { {{namePascal}}Service } from "./{{nameKebab}}.js";
+
+describe("{{namePascal}}Service", () => {
+  it("returns ok=true with the input value", () => {
+    const svc = new {{namePascal}}Service();
+    expect(svc.run({ value: "hello" })).toEqual({ ok: true, value: "hello" });
+  });
+});

@@ -1,0 +1,17 @@
+{
+  "description": "새로운 commander 서브커맨드 (src/cmd/<name>.ts) + index.ts 등록 + 단위 테스트.",
+  "patches": [
+    {
+      "file": "src/cmd/index.ts",
+      "slot": "imports",
+      "entryKey": "register{{namePascal}}Command",
+      "content": "import { register{{namePascal}}Command } from \"./{{nameKebab}}.js\";"
+    },
+    {
+      "file": "src/cmd/index.ts",
+      "slot": "commands",
+      "entryKey": "register{{namePascal}}Command",
+      "content": "register{{namePascal}}Command(program);"
+    }
+  ]
+}

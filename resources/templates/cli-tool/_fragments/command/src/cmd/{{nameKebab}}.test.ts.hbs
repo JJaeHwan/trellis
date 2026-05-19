@@ -1,0 +1,12 @@
+import { Command } from "commander";
+import { describe, it, expect } from "vitest";
+import { register{{namePascal}}Command } from "./{{nameKebab}}.js";
+
+describe("register{{namePascal}}Command", () => {
+  it("registers a '{{nameKebab}}' subcommand on the program", () => {
+    const program = new Command();
+    register{{namePascal}}Command(program);
+    const found = program.commands.find((c) => c.name() === "{{nameKebab}}");
+    expect(found).toBeDefined();
+  });
+});
