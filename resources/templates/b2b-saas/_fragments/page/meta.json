@@ -1,3 +1,11 @@
 {
-  "description": "Next.js App Router page component under (authed) route group with getServerSession auth guard, basic layout, and placeholder UI."
+  "description": "Next.js App Router page component under (authed) route group with getServerSession auth guard, basic layout, and placeholder UI.",
+  "patches": [
+    {
+      "file": "src/lib/nav-items.ts",
+      "slot": "nav-items",
+      "entryKey": "/{{nameKebab}}",
+      "content": "{ label: \"{{namePascal}}\", href: \"/{{nameKebab}}\" },"
+    }
+  ]
 }

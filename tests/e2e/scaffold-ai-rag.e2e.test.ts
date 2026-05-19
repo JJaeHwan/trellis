@@ -91,4 +91,10 @@ describe("E2E — scaffold ai-rag-platform to a real temp directory", () => {
     expect(existsSync(join(projectDir, "src/lib/external/llm/anthropic.ts"))).toBe(true);
     expect(existsSync(join(projectDir, "src/lib/external/llm/factory.ts"))).toBe(true);
   });
+
+  it("nav-items.ts contains trellis slot markers for nav-items", () => {
+    const navItems = readFileSync(join(projectDir, "src/lib/nav-items.ts"), "utf-8");
+    expect(navItems).toContain("// trellis:slot:nav-items:start");
+    expect(navItems).toContain("// trellis:slot:nav-items:end");
+  });
 });

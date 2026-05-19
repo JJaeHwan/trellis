@@ -102,4 +102,10 @@ describe("E2E — scaffold b2b-saas to a real temp directory", () => {
       existsSync(join(projectDir, "src/app/api/auth/[...nextauth]/route.ts")),
     ).toBe(true);
   });
+
+  it("nav-items.ts contains trellis slot markers for nav-items", () => {
+    const navItems = readFileSync(join(projectDir, "src/lib/nav-items.ts"), "utf-8");
+    expect(navItems).toContain("// trellis:slot:nav-items:start");
+    expect(navItems).toContain("// trellis:slot:nav-items:end");
+  });
 });

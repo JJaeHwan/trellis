@@ -110,4 +110,13 @@ describe("golden — ai-rag-platform template tree", () => {
     expect(schema!.content).toContain("Unsupported(\"vector\")");
     expect(schema!.content).toContain("extensions = [vector]");
   });
+
+  it("nav-items.ts contains trellis slot markers for nav-items", () => {
+    const templates = loadTemplates("ai-rag-platform");
+    const tree = renderTree(templates, buildContext(baseSpec));
+    const navItems = tree.find((f) => f.path === "src/lib/nav-items.ts");
+    expect(navItems).toBeDefined();
+    expect(navItems!.content).toContain("// trellis:slot:nav-items:start");
+    expect(navItems!.content).toContain("// trellis:slot:nav-items:end");
+  });
 });

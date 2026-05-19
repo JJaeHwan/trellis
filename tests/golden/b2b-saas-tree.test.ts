@@ -112,4 +112,13 @@ describe("golden — b2b-saas template tree", () => {
     expect(schema!.content).toContain("enum Role");
     expect(schema!.content).toContain("passwordHash");
   });
+
+  it("nav-items.ts contains trellis slot markers for nav-items", () => {
+    const templates = loadTemplates("b2b-saas");
+    const tree = renderTree(templates, buildContext(baseSpec));
+    const navItems = tree.find((f) => f.path === "src/lib/nav-items.ts");
+    expect(navItems).toBeDefined();
+    expect(navItems!.content).toContain("// trellis:slot:nav-items:start");
+    expect(navItems!.content).toContain("// trellis:slot:nav-items:end");
+  });
 });
