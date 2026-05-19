@@ -42,7 +42,7 @@ afterAll(() => {
 describe("E2E — scaffold b2b-saas to a real temp directory", () => {
   it("writes a complete Next.js app tree to disk", () => {
     const tree = scaffold({ ...spec, rootPath: projectDir });
-    expect(tree.length).toBeGreaterThan(25);
+    expect(tree.length).toBeGreaterThan(27);
 
     expect(existsSync(projectDir)).toBe(true);
     expect(statSync(projectDir).isDirectory()).toBe(true);
@@ -85,8 +85,8 @@ describe("E2E — scaffold b2b-saas to a real temp directory", () => {
     expect(statSync(join(projectDir, "src/lib/service")).isDirectory()).toBe(true);
     expect(statSync(join(projectDir, "src/app")).isDirectory()).toBe(true);
     expect(statSync(join(projectDir, "src/app/api/auth")).isDirectory()).toBe(true);
-    expect(statSync(join(projectDir, "src/app/dashboard")).isDirectory()).toBe(true);
-    expect(statSync(join(projectDir, "src/app/admin")).isDirectory()).toBe(true);
+    expect(statSync(join(projectDir, "src/app/(authed)/dashboard")).isDirectory()).toBe(true);
+    expect(statSync(join(projectDir, "src/app/(authed)/admin")).isDirectory()).toBe(true);
     expect(statSync(join(projectDir, "prisma")).isDirectory()).toBe(true);
   });
 

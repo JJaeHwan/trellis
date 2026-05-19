@@ -127,7 +127,8 @@ describe("E2E — b2b-saas: add api users", () => {
 
 describe("E2E — b2b-saas: add page dashboard", () => {
   it("runAdd creates (authed)/dashboard/page.tsx with correct substitutions", async () => {
-    await runAdd("page", "dashboard", { force: false }, realFsAdapter, saasProjectDir);
+    // force: true because the full-body scaffold already ships (authed)/dashboard/page.tsx
+    await runAdd("page", "dashboard", { force: true }, realFsAdapter, saasProjectDir);
 
     const pagePath = join(saasProjectDir, "src/app/(authed)/dashboard/page.tsx");
     expect(existsSync(pagePath)).toBe(true);

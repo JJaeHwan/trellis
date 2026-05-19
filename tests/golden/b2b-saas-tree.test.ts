@@ -22,7 +22,7 @@ const baseSpec: ProjectSpec = {
 describe("golden — b2b-saas template tree", () => {
   it("loads the b2b-saas template set with expected key files", () => {
     const templates = loadTemplates("b2b-saas");
-    expect(templates.length).toBeGreaterThan(25);
+    expect(templates.length).toBeGreaterThan(27);
 
     const sourcePaths = templates.map((t) => t.sourcePath);
     // Root config
@@ -42,13 +42,17 @@ describe("golden — b2b-saas template tree", () => {
     expect(sourcePaths).toContain("src/app/globals.css");
     expect(sourcePaths).toContain("src/app/(auth)/login/page.tsx");
     expect(sourcePaths).toContain("src/app/(auth)/register/page.tsx");
-    expect(sourcePaths).toContain("src/app/dashboard/page.tsx.hbs");
-    expect(sourcePaths).toContain("src/app/admin/page.tsx");
+    expect(sourcePaths).toContain("src/app/(authed)/layout.tsx.hbs");
+    expect(sourcePaths).toContain("src/app/(authed)/dashboard/page.tsx.hbs");
+    expect(sourcePaths).toContain("src/app/(authed)/admin/page.tsx");
     expect(sourcePaths).toContain("src/app/api/auth/[...nextauth]/route.ts");
     expect(sourcePaths).toContain("src/app/api/auth/register/route.ts");
     expect(sourcePaths).toContain("src/app/api/me/route.ts");
     expect(sourcePaths).toContain("src/app/api/admin/users/route.ts");
+    // Components
+    expect(sourcePaths).toContain("src/components/Sidebar.tsx.hbs");
     // Lib layer
+    expect(sourcePaths).toContain("src/lib/nav-items.ts.hbs");
     expect(sourcePaths).toContain("src/lib/common/errors.ts");
     expect(sourcePaths).toContain("src/lib/config/env.ts");
     expect(sourcePaths).toContain("src/lib/domain/user.ts");

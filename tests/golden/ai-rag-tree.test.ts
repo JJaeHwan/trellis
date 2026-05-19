@@ -18,7 +18,7 @@ const baseSpec: ProjectSpec = {
 describe("golden — ai-rag-platform template tree", () => {
   it("loads the ai-rag-platform template set with expected key files", () => {
     const templates = loadTemplates("ai-rag-platform");
-    expect(templates.length).toBeGreaterThan(35);
+    expect(templates.length).toBeGreaterThan(37);
 
     const sourcePaths = templates.map((t) => t.sourcePath);
     // Root config
@@ -46,6 +46,9 @@ describe("golden — ai-rag-platform template tree", () => {
     expect(sourcePaths).toContain("src/lib/service/document/pipeline.ts");
     expect(sourcePaths).toContain("src/lib/service/search/vector-search.ts");
     expect(sourcePaths).toContain("src/lib/service/chat/rag-chat.ts");
+    // Components + lib
+    expect(sourcePaths).toContain("src/components/Sidebar.tsx.hbs");
+    expect(sourcePaths).toContain("src/lib/nav-items.ts.hbs");
     // App + API
     expect(sourcePaths).toContain("src/app/layout.tsx.hbs");
     expect(sourcePaths).toContain("src/app/documents/page.tsx");
@@ -67,6 +70,8 @@ describe("golden — ai-rag-platform template tree", () => {
     expect(paths).toContain("LICENSE");
     expect(paths).toContain("prisma/schema.prisma");
     expect(paths).toContain("src/app/layout.tsx");
+    expect(paths).toContain("src/components/Sidebar.tsx");
+    expect(paths).toContain("src/lib/nav-items.ts");
     expect(paths).toContain(
       "src/app/api/chat/sessions/[id]/messages/route.ts",
     );
