@@ -106,12 +106,14 @@ export function applyPatches(
       throw new HarnessError(
         `missing slot '${patch.slot}' in ${patch.file}`,
         ExitCode.ValidationFailure,
+        "trellis doctor . 로 풀바디 marker 무결성을 확인하세요.",
       );
     }
     if (endIndex === -1) {
       throw new HarnessError(
         `missing slot '${patch.slot}' in ${patch.file}`,
         ExitCode.ValidationFailure,
+        "trellis doctor . 로 풀바디 marker 무결성을 확인하세요.",
       );
     }
     // end 가 start 보다 앞에 있는 경우는 위 로직에서 이미 처리됨
