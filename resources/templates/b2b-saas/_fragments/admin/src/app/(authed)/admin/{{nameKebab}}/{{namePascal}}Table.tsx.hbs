@@ -1,0 +1,39 @@
+interface {{namePascal}}TableProps {
+  query?: string;
+}
+
+export async function {{namePascal}}Table({ query }: {{namePascal}}TableProps) {
+  // TODO: fetch data via {{namePascal}}Service (보통 model fragment 의 Repository 사용)
+  const rows: ReadonlyArray<{ id: string; createdAt: Date }> = [];
+
+  return (
+    <table className="min-w-full border border-gray-200 dark:border-gray-800">
+      <thead className="bg-gray-50 dark:bg-gray-900">
+        <tr>
+          <th className="px-4 py-2 text-left text-sm font-medium">ID</th>
+          <th className="px-4 py-2 text-left text-sm font-medium">Created</th>
+          <th className="px-4 py-2 text-left text-sm font-medium">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.length === 0 ? (
+          <tr>
+            <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
+              {query ? `'${query}' 검색 결과 없음` : "데이터가 없습니다."}
+            </td>
+          </tr>
+        ) : (
+          rows.map((row) => (
+            <tr key={row.id} className="border-t border-gray-100 dark:border-gray-800">
+              <td className="px-4 py-2 font-mono text-xs">{row.id}</td>
+              <td className="px-4 py-2 text-sm">{row.createdAt.toISOString()}</td>
+              <td className="px-4 py-2 text-sm">
+                {/* TODO: edit/delete actions */}
+              </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  );
+}

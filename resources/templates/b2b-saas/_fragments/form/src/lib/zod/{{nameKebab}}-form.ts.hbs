@@ -1,0 +1,7 @@
+import { z } from "zod";
+
+export const {{nameCamel}}FormSchema = z.object({
+  // TODO: define form fields
+});
+
+export type {{namePascal}}FormInput = z.infer<typeof {{nameCamel}}FormSchema>;

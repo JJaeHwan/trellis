@@ -1,0 +1,15 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+export async function create{{namePascal}}(formData: FormData): Promise<void> {
+  // TODO: validate with Zod ({{nameCamel}}FormSchema) + persist via {{namePascal}}Repository
+  console.log("create{{namePascal}}", Object.fromEntries(formData));
+  revalidatePath("/admin/{{nameKebab}}");
+}
+
+export async function delete{{namePascal}}(id: string): Promise<void> {
+  // TODO: delete via {{namePascal}}Repository
+  console.log("delete{{namePascal}}", id);
+  revalidatePath("/admin/{{nameKebab}}");
+}

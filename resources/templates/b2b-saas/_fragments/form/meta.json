@@ -1,0 +1,6 @@
+{
+  "description": "Form component + Server Action + Zod schema — 단순 폼 한 묶음. 다이얼로그 wrap 없음. 보통 model fragment 와 함께 사용.",
+  "dependencies": {
+    "zod": "^3.22.4"
+  }
+}

@@ -1,0 +1,25 @@
+import { Suspense } from "react";
+import { {{namePascal}}Table } from "./{{namePascal}}Table";
+import { {{namePascal}}Filter } from "./{{namePascal}}Filter";
+
+export const metadata = {
+  title: "{{namePascal}} | Admin",
+};
+
+export default function {{namePascal}}AdminPage({
+  searchParams,
+}: {
+  searchParams: { q?: string };
+}) {
+  return (
+    <main className="flex flex-1 flex-col gap-6 p-8">
+      <header className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{{namePascal}} Admin</h1>
+      </header>
+      <{{namePascal}}Filter />
+      <Suspense fallback={<p className="text-gray-500">불러오는 중...</p>}>
+        <{{namePascal}}Table query={searchParams.q} />
+      </Suspense>
+    </main>
+  );
+}

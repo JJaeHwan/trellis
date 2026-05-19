@@ -1,0 +1,17 @@
+{
+  "description": "Admin CRUD page (Table + Filter + actions). model + service + form fragment 와 함께 사용 권장 — 데이터 계층 + 폼이 먼저 있어야 의미.",
+  "patches": [
+    {
+      "file": "src/lib/nav-items.ts",
+      "slot": "admin-items",
+      "entryKey": "/admin/{{nameKebab}}",
+      "content": "{ label: \"{{namePascal}}\", href: \"/admin/{{nameKebab}}\" },"
+    },
+    {
+      "file": "src/lib/breadcrumb-map.ts",
+      "slot": "breadcrumb",
+      "entryKey": "/admin/{{nameKebab}}",
+      "content": "\"/admin/{{nameKebab}}\": \"{{namePascal}}\","
+    }
+  ]
+}

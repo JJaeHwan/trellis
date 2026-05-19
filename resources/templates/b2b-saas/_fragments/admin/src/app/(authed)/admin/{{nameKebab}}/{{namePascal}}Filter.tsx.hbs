@@ -1,0 +1,38 @@
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
+
+export function {{namePascal}}Filter() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(formData: FormData) {
+    const q = formData.get("q")?.toString() ?? "";
+    const params = new URLSearchParams(searchParams);
+    if (q) params.set("q", q); else params.delete("q");
+    startTransition(() => {
+      router.push(`?${params.toString()}`);
+    });
+  }
+
+  return (
+    <form action={handleSubmit} className="flex gap-2">
+      <input
+        type="search"
+        name="q"
+        defaultValue={searchParams.get("q") ?? ""}
+        placeholder="검색..."
+        className="rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900"
+      />
+      <button
+        type="submit"
+        disabled={isPending}
+        className="rounded bg-gray-100 px-3 py-2 text-sm hover:bg-gray-200 disabled:opacity-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+      >
+        Filter
+      </button>
+    </form>
+  );
+}
