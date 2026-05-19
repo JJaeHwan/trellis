@@ -1,0 +1,23 @@
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+import { authOptions } from "@/lib/service/auth";
+import Sidebar from "@/components/Sidebar";
+import { navItems } from "@/lib/nav-items";
+
+export default async function AuthedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
+  return (
+    <div className="flex">
+      <Sidebar items={navItems} />
+      <main className="flex-1">{children}</main>
+    </div>
+  );
+}
