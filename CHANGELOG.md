@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://github.com/JJaeHwan/trellis/compare/v0.4.0...v0.5.0) (2026-05-19)
+
+
+### Features
+
+* **cmd:** add trellis add command with conflict handling and --force ([8724fbd](https://github.com/JJaeHwan/trellis/commit/8724fbd6386d2d91e6c9c1d3ccaff224de9b5f66))
+* **external:** add spec-loader and fragment-types-loader ([7be021a](https://github.com/JJaeHwan/trellis/commit/7be021a763b6eac79ccab32aa2d68603d6fb1f09))
+* **scaffold:** write .trellis/spec.json on trellis new ([82cc826](https://github.com/JJaeHwan/trellis/commit/82cc8267b1544be80ed49c01246e0aa1cacada3d))
+* **service:** add fragment loader, renderer, and dep-patcher ([2ef869d](https://github.com/JJaeHwan/trellis/commit/2ef869dd13cc40d567e4f394e29d963e912c7d1b))
+* **templates:** add b2b-saas and ai-rag-platform fragments (api/page) ([965588d](https://github.com/JJaeHwan/trellis/commit/965588dfa9cf3296c9fe28ea0046b47690f20bc9))
+
 ## [0.4.0](https://github.com/JJaeHwan/trellis/compare/v0.3.0...v0.4.0) (2026-04-27)
 
 
