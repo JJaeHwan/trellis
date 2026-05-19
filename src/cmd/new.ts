@@ -24,7 +24,26 @@ const TRELLIS_VERSION = "0.0.0";
 interface NewOptions {
   dryRun?: boolean;
   force?: boolean;
+  json?: boolean;
 }
+
+/**
+ * JSON mode 의 성공/실패 결과 스키마.
+ */
+export type NewJsonResult = {
+  readonly ok: boolean;
+  readonly command: "new";
+  readonly projectName?: string;
+  readonly playbookId?: string;
+  readonly matchMode?: string;
+  readonly created?: readonly string[];
+  readonly trellisVersion?: string;
+  readonly error?: {
+    readonly code: number;
+    readonly message: string;
+    readonly hint?: string;
+  };
+};
 
 export function registerNewCommand(program: Command): void {
   program
@@ -34,6 +53,10 @@ export function registerNewCommand(program: Command): void {
     .option(
       "--force",
       "Allow writing into a non-empty target directory (overwrites)",
+    )
+    .option(
+      "--json",
+      "Output result as single JSON line to stdout (interview prompts go to stderr)",
     )
     .action(async (projectName: string, options: NewOptions) => {
       await runNew(projectName, new InquirerPrompter(), options);
@@ -45,11 +68,44 @@ export async function runNew(
   prompter: Prompter,
   options: NewOptions = {},
 ): Promise<void> {
+  const jsonMode = options.json === true;
+
+  try {
+    await runNewInner(projectName, prompter, options, jsonMode);
+  } catch (err) {
+    if (jsonMode && err instanceof HarnessError) {
+      const result: NewJsonResult = {
+        ok: false,
+        command: "new",
+        error: {
+          code: err.exitCode,
+          message: err.message,
+          ...(err.hint !== undefined ? { hint: err.hint } : {}),
+        },
+      };
+      process.stdout.write(JSON.stringify(result) + "\n");
+      process.stderr.write(`${err.message}\n`);
+      if (err.hint !== undefined) {
+        process.stderr.write(`→ ${err.hint}\n`);
+      }
+      process.exit(err.exitCode);
+    }
+    throw err;
+  }
+}
+
+async function runNewInner(
+  projectName: string,
+  prompter: Prompter,
+  options: NewOptions,
+  jsonMode: boolean,
+): Promise<void> {
   validateProjectName(projectName);
   if (!process.stdin.isTTY) {
     throw new HarnessError(
       "trellis new 는 TTY 가 필요합니다 (대화형 인터뷰).",
       ExitCode.UserInputError,
+      "TTY 환경에서 trellis new <프로젝트명> 을 실행하세요.",
     );
   }
 
@@ -76,6 +132,18 @@ export async function runNew(
   const proceed = await prompter.confirm("이대로 진행할까요?", true);
   if (!proceed) {
     process.stderr.write("취소됨.\n");
+    if (jsonMode) {
+      const result: NewJsonResult = {
+        ok: false,
+        command: "new",
+        error: {
+          code: ExitCode.UserInputError,
+          message: "사용자가 취소했습니다.",
+        },
+      };
+      process.stdout.write(JSON.stringify(result) + "\n");
+      process.exit(ExitCode.UserInputError);
+    }
     return;
   }
 
@@ -94,7 +162,21 @@ export async function runNew(
   }
 
   const tree = scaffold(spec, { force: options.force });
-  printSuccess(spec, tree.length);
+
+  if (jsonMode) {
+    const result: NewJsonResult = {
+      ok: true,
+      command: "new",
+      projectName: spec.projectName,
+      playbookId: spec.playbookId,
+      matchMode: spec.matchMode,
+      created: tree.map((f) => f.path),
+      trellisVersion: spec.trellisVersion,
+    };
+    process.stdout.write(JSON.stringify(result) + "\n");
+  } else {
+    printSuccess(spec, tree.length);
+  }
 }
 
 function validateProjectName(name: string): void {
