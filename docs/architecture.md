@@ -99,9 +99,12 @@ resources/
 │       ├── src/                # 풀바디 산출물 (b2b-saas, ai-rag-platform)
 │       │   ├── app/            # Next.js App Router 라우트
 │       │   ├── components/     # Sidebar.tsx.hbs 등 공용 컴포넌트
-│       │   └── lib/            # nav-items.ts.hbs 등 데이터/유틸
+│       │   └── lib/            # nav-items.ts.hbs, services.ts.hbs (b2b-saas)
+│       │                        # db/, zod/, service/ 등 fragment 가 채우는 서브디렉토리
 │       └── _fragments/
 │           └── <type>/         # add 가 렌더하는 부분 단위 (meta.json + *.hbs)
+│                               # b2b-saas: api, page, model, service
+│                               # ai-rag-platform: api, page
 └── playbooks/
     ├── cli-tool.json          # 매처 입력 — 기계 판독용 스펙
     ├── cli-tool.meta.json     # 원본 MD 경로 + 버전 기록
@@ -194,10 +197,10 @@ service/fragment/patcher (P9)
   ↓  applyPatches — meta.patches 가 있으면 풀바디의 block-style slot marker 에 삽입
   ↓  entryKey 멱등 검사로 두 번 적용해도 중복 X
   ↓  slot marker 누락 시 fail-fast (--force 무관)
-[완료 메시지]
+[완료 메시지 — `--json` 시 stdout 단일 라인 JSON]
 ```
 
-#### Patch 적용 흐름 (P9)
+#### Patch 적용 흐름 (P9, P10 확장)
 
 - 풀바디 템플릿이 미리 심어둔 block-style marker 사이에 fragment 가 텍스트를 삽입한다.
   - 형식: `// trellis:slot:<name>:start` ... `// trellis:slot:<name>:end`
@@ -207,6 +210,15 @@ service/fragment/patcher (P9)
 - `--force` 는 파일 충돌 한정 — entry 중복 멱등성은 우회하지 않는다 (UI 데이터 손상 방지).
 - patch 는 insert-only — replace/delete 없음.
 - rollback 없음 — 실패 시 부분 적용 상태가 남을 수 있으므로 git 으로 복구한다.
+- **Multi-slot patch (P10)** — 하나의 fragment 가 `meta.patches` 배열로 여러 파일/슬롯을 동시에 갱신할 수 있다. 예: `model` fragment 가 `prisma/schema.prisma` 의 `prisma-models` 슬롯과 `src/lib/services.ts` 의 `services` 슬롯을 한 번의 add 로 함께 패치. 각 entry 는 독립적으로 멱등 검사된다.
+- Prisma 슬롯 호환성 — `// trellis:slot:<name>:start/end` 는 Prisma 가 한 줄 주석을 허용하므로 schema 파싱에 영향이 없다.
+
+#### `--json` / `--verbose` 출력 (P10)
+
+- `trellis add <type> <name> --json` — stdout 에 결과 단일 라인 JSON, stderr 에 진행 로그. UNIX 파이프 친화 (`trellis add model Invoice --json | jq ...`).
+- 스키마: `{ "command": "add", "created": string[], "patches": { applied: number, skipped: number, conflicts: string[] } }`.
+- `--verbose` — 멱등 skip 된 entry 도 stderr 에 표시 (디버깅용).
+- 실패는 `HarnessError` 로 전파되며 메시지 끝에 `→ <다음 명령 예시>` 형식의 actionable hint 가 붙는다 (slot 누락 / 파일 충돌 / spec.json 부재 등).
 
 ### 3.3 `trellis check <dir>` 흐름
 
@@ -326,6 +338,7 @@ interface ProjectSpec {
 - `trellis add` 의 dep merge — fragment `meta.json` 의 `dependencies` 는 `package.json` 에 JSON merge. 같은 이름이 이미 있고 버전이 다르면 stderr 경고만 출력하고 기존 값을 유지
 - `trellis add` 의 patch — fragment `meta.json` 의 `patches` 는 풀바디의 block-style marker (`// trellis:slot:<name>:start/end`) 사이에 삽입. `entryKey` 로 멱등 보장, slot 누락 시 fail-fast (--force 무관)
 - `trellis doctor` 의 `patch-marker-presence` 규칙 (P9) — 번들 템플릿이 fragment `meta.patches` 가 가리키는 slot marker 를 잃지 않았는지 검사하여 회귀를 차단
+- `trellis doctor` 의 `trellis-version-compat` 규칙 (P10) — 대상 프로젝트의 `.trellis/spec.json.trellisVersion` 이 현재 실행 중인 trellis 와 semver minor 단위로 호환되는지 검사. major 가 다르면 warning, spec.json 부재 시 no-op
 - 설정 파일(`~/.config/trellis/`)에 비밀값 저장 금지
 
 ---
@@ -366,3 +379,4 @@ Node.js ≥ 20, OS: macOS / Linux (Windows 는 Phase 2+ 검증).
 - P7 — `trellis add` (fragment) 명령 도입
 - P8 — 풀바디 네비게이션 보완 (Sidebar / nav-items / authed layout)
 - P9 (2026-05-19): fragment patches — meta.json.patches, block-style marker, applyPatches, doctor 규칙
+- P10 (2026-05-19): b2b-saas model + service fragment, multi-slot patch 검증, trellis add --json, actionable errors, doctor trellis-version-compat
