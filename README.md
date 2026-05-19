@@ -46,10 +46,10 @@ AI 에이전트와 함께 프로젝트를 만들 때 **예측 가능한 품질**
 
 ## 상태
 
-✅ **Released v0.1.0** ([npm](https://www.npmjs.com/package/@woghks096/trellis))
+✅ **Released v0.10.0** ([npm](https://www.npmjs.com/package/@woghks096/trellis)) — **L4 (매일 쓰는 도구) 졸업**
 
-P0~P4 (스캐폴딩, 인터뷰, 생성기, 검증기, 닥터) + P5 (npm publish 자동화) 완료.
-release-please 가 main 으로의 `feat:`/`fix:` 커밋을 추적해 자동 release PR 을 만든다.
+P0~P12 완료: 스캐폴딩 / 인터뷰 / 생성기 / 검증기 / 닥터 / `trellis add` (fragment + multi-slot patch) / `trellis list` (목록·상세·`--json`) / cli-tool 자기 적용 fragments (`command` + `service-module`). 모든 명령에 `--json` 옵션, actionable error hints, doctor 5규칙.
+release-please 가 main 으로의 `feat:`/`fix:` 커밋을 추적해 자동 release PR 을 만든다 (`extra-files` 로 버전 상수 3곳도 자동 동기화).
 로드맵은 [`docs/plans/`](docs/plans/).
 
 ---
