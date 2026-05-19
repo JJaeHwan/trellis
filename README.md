@@ -1,68 +1,71 @@
 # trellis
 
-> 하네스 엔지니어링 방법론을 기계화하는 스캐폴딩 + 검증 CLI.
+> Opinionated project scaffolder and validator for the AI-coding era.
 
 [![npm](https://img.shields.io/npm/v/@woghks096/trellis.svg)](https://www.npmjs.com/package/@woghks096/trellis)
 [![license](https://img.shields.io/npm/l/@woghks096/trellis.svg)](LICENSE)
 
-```bash
-$ trellis new my-project        # 방법론 준수 스켈레톤 생성
-$ trellis list                  # 현재 플레이북에서 사용 가능한 fragment 목록
-$ trellis list command          # command fragment 상세 정보 (--json 지원)
-$ trellis add command greet     # cli-tool: commander 서브커맨드 추가 + index.ts 자동 등록
-$ trellis add api users         # 기존 프로젝트에 fragment 추가 (필요 시 사이드바 등 기존 파일에 멱등 patch 적용)
-$ trellis add model Invoice     # Prisma 모델 + Zod + Repository 한 묶음 추가 (b2b-saas)
-$ trellis add admin Invoice     # CRUD 페이지 (Table + Filter + actions) + 사이드바/breadcrumb 자동 등록 (b2b-saas)
-$ trellis check .               # 계층 규칙 위반 탐지
-$ trellis doctor .              # 문서-코드 일관성 점검
-```
+## What is trellis?
 
----
+trellis turns your methodology into an executable CLI. You and your AI agents scaffold, extend, and validate projects from the same opinionated playbooks — so structure stays consistent whether a human or an agent writes the code.
 
-## 설치
+- Three built-in playbooks: `cli-tool` / `b2b-saas` / `ai-rag-platform`
+- `trellis new` bootstraps a new project through a short interview
+- `trellis add` extends an existing project with idempotent fragments
+- `trellis check` / `trellis doctor` enforce architecture rules and doc–code consistency
+
+## Quick start
 
 ```bash
 npm i -g @woghks096/trellis
-trellis --version
+trellis new my-project
 ```
 
-또는 일회성 실행:
+One-off (no global install):
 
 ```bash
 npx @woghks096/trellis new my-project
 ```
 
----
+## Commands
 
-## 왜
+```bash
+trellis new <dir>           # Interview → match playbook → scaffold + .trellis/spec.json
+trellis add <type> <name>   # Add a fragment (idempotent, multi-slot patch)
+trellis list [type]         # Browse available fragments (--json for scripting)
+trellis check <dir>         # Detect layered-architecture violations
+trellis doctor <dir>        # Check doc / code / playbook consistency
+```
 
-AI 에이전트와 함께 프로젝트를 만들 때 **예측 가능한 품질**이 핵심이다.
-`harness-engineering/` 에 정리된 방법론 문서를 사람/AI가 매번 해석하는 대신,
-**CLI 한 줄**로 동일한 구조를 재현 가능하게 만든다.
+All commands support `--json` for AI / script consumption.
 
-상위 방법론 문서: [`harness-engineering/`](../harness-engineering/)
+## Why
 
----
+Predictable quality matters most when you code with AI agents. Instead of asking humans and agents to re-interpret methodology documents every time, trellis makes the rules executable:
 
-## 상태
+- One CLI command reproduces the same structure every time
+- Architecture violations are caught automatically (`trellis check .` passes on this repo itself)
+- Methodology becomes self-validating, not just documented
 
-✅ **Released v0.10.0** ([npm](https://www.npmjs.com/package/@woghks096/trellis)) — **L4 (매일 쓰는 도구) 졸업**
+## Status
 
-P0~P12 완료: 스캐폴딩 / 인터뷰 / 생성기 / 검증기 / 닥터 / `trellis add` (fragment + multi-slot patch) / `trellis list` (목록·상세·`--json`) / cli-tool 자기 적용 fragments (`command` + `service-module`). 모든 명령에 `--json` 옵션, actionable error hints, doctor 5규칙.
-release-please 가 main 으로의 `feat:`/`fix:` 커밋을 추적해 자동 release PR 을 만든다 (`extra-files` 로 버전 상수 3곳도 자동 동기화).
-로드맵은 [`docs/plans/`](docs/plans/).
+**v0.10.0** — daily-driver maturity (L4 graduated)
 
----
+P0–P12 complete: scaffolding, interview, generator, validator, doctor, `trellis add` (fragment + multi-slot patch), `trellis list` (list / detail / `--json`), cli-tool dogfooding fragments (`command` + `service-module`). All commands include `--json`, actionable error hints, and doctor 5-rules.
 
-## 지원 플레이북 (MVP 목표)
+`release-please` automates version bumps on `feat:`/`fix:` commits, including version-constant sync via `extra-files`.
 
-- `cli-tool` — 단일 바이너리 CLI
-- `b2b-saas` — 인증 + 다중 사용자 SaaS (사이드바 + authed 라우트 그룹 포함)
-- `ai-rag-platform` — 문서 업로드 + RAG + LLM (사이드바 포함)
+Roadmap: [`docs/plans/`](docs/plans/)
 
----
+## Supported playbooks
 
-## 개발
+| Playbook | Description |
+|---|---|
+| `cli-tool` | Single-binary CLI — this repo follows it |
+| `b2b-saas` | Auth + multi-tenant SaaS (sidebar + authed route group) |
+| `ai-rag-platform` | Document upload + RAG + LLM pipeline (sidebar included) |
+
+## Development
 
 ```bash
 npm install
@@ -71,8 +74,10 @@ npm run test
 npm run lint
 ```
 
----
+## Korean version
 
-## 라이선스
+[한국어 README →](README.ko.md)
+
+## License
 
 MIT — see [LICENSE](LICENSE).
