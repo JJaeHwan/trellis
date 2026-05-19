@@ -13,3 +13,5 @@ export type { WriteOptions } from "./fs-writer.js";
 export { loadTemplates } from "./template-loader.js";
 export { detectLanguage } from "./lang-detector.js";
 export type { Language } from "./lang-detector.js";
+export { loadSpec } from "./spec-loader.js";
+export { listFragmentTypes } from "./fragment-types-loader.js";
