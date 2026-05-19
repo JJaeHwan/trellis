@@ -27,9 +27,17 @@ export function toCamel(input: string): string {
   );
 }
 
+export function toSnake(input: string): string {
+  return String(input)
+    .replace(/([a-z])([A-Z])/g, "$1_$2")
+    .replace(/[-\s]+/g, "_")
+    .toLowerCase();
+}
+
 export function registerHelpers(hbs: typeof Handlebars): void {
   hbs.registerHelper("kebab", (s: unknown) => toKebab(String(s ?? "")));
   hbs.registerHelper("pascal", (s: unknown) => toPascal(String(s ?? "")));
   hbs.registerHelper("camel", (s: unknown) => toCamel(String(s ?? "")));
+  hbs.registerHelper("snake", (s: unknown) => toSnake(String(s ?? "")));
   hbs.registerHelper("eq", (a: unknown, b: unknown) => a === b);
 }
