@@ -1,0 +1,10 @@
+/**
+ * 라우트 경로 → 표시명 매핑.
+ * trellis add 시 새 페이지/admin 의 breadcrumb 라벨이 이 객체에 자동 등록된다.
+ */
+export const breadcrumbMap: Readonly<Record<string, string>> = {
+  "/dashboard": "Dashboard",
+  "/admin": "Admin",
+  // trellis:slot:breadcrumb:start
+  // trellis:slot:breadcrumb:end
+};

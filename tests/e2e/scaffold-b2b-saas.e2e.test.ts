@@ -42,7 +42,7 @@ afterAll(() => {
 describe("E2E — scaffold b2b-saas to a real temp directory", () => {
   it("writes a complete Next.js app tree to disk", () => {
     const tree = scaffold({ ...spec, rootPath: projectDir });
-    expect(tree.length).toBeGreaterThan(27);
+    expect(tree.length).toBeGreaterThan(28);
 
     expect(existsSync(projectDir)).toBe(true);
     expect(statSync(projectDir).isDirectory()).toBe(true);
@@ -103,10 +103,21 @@ describe("E2E — scaffold b2b-saas to a real temp directory", () => {
     ).toBe(true);
   });
 
-  it("nav-items.ts contains trellis slot markers for nav-items", () => {
+  it("nav-items.ts contains trellis slot markers for nav-items and admin-items", () => {
     const navItems = readFileSync(join(projectDir, "src/lib/nav-items.ts"), "utf-8");
     expect(navItems).toContain("// trellis:slot:nav-items:start");
     expect(navItems).toContain("// trellis:slot:nav-items:end");
+    expect(navItems).toContain("// trellis:slot:admin-items:start");
+    expect(navItems).toContain("// trellis:slot:admin-items:end");
+  });
+
+  it("breadcrumb-map.ts exists and contains trellis slot markers for breadcrumb", () => {
+    const breadcrumbPath = join(projectDir, "src/lib/breadcrumb-map.ts");
+    expect(existsSync(breadcrumbPath)).toBe(true);
+    const breadcrumbMap = readFileSync(breadcrumbPath, "utf-8");
+    expect(breadcrumbMap).toContain("// trellis:slot:breadcrumb:start");
+    expect(breadcrumbMap).toContain("// trellis:slot:breadcrumb:end");
+    expect(breadcrumbMap).toContain("export const breadcrumbMap");
   });
 
   it("schema.prisma contains trellis slot markers for prisma-models", () => {

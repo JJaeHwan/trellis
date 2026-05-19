@@ -22,7 +22,7 @@ const baseSpec: ProjectSpec = {
 describe("golden — b2b-saas template tree", () => {
   it("loads the b2b-saas template set with expected key files", () => {
     const templates = loadTemplates("b2b-saas");
-    expect(templates.length).toBeGreaterThan(27);
+    expect(templates.length).toBeGreaterThan(28);
 
     const sourcePaths = templates.map((t) => t.sourcePath);
     // Root config
@@ -53,6 +53,7 @@ describe("golden — b2b-saas template tree", () => {
     expect(sourcePaths).toContain("src/components/Sidebar.tsx.hbs");
     // Lib layer
     expect(sourcePaths).toContain("src/lib/nav-items.ts.hbs");
+    expect(sourcePaths).toContain("src/lib/breadcrumb-map.ts.hbs");
     expect(sourcePaths).toContain("src/lib/services.ts.hbs");
     expect(sourcePaths).toContain("src/lib/common/errors.ts");
     expect(sourcePaths).toContain("src/lib/config/env.ts");
@@ -114,13 +115,25 @@ describe("golden — b2b-saas template tree", () => {
     expect(schema!.content).toContain("passwordHash");
   });
 
-  it("nav-items.ts contains trellis slot markers for nav-items", () => {
+  it("nav-items.ts contains trellis slot markers for nav-items and admin-items", () => {
     const templates = loadTemplates("b2b-saas");
     const tree = renderTree(templates, buildContext(baseSpec));
     const navItems = tree.find((f) => f.path === "src/lib/nav-items.ts");
     expect(navItems).toBeDefined();
     expect(navItems!.content).toContain("// trellis:slot:nav-items:start");
     expect(navItems!.content).toContain("// trellis:slot:nav-items:end");
+    expect(navItems!.content).toContain("// trellis:slot:admin-items:start");
+    expect(navItems!.content).toContain("// trellis:slot:admin-items:end");
+  });
+
+  it("breadcrumb-map.ts exists and contains trellis slot markers for breadcrumb", () => {
+    const templates = loadTemplates("b2b-saas");
+    const tree = renderTree(templates, buildContext(baseSpec));
+    const breadcrumbMap = tree.find((f) => f.path === "src/lib/breadcrumb-map.ts");
+    expect(breadcrumbMap).toBeDefined();
+    expect(breadcrumbMap!.content).toContain("// trellis:slot:breadcrumb:start");
+    expect(breadcrumbMap!.content).toContain("// trellis:slot:breadcrumb:end");
+    expect(breadcrumbMap!.content).toContain("export const breadcrumbMap");
   });
 
   it("schema.prisma contains trellis slot markers for prisma-models", () => {

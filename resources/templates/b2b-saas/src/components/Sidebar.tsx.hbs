@@ -3,9 +3,10 @@ import type { NavItem } from "@/lib/nav-items";
 
 interface SidebarProps {
   items: readonly NavItem[];
+  adminItems?: readonly NavItem[];
 }
 
-export default function Sidebar({ items }: SidebarProps) {
+export default function Sidebar({ items, adminItems }: SidebarProps) {
   return (
     <aside className="flex h-screen w-60 flex-col border-r border-gray-200 bg-gray-50 px-4 py-6 dark:border-gray-800 dark:bg-gray-900">
       <nav className="flex flex-col gap-1">
@@ -19,6 +20,23 @@ export default function Sidebar({ items }: SidebarProps) {
           </Link>
         ))}
       </nav>
+      {adminItems && adminItems.length > 0 && (
+        <>
+          <hr className="my-4 border-gray-200 dark:border-gray-800" />
+          <p className="px-3 py-1 text-xs font-semibold uppercase text-gray-500">Admin</p>
+          <nav className="flex flex-col gap-1">
+            {adminItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </>
+      )}
     </aside>
   );
 }

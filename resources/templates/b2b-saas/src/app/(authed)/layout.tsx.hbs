@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/service/auth";
 import Sidebar from "@/components/Sidebar";
-import { navItems } from "@/lib/nav-items";
+import { navItems, adminItems } from "@/lib/nav-items";
 
 export default async function AuthedLayout({
   children,
@@ -16,7 +16,7 @@ export default async function AuthedLayout({
 
   return (
     <div className="flex">
-      <Sidebar items={navItems} />
+      <Sidebar items={navItems} adminItems={adminItems} />
       <main className="flex-1">{children}</main>
     </div>
   );
