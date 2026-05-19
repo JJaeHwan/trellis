@@ -730,4 +730,253 @@ describe("runAdd", () => {
       expect(stderrOutput).not.toContain("Warning");
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // P10.7 — --json output option
+  // ---------------------------------------------------------------------------
+
+  describe("--json output", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("runAdd_json_success_stdoutIsParseable", async () => {
+      const stdoutChunks: string[] = [];
+      vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+        stdoutChunks.push(chunk as string);
+        return true;
+      });
+      const fs = makeFakeFs({ projectDir: PROJECT_DIR });
+
+      await runAdd("api", "users", { json: true }, fs, PROJECT_DIR);
+
+      const stdout = stdoutChunks.join("");
+      expect(() => JSON.parse(stdout)).not.toThrow();
+    });
+
+    it("runAdd_json_success_okTrue", async () => {
+      const stdoutChunks: string[] = [];
+      vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+        stdoutChunks.push(chunk as string);
+        return true;
+      });
+      const fs = makeFakeFs({ projectDir: PROJECT_DIR });
+
+      await runAdd("api", "users", { json: true }, fs, PROJECT_DIR);
+
+      const result = JSON.parse(stdoutChunks.join("")) as { ok: boolean };
+      expect(result.ok).toBe(true);
+    });
+
+    it("runAdd_json_success_commandIsAdd", async () => {
+      const stdoutChunks: string[] = [];
+      vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+        stdoutChunks.push(chunk as string);
+        return true;
+      });
+      const fs = makeFakeFs({ projectDir: PROJECT_DIR });
+
+      await runAdd("api", "users", { json: true }, fs, PROJECT_DIR);
+
+      const result = JSON.parse(stdoutChunks.join("")) as { command: string };
+      expect(result.command).toBe("add");
+    });
+
+    it("runAdd_json_success_createdArrayContainsFile", async () => {
+      const stdoutChunks: string[] = [];
+      vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+        stdoutChunks.push(chunk as string);
+        return true;
+      });
+      const fs = makeFakeFs({ projectDir: PROJECT_DIR });
+
+      await runAdd("api", "users", { json: true }, fs, PROJECT_DIR);
+
+      const result = JSON.parse(stdoutChunks.join("")) as { created: string[] };
+      expect(Array.isArray(result.created)).toBe(true);
+      expect(result.created.length).toBeGreaterThan(0);
+      expect(result.created[0]).toContain("users");
+    });
+
+    it("runAdd_json_success_patchesAppliedArray", async () => {
+      const stdoutChunks: string[] = [];
+      vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+        stdoutChunks.push(chunk as string);
+        return true;
+      });
+
+      const SLOT_FILE = "src/lib/nav-items.ts";
+      const SLOT_CONTENT = [
+        "// trellis:slot:nav-items:start",
+        "// trellis:slot:nav-items:end",
+      ].join("\n");
+
+      const fs = makeFakeFs({
+        projectDir: PROJECT_DIR,
+        patches: [
+          {
+            file: SLOT_FILE,
+            slot: "nav-items",
+            entryKey: "users",
+            content: "{ label: 'Users', href: '/users' },",
+          },
+        ],
+        patchTargetFiles: { [SLOT_FILE]: SLOT_CONTENT },
+      });
+
+      await runAdd("api", "users", { json: true }, fs, PROJECT_DIR);
+
+      const result = JSON.parse(stdoutChunks.join("")) as {
+        patches: { applied: { file: string; slot: string; entryKey: string }[] };
+      };
+      expect(Array.isArray(result.patches.applied)).toBe(true);
+      expect(result.patches.applied.length).toBe(1);
+      expect(result.patches.applied[0]?.file).toBe(SLOT_FILE);
+      expect(result.patches.applied[0]?.slot).toBe("nav-items");
+      expect(result.patches.applied[0]?.entryKey).toBe("users");
+    });
+
+    it("runAdd_json_success_noHumanTextOnStdout", async () => {
+      const stdoutChunks: string[] = [];
+      vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+        stdoutChunks.push(chunk as string);
+        return true;
+      });
+      const fs = makeFakeFs({ projectDir: PROJECT_DIR });
+
+      await runAdd("api", "users", { json: true }, fs, PROJECT_DIR);
+
+      // stdout should be exactly one JSON line
+      const lines = stdoutChunks.join("").trim().split("\n");
+      expect(lines.length).toBe(1);
+      expect(() => JSON.parse(lines[0] as string)).not.toThrow();
+    });
+
+    it("runAdd_json_success_playbookIdAndFragmentTypeAndName", async () => {
+      const stdoutChunks: string[] = [];
+      vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+        stdoutChunks.push(chunk as string);
+        return true;
+      });
+      const fs = makeFakeFs({ projectDir: PROJECT_DIR });
+
+      await runAdd("api", "users", { json: true }, fs, PROJECT_DIR);
+
+      const result = JSON.parse(stdoutChunks.join("")) as {
+        playbookId: string;
+        fragmentType: string;
+        name: string;
+      };
+      expect(result.playbookId).toBe("b2b-saas");
+      expect(result.fragmentType).toBe("api");
+      expect(result.name).toBe("users");
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // P10.8 — actionable error hints (HarnessError.hint)
+  // ---------------------------------------------------------------------------
+
+  describe("actionable error hints", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("runAdd_noSpec_hintMentionsTrellisNew", async () => {
+      const fs = makeFakeFs({ projectDir: PROJECT_DIR, specMissing: true });
+
+      const err = await runAdd("api", "users", {}, fs, PROJECT_DIR).catch(
+        (e: unknown) => e,
+      );
+
+      expect(err).toBeInstanceOf(HarnessError);
+      expect((err as HarnessError).hint).toBeDefined();
+      expect((err as HarnessError).hint).toContain("trellis new");
+    });
+
+    it("runAdd_invalidName_hintMentionsTrellisAdd", async () => {
+      const fs = makeFakeFs({ projectDir: PROJECT_DIR });
+
+      const err = await runAdd("api", "123invalid", {}, fs, PROJECT_DIR).catch(
+        (e: unknown) => e,
+      );
+
+      expect(err).toBeInstanceOf(HarnessError);
+      expect((err as HarnessError).hint).toBeDefined();
+      expect((err as HarnessError).hint).toContain("trellis add");
+    });
+
+    it("runAdd_conflict_hintMentionsForce", async () => {
+      const fs = makeFakeFs({
+        projectDir: PROJECT_DIR,
+        existingFiles: ["app/api/users/route.ts"],
+      });
+
+      const err = await runAdd("api", "users", {}, fs, PROJECT_DIR).catch(
+        (e: unknown) => e,
+      );
+
+      expect(err).toBeInstanceOf(HarnessError);
+      expect((err as HarnessError).hint).toBeDefined();
+      expect((err as HarnessError).hint).toContain("--force");
+    });
+
+    it("runAdd_json_conflict_errorJsonContainsHint", async () => {
+      // In json mode, exit is called — mock process.exit to prevent actual exit
+      const exitSpy = vi.spyOn(process, "exit").mockImplementation((_code) => {
+        throw new Error("process.exit called");
+      });
+      const stdoutChunks: string[] = [];
+      vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+        stdoutChunks.push(chunk as string);
+        return true;
+      });
+      vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+      const fs = makeFakeFs({
+        projectDir: PROJECT_DIR,
+        existingFiles: ["app/api/users/route.ts"],
+      });
+
+      await runAdd("api", "users", { json: true }, fs, PROJECT_DIR).catch(() => {
+        // process.exit throws in test
+      });
+
+      exitSpy.mockRestore();
+
+      const stdout = stdoutChunks.join("");
+      expect(stdout.length).toBeGreaterThan(0);
+      const result = JSON.parse(stdout) as {
+        ok: boolean;
+        error: { code: number; message: string; hint?: string };
+      };
+      expect(result.ok).toBe(false);
+      expect(result.error.code).toBe(3);
+      expect(result.error.hint).toBeDefined();
+      expect(result.error.hint).toContain("--force");
+    });
+
+    it("runAdd_json_noSpec_errorJsonOkFalse", async () => {
+      const exitSpy = vi.spyOn(process, "exit").mockImplementation((_code) => {
+        throw new Error("process.exit called");
+      });
+      const stdoutChunks: string[] = [];
+      vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+        stdoutChunks.push(chunk as string);
+        return true;
+      });
+      vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+      const fs = makeFakeFs({ projectDir: PROJECT_DIR, specMissing: true });
+
+      await runAdd("api", "users", { json: true }, fs, PROJECT_DIR).catch(() => {});
+
+      exitSpy.mockRestore();
+
+      const stdout = stdoutChunks.join("");
+      const result = JSON.parse(stdout) as { ok: boolean; error: { code: number } };
+      expect(result.ok).toBe(false);
+      expect(result.error.code).toBe(2);
+    });
+  });
 });

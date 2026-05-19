@@ -23,7 +23,34 @@ const NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9\-_]*$/;
 interface AddOptions {
   force?: boolean;
   verbose?: boolean;
+  json?: boolean;
 }
+
+/**
+ * JSON mode 의 성공/실패 결과 스키마.
+ */
+export type AddJsonResult = {
+  readonly ok: boolean;
+  readonly command: "add";
+  readonly playbookId?: string;
+  readonly fragmentType?: string;
+  readonly name?: string;
+  readonly created?: readonly string[];
+  readonly patches?: {
+    readonly applied: readonly { file: string; slot: string; entryKey: string }[];
+    readonly skipped: readonly { file: string; slot: string; entryKey: string }[];
+  };
+  readonly dependencies?: {
+    readonly added: readonly string[];
+    readonly skipped: readonly string[];
+    readonly conflicts: readonly { name: string; existing: string; requested: string }[];
+  };
+  readonly error?: {
+    readonly code: number;
+    readonly message: string;
+    readonly hint?: string;
+  };
+};
 
 /**
  * Handlebars 컴파일러 (helpers 등록) — 단순 문자열 치환용.
@@ -42,6 +69,7 @@ export function registerAddCommand(program: Command): void {
     )
     .option("--force", "기존 파일을 덮어씁니다")
     .option("--verbose", "스킵된 patch 도 표시합니다")
+    .option("--json", "출력을 JSON 객체로 표준 출력 (사람용 메시지는 stderr 로 이동)")
     .action(async (type: string | undefined, name: string | undefined, options: AddOptions) => {
       await runAdd(type, name, options);
     });
@@ -54,6 +82,42 @@ export async function runAdd(
   fs: FsAdapter = realFsAdapter,
   projectDir: string = process.cwd(),
 ): Promise<void> {
+  const jsonMode = options.json === true;
+
+  try {
+    await runAddInner(typeArg, nameArg, options, fs, projectDir, jsonMode);
+  } catch (err) {
+    if (jsonMode && err instanceof HarnessError) {
+      const result: AddJsonResult = {
+        ok: false,
+        command: "add",
+        error: {
+          code: err.exitCode,
+          message: err.message,
+          ...(err.hint !== undefined ? { hint: err.hint } : {}),
+        },
+      };
+      process.stdout.write(JSON.stringify(result) + "\n");
+      // stderr 에 사람용 메시지
+      process.stderr.write(`${err.message}\n`);
+      if (err.hint !== undefined) {
+        process.stderr.write(`→ ${err.hint}\n`);
+      }
+      process.exit(err.exitCode);
+    }
+    // non-json mode — re-throw for cmd/index.ts to handle
+    throw err;
+  }
+}
+
+async function runAddInner(
+  typeArg: string | undefined,
+  nameArg: string | undefined,
+  options: AddOptions,
+  fs: FsAdapter,
+  projectDir: string,
+  jsonMode: boolean,
+): Promise<void> {
 
   // 1. spec.json 확인
   const spec = loadSpec(projectDir, fs);
@@ -61,6 +125,7 @@ export async function runAdd(
     throw new HarnessError(
       "이 디렉토리는 trellis 프로젝트가 아닙니다 (.trellis/spec.json 없음). `trellis new` 로 시작하세요.",
       ExitCode.UserInputError,
+      "trellis new <디렉토리> 로 프로젝트를 먼저 생성하세요.",
     );
   }
 
@@ -68,7 +133,7 @@ export async function runAdd(
   const type = await resolveType(typeArg, spec, fs);
 
   // 3. name 결정 (인자 없으면 인터랙티브)
-  const name = await resolveName(nameArg);
+  const name = await resolveName(nameArg, spec.playbookId, type);
 
   // 4. fragment 로드
   const fragment = loadFragment(spec.playbookId, type, fs);
@@ -81,13 +146,17 @@ export async function runAdd(
   writeTree(tree, projectDir, options, fs);
 
   // 7. package.json dep merge (package.json 없으면 skip)
+  let depResult: DepPatchResult | undefined;
   const pkgPath = resolve(projectDir, "package.json");
   if (fs.exists(pkgPath)) {
-    const depResult = patchPackageJson(projectDir, fragment.meta, fs);
-    printDepResult(depResult);
+    depResult = patchPackageJson(projectDir, fragment.meta, fs);
+    if (!jsonMode) {
+      printDepResult(depResult);
+    }
   }
 
   // 8. patches 적용 (fragment.meta.patches 가 있을 때만)
+  let patchResult: PatchResult | undefined;
   if (fragment.meta.patches !== undefined && fragment.meta.patches.length > 0) {
     const renderedPatches = fragment.meta.patches.map((p) => ({
       file: renderHandlebars(p.file, context),
@@ -95,12 +164,53 @@ export async function runAdd(
       entryKey: renderHandlebars(p.entryKey, context),
       content: renderHandlebars(p.content, context),
     }));
-    const patchResult = applyPatches(projectDir, renderedPatches, fs);
-    printPatchResult(patchResult, options.verbose ?? false);
+    patchResult = applyPatches(projectDir, renderedPatches, fs);
+    if (!jsonMode) {
+      printPatchResult(patchResult, options.verbose ?? false);
+    }
   }
 
   // 9. 성공 출력
-  printSuccess(tree);
+  if (jsonMode) {
+    const created = tree.map((f) => f.path);
+    const patchApplied = (patchResult?.applied ?? []).map((p) => ({
+      file: p.file,
+      slot: p.slot,
+      entryKey: p.entryKey,
+    }));
+    const patchSkipped = options.verbose
+      ? (patchResult?.skipped ?? []).map((p) => ({
+          file: p.file,
+          slot: p.slot,
+          entryKey: p.entryKey,
+        }))
+      : [];
+
+    const result: AddJsonResult = {
+      ok: true,
+      command: "add",
+      playbookId: spec.playbookId,
+      fragmentType: type,
+      name,
+      created,
+      patches: {
+        applied: patchApplied,
+        skipped: patchSkipped,
+      },
+      ...(depResult !== undefined
+        ? {
+            dependencies: {
+              added: depResult.added,
+              skipped: depResult.skipped,
+              conflicts: depResult.conflicts,
+            },
+          }
+        : {}),
+    };
+    process.stdout.write(JSON.stringify(result) + "\n");
+  } else {
+    printSuccess(tree);
+  }
 }
 
 async function resolveType(
@@ -124,6 +234,7 @@ async function resolveType(
     throw new HarnessError(
       "type 인자가 필요합니다 (비-TTY 환경에서는 인터랙티브 선택 불가).",
       ExitCode.UserInputError,
+      `trellis add ${types[0] ?? "<type>"} <name> 과 같은 형식으로 호출하세요.`,
     );
   }
 
@@ -133,9 +244,13 @@ async function resolveType(
   });
 }
 
-async function resolveName(nameArg: string | undefined): Promise<string> {
+async function resolveName(
+  nameArg: string | undefined,
+  playbookId: string,
+  type: string,
+): Promise<string> {
   if (nameArg !== undefined && nameArg.length > 0) {
-    validateName(nameArg);
+    validateName(nameArg, playbookId, type);
     return nameArg;
   }
 
@@ -143,6 +258,7 @@ async function resolveName(nameArg: string | undefined): Promise<string> {
     throw new HarnessError(
       "name 인자가 필요합니다 (비-TTY 환경에서는 인터랙티브 입력 불가).",
       ExitCode.UserInputError,
+      `trellis add ${type} <name> 과 같은 형식으로 호출하세요.`,
     );
   }
 
@@ -157,11 +273,12 @@ async function resolveName(nameArg: string | undefined): Promise<string> {
   });
 }
 
-function validateName(name: string): void {
+function validateName(name: string, playbookId: string, type: string): void {
   if (!NAME_PATTERN.test(name)) {
     throw new HarnessError(
       `유효하지 않은 이름: "${name}". 알파벳으로 시작하고 알파벳/숫자/대시/언더스코어만 사용하세요.`,
       ExitCode.UserInputError,
+      `trellis add ${type} <name> 와 같은 형식으로 호출하세요. (playbookId: ${playbookId})`,
     );
   }
 }
@@ -194,6 +311,7 @@ function writeTree(
     throw new HarnessError(
       `Conflict: 다음 파일이 이미 존재합니다. --force 를 추가하면 덮어씁니다.\n${list}`,
       ExitCode.ValidationFailure,
+      "trellis add <type> <name> --force 로 덮어쓸 수 있습니다.",
     );
   }
 
