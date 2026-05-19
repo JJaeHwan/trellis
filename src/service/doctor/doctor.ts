@@ -1,4 +1,5 @@
 import { resolve } from "node:path";
+import { checkHandlebarsTokenValid } from "./rules/handlebars-token-valid.js";
 import { checkPatchMarkerPresence } from "./rules/patch-marker-presence.js";
 import { checkPlaybookSync } from "./rules/playbook-sync.js";
 import { checkRequiredFiles } from "./rules/required-files.js";
@@ -12,6 +13,7 @@ export function runDoctor(targetDir: string): DoctorReport {
     ...checkPlaybookSync(absDir),
     ...checkPatchMarkerPresence(),
     ...checkTrellisVersionCompat(absDir),
+    ...checkHandlebarsTokenValid(),
   ];
   return { targetDir: absDir, findings };
 }
