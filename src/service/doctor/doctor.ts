@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { checkPatchMarkerPresence } from "./rules/patch-marker-presence.js";
 import { checkPlaybookSync } from "./rules/playbook-sync.js";
 import { checkRequiredFiles } from "./rules/required-files.js";
+import { checkTrellisVersionCompat } from "./rules/trellis-version-compat.js";
 import type { DoctorReport, Finding } from "./types.js";
 
 export function runDoctor(targetDir: string): DoctorReport {
@@ -10,6 +11,7 @@ export function runDoctor(targetDir: string): DoctorReport {
     ...checkRequiredFiles(absDir),
     ...checkPlaybookSync(absDir),
     ...checkPatchMarkerPresence(),
+    ...checkTrellisVersionCompat(absDir),
   ];
   return { targetDir: absDir, findings };
 }
