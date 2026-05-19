@@ -179,5 +179,6 @@ service/
 - CI 에서 `npm run dep:check` 로 계층 규칙을 자기 검증 (dependency-cruiser 래핑)
 - `trellis check .` 를 자기 자신에게 실행해도 통과해야 한다 (Phase 3 이후)
 - `trellis doctor .` 를 자기 자신에게 실행해도 통과해야 한다 (Phase 4 이후)
-- `trellis add` 의 자기참조성: trellis 본체는 `cli-tool` 플레이북을 따르고, 현재 MVP 에선 cli-tool fragment 는 P8 로 분리되어 있으므로 자기 자신에 적용할 fragment 가 아직 없다 — 본체 dogfooding 측면에선 현 시점 NA. b2b-saas / ai-rag 플레이북 사용자에게만 의미가 있다.
+- `trellis add` 의 자기참조성: trellis 본체는 `cli-tool` 플레이북을 따르고, 현재 MVP 에선 cli-tool fragment 가 별도 단계로 분리되어 있으므로 자기 자신에 적용할 fragment 가 아직 없다 — 본체 dogfooding 측면에선 현 시점 NA. b2b-saas / ai-rag 플레이북 사용자에게만 의미가 있다.
+- 풀바디 보완(P8): b2b-saas / ai-rag-platform 풀바디는 사이드바(`Sidebar.tsx` + `nav-items.ts`) 와 라우트 그룹 레이아웃을 포함한다. 본체(cli-tool) 의 계층 규칙에는 영향 없음 — `resources/templates/` 내부 산출물.
 - 방법론 문서(`harness-engineering/`)의 규칙과 충돌이 생기면 그것은 **문서의 결함** — 문서를 고친다

@@ -96,8 +96,12 @@ resources/
 │   ├── gitignore.hbs
 │   ├── ci.yml.hbs
 │   └── <playbookId>/
+│       ├── src/                # 풀바디 산출물 (b2b-saas, ai-rag-platform)
+│       │   ├── app/            # Next.js App Router 라우트
+│       │   ├── components/     # Sidebar.tsx.hbs 등 공용 컴포넌트
+│       │   └── lib/            # nav-items.ts.hbs 등 데이터/유틸
 │       └── _fragments/
-│           └── <type>/        # add 가 렌더하는 부분 단위 (meta.json + *.hbs)
+│           └── <type>/         # add 가 렌더하는 부분 단위 (meta.json + *.hbs)
 └── playbooks/
     ├── cli-tool.json          # 매처 입력 — 기계 판독용 스펙
     ├── cli-tool.meta.json     # 원본 MD 경로 + 버전 기록
@@ -106,6 +110,21 @@ resources/
     ├── ai-rag-platform.json
     └── ai-rag-platform.meta.json
 ```
+
+#### 풀바디 네비게이션 구조 (P8 보완)
+
+- `b2b-saas`
+  - `src/components/Sidebar.tsx.hbs` — 좌측 고정 사이드바 (정적, 토글 없음)
+  - `src/lib/nav-items.ts.hbs` — `{ label, href }[]` 메뉴 데이터
+  - `src/app/(authed)/layout.tsx.hbs` — authed 라우트 그룹 레이아웃, Sidebar 임포트
+  - `src/app/(authed)/dashboard/`, `src/app/(authed)/admin/` — authed 그룹 안에 배치
+  - `(auth)/login`, `(auth)/register` 에는 사이드바 미표시
+- `ai-rag-platform`
+  - `src/components/Sidebar.tsx.hbs`, `src/lib/nav-items.ts.hbs` — 동일 패턴
+  - `src/app/layout.tsx.hbs` — 인증 라우트가 없으므로 root layout 에 Sidebar 직접 통합
+- 두 플레이북 공통
+  - Sidebar 와 nav-items 는 별도 파일로 분리되어 향후 fragment patch 의 marker 주입 대상이 됨
+  - 아이콘 라이브러리, 토글, 헤더, 모바일 햄버거 메뉴는 비범위 — 사용자가 필요 시 추가
 
 #### 플레이북 MD ↔ JSON 관계 (중요 설계 결정)
 
@@ -320,4 +339,12 @@ Node.js ≥ 20, OS: macOS / Linux (Windows 는 Phase 2+ 검증).
 - CI 에서 `npm run dep:check` 로 L0..L5 역방향 의존성 0건 확인 (dependency-cruiser 래핑)
 - Phase 3 이후: `trellis check .` 를 자신에게 실행 → 통과 유지
 - Phase 4 이후: `trellis doctor .` 자기 자신에게 실행 → 통과 유지
-- `trellis add` 는 b2b-saas / ai-rag-platform 플레이북에만 fragment 가 정의되어 있다. trellis 본체는 `cli-tool` 플레이북이고 cli-tool fragment 는 P8 로 분리되어 있으므로 본체에 대한 `add` 자기 적용 사례는 현재 없다.
+- `trellis add` 는 b2b-saas / ai-rag-platform 플레이북에만 fragment 가 정의되어 있다. trellis 본체는 `cli-tool` 플레이북이고 cli-tool fragment 는 별도 단계로 분리되어 있으므로 본체에 대한 `add` 자기 적용 사례는 현재 없다.
+
+---
+
+## 11. 변경 이력 (주요 단계)
+
+- P6 — b2b-saas / ai-rag-platform 풀바디 템플릿 초도 작성
+- P7 — `trellis add` (fragment) 명령 도입
+- P8 — 풀바디 네비게이션 보완 (Sidebar / nav-items / authed layout)

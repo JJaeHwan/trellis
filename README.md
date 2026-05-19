@@ -52,8 +52,8 @@ release-please 가 main 으로의 `feat:`/`fix:` 커밋을 추적해 자동 rele
 ## 지원 플레이북 (MVP 목표)
 
 - `cli-tool` — 단일 바이너리 CLI
-- `b2b-saas` — 인증 + 다중 사용자 SaaS
-- `ai-rag-platform` — 문서 업로드 + RAG + LLM
+- `b2b-saas` — 인증 + 다중 사용자 SaaS (사이드바 + authed 라우트 그룹 포함)
+- `ai-rag-platform` — 문서 업로드 + RAG + LLM (사이드바 포함)
 
 ---
 
