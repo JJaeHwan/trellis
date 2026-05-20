@@ -28,5 +28,8 @@
 
 ## 현재 상태
 
-- **Phase**: P0 — 스켈레톤 준비 중 (문서만 존재, 코드 미생성)
-- **다음 마일스톤**: `docs/plans/00-initial-skeleton.md` 의 체크리스트 실행
+- **Phase**: P0~P13 완료 (스캐폴딩 / 인터뷰 / 생성기 / 검증기 / 닥터 / `trellis add` / `trellis list` / `trellis upgrade`)
+- **성숙도**: L4 (매일 쓰는 도구) 졸업, L5 (공공시스템) 진입 준비
+- **npm**: [@woghks096/trellis](https://www.npmjs.com/package/@woghks096/trellis) — Trusted Publishing (OIDC + sigstore provenance)
+- **다음 마일스톤**: P14 `trellis remove` (add 의 역연산), 외부 fragment 카탈로그 (L6)
+- **완료된 플랜**: `docs/plans/completed/` 참조
