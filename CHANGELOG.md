@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/JJaeHwan/trellis/compare/v0.11.0...v0.12.0) (2026-05-20)
+
+
+### Features
+
+* **doctor:** suggest --dry-run preview in upgrade-pending hint ([39b9a7b](https://github.com/JJaeHwan/trellis/commit/39b9a7b7f79774676a086b10a897cad2e499b5ad))
+
 ## [0.11.0](https://github.com/JJaeHwan/trellis/compare/v0.10.0...v0.11.0) (2026-05-20)
 
 
