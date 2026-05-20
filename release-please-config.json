@@ -17,6 +17,14 @@
         {
           "type": "generic",
           "path": "src/service/doctor/rules/trellis-version-compat.ts"
+        },
+        {
+          "type": "generic",
+          "path": "src/service/doctor/rules/upgrade-pending.ts"
+        },
+        {
+          "type": "generic",
+          "path": "src/cmd/upgrade.ts"
         }
       ]
     }
