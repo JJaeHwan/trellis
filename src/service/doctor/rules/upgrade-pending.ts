@@ -84,7 +84,7 @@ export function checkUpgradePending(
     ruleId: "upgrade-pending",
     severity: "info",
     message: `프로젝트는 trellis v${spec.trellisVersion} 로 생성됨. 최신 v${currentVersion} 로 마이그레이션 가능.`,
-    hint: `trellis upgrade 를 실행해 신규 slot / 필수 파일을 자동 적용하세요.`,
+    hint: `trellis upgrade --dry-run 으로 변경 사항을 먼저 확인한 뒤, 문제 없으면 trellis upgrade 를 실행하세요.`,
   });
 
   return findings;
