@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/JJaeHwan/trellis/compare/v0.12.0...v0.12.1) (2026-05-20)
+
+
+### Bug Fixes
+
+* **ci:** upgrade npm CLI to enable Trusted Publishing OIDC exchange ([daf04dd](https://github.com/JJaeHwan/trellis/commit/daf04dd5a6ac4059f4a212ccb205ea4b31eebc42))
+
 ## [0.12.0](https://github.com/JJaeHwan/trellis/compare/v0.11.0...v0.12.0) (2026-05-20)
 
 
