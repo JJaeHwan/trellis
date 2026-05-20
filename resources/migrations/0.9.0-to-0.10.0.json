@@ -1,0 +1,21 @@
+{
+  "from": "0.9.0",
+  "to": "0.10.0",
+  "playbooks": {
+    "cli-tool": {
+      "addSlots": [
+        {
+          "file": "src/cmd/index.ts",
+          "slot": "imports",
+          "afterLine": "import { registerHelloCommand } from \"./hello.js\";"
+        },
+        {
+          "file": "src/cmd/index.ts",
+          "slot": "commands",
+          "afterLine": "  registerHelloCommand(program);",
+          "indent": "  "
+        }
+      ]
+    }
+  }
+}

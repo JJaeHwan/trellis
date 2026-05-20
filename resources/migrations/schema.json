@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "trellis Migration Manifest",
+  "type": "object",
+  "required": ["from", "to", "playbooks"],
+  "properties": {
+    "from": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "to": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "playbooks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "addSlots": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["file", "slot", "afterLine"],
+              "properties": {
+                "file": { "type": "string" },
+                "slot": { "type": "string" },
+                "afterLine": { "type": "string" },
+                "indent": { "type": "string" }
+              }
+            }
+          },
+          "addFiles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["path", "content"],
+              "properties": {
+                "path": { "type": "string" },
+                "content": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
