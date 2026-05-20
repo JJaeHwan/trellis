@@ -41,7 +41,9 @@ trellis doctor .
 
 ---
 
-## 3. 결정 사항 (사용자 승인 필요)
+## 3. 결정 사항 (사용자 승인 완료 — 2026-05-19)
+
+> 모든 권장안(A1, B1, C1, D1, E1, F1, G1) 및 Q-H 채택. 구현 시작.
 
 > **Q-A. 마이그레이션 범위**
 > **권장 (A1)**: 풀바디의 *새 slot marker* + *신규 필수 파일* 만 자동 추가. 사용자가 수정한 파일은 건드리지 않음. `spec.json.trellisVersion` 갱신.
@@ -71,6 +73,11 @@ trellis doctor .
 > **권장 (G1)**: 풀바디에 새 slot marker 가 추가됐다면 해당 위치에 자동 삽입 (insert-only, 멱등). 사용자 코드 영향 없음.
 > 대안: G2 사용자 확인 후 삽입 (UX 마찰, 자동화 불친화)
 
+> **Q-H. "이전 버전 풀바디" 참조 방식** (추가 결정 — 가장 큰 설계 결정)
+> **권장 (H1)**: **Migration Manifest** — 각 minor release 마다 `resources/migrations/X.Y.Z-to-X.(Y+1).0.json` 을 trellis 번들에 동봉. manifest 가 "이번 버전이 추가한 slot, 신규 필수 파일, 변경된 슬롯 entryKey" 를 선언. upgrade 는 `spec.trellisVersion` 부터 current 까지 manifest 를 순차 적용.
+> - 장점: 오프라인 (CLAUDE.md MVP 원칙 준수), 번들 크기 작음 (전체 풀바디 cache X), 인접 minor 만 적용하므로 Q-F 와 일관, 명시적 (어떤 변경이 적용되는지 manifest 가 곧 문서)
+> - 대안: H2 번들에 이전 풀바디 전체 cache (번들 크기 폭증), H3 git tag fetch (네트워크 의존, MVP 원칙 위반)
+
 ---
 
 ## 4. 비범위
@@ -89,7 +96,7 @@ trellis doctor .
 | P13.0 | 본 문서 + Q-A~G 사용자 승인 | § 3 마감 |
 | P13.1 | `cmd/upgrade.ts` 신설 + commander 등록 | 명령 진입점 동작 |
 | P13.2 | `service/upgrader/` 신설 — 버전 diff 산정 + 인접 버전 검사 | 단위 테스트 |
-| P13.3 | 풀바디 diff 산정 — 이전 버전 번들 cache vs 현 풀바디 비교 | 신규/변경 파일 목록 |
+| P13.3 | **Migration manifest 로더** (`resources/migrations/<from>-to-<to>.json` 파싱 + 첫 manifest `0.10.0-to-0.11.0.json` 작성) | manifest 적용 단위 결정 |
 | P13.4 | 사용자 코드 변경 감지 (수정된 파일 식별) + 3-way merge or fail-fast | 충돌 케이스 처리 |
 | P13.5 | slot marker 자동 삽입 (insert-only, 멱등) + `spec.json` trellisVersion 갱신 | 핵심 로직 |
 | P13.6 | git working tree clean 검사 + `--dry-run` / `--json` / `--force` 옵션 | 안전성 + UX |
@@ -110,12 +117,13 @@ trellis doctor .
 | `src/cmd/index.ts` | 수정 — upgrade 등록 |
 | `src/service/upgrader/index.ts` | 신규 — 오케스트레이션 |
 | `src/service/upgrader/version-diff.ts` | 신규 — 버전 diff 산정 |
-| `src/service/upgrader/body-differ.ts` | 신규 — 풀바디 diff |
-| `src/service/upgrader/merger.ts` | 신규 — 3-way merge / fail-fast |
+| `src/service/upgrader/manifest-loader.ts` | 신규 — migration manifest 파싱 |
+| `src/service/upgrader/applier.ts` | 신규 — manifest 의 변경을 프로젝트에 적용 (insert-only + 멱등) |
 | `src/service/upgrader/*.test.ts` | 신규 |
 | `src/service/doctor/rules/upgrade-pending.ts` | 신규 |
 | `src/service/doctor/rules/upgrade-pending.test.ts` | 신규 |
-| `resources/templates/` | 이전 풀바디 버전 캐시 또는 git 기반 diff 지원 |
+| `resources/migrations/0.10.0-to-0.11.0.json` | 신규 — 첫 migration manifest |
+| `resources/migrations/schema.json` | 신규 — manifest JSON schema 문서화 |
 | `tests/e2e/upgrade-*.e2e.test.ts` | 신규 — 실제 upgrade 시나리오 |
 | `docs/architecture.md` / `CLAUDE.md` / `README.md` | 수정 |
 
