@@ -9,7 +9,7 @@ import { registerListCommand } from "./list.js";
 import { registerNewCommand } from "./new.js";
 import { registerUpgradeCommand } from "./upgrade.js";
 
-const VERSION = "0.10.0"; // x-release-please-version
+const VERSION = "0.11.0"; // x-release-please-version
 
 async function main(argv: string[]): Promise<void> {
   const program = new Command();
