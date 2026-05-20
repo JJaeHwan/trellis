@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.11.0](https://github.com/JJaeHwan/trellis/compare/v0.10.0...v0.11.0) (2026-05-20)
+
+
+### Features
+
+* **cmd:** add 'trellis upgrade' command ([6c3bf02](https://github.com/JJaeHwan/trellis/commit/6c3bf025328edbbe9c3934e338681d3bccce0897))
+* **doctor:** add upgrade-pending rule ([111472c](https://github.com/JJaeHwan/trellis/commit/111472cb5024eb87973514ea9519e06fae9a2eda))
+* **upgrader:** introduce trellis upgrade service + migration manifest system ([76984dc](https://github.com/JJaeHwan/trellis/commit/76984dc00487adb38ffa9165ba0735da194a2063))
+
 ## [0.10.0](https://github.com/JJaeHwan/trellis/compare/v0.9.0...v0.10.0) (2026-05-19)
 
 

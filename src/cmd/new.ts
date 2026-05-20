@@ -19,7 +19,7 @@ import {
 import { matchPlaybooks } from "../service/matcher/index.js";
 import { scaffold } from "../service/scaffolder/index.js";
 
-const TRELLIS_VERSION = "0.10.0"; // x-release-please-version
+const TRELLIS_VERSION = "0.11.0"; // x-release-please-version
 
 interface NewOptions {
   dryRun?: boolean;
