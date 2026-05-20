@@ -45,7 +45,7 @@ Layer 1: config     (설정 로드 — 우선순위 상세는 § 5 참조)
 Layer 2: domain     (Interview / Playbook / ProjectSpec 등 순수 모델)
 Layer 3: external   (파일 시스템, 번들 리소스 접근 — repository 역할)
 Layer 4: service    (interview / matcher / generator / validator / doctor / scaffolder / fragment)
-Layer 5: cmd        (서브커맨드 엔트리 — new / add / check / doctor / hello)
+Layer 5: cmd        (서브커맨드 엔트리 — new / add / list / upgrade / check / doctor / hello)
 ```
 
 ### 의존성 규칙
@@ -90,10 +90,11 @@ service/
 
 ## 4. CLI 규칙 (cli-tool.md 준수)
 
-- **서브커맨드**: `new` / `add` / `list` / `check` / `doctor` / `hello`
+- **서브커맨드**: `new` / `add` / `list` / `upgrade` / `check` / `doctor` / `hello`
   - `new <dir>` — 인터뷰 후 플레이북 매칭, 새 프로젝트 트리 생성 + `.trellis/spec.json` 기록. `--json` 옵션 시 stdout=결과 단일 라인 JSON (`{ ok, command, projectName, playbookId, matchMode, created, trellisVersion }`) / stderr=인터뷰 프롬프트와 매칭 요약 (UNIX 파이프 친화)
   - `add [type] [name]` — 기존 trellis 프로젝트(=`.trellis/spec.json` 보유)에 fragment 추가. 새 파일은 insert-only, 충돌 시 fail-fast / `--force` 로 덮어쓰기, fragment `meta.json` 의 dependencies 는 `package.json` 에 JSON merge, `patches` 는 풀바디의 block-style slot marker (`// trellis:slot:<name>:start/end`) 사이에 멱등 삽입 (slot 누락 시 fail-fast, `--force` 무관). `--json` 옵션 시 stdout=결과 JSON 단일 라인 / stderr=진행 로그 (UNIX 파이프 친화), `--verbose` 로 멱등 skip entry 도 stderr 노출. 모든 `HarnessError` 메시지에는 `→ <다음 명령 예시>` 형식의 actionable hint 가 포함된다 (slot 누락 / 파일 충돌 / spec.json 부재 등)
   - `list [type]` — 현재 플레이북에서 사용 가능한 fragment 타입 목록 출력 (목록 모드) 또는 특정 타입 상세 출력 (상세 모드). `--json` 옵션으로 구조화 출력 지원
+  - `upgrade [targetDir]` — 기존 trellis 프로젝트를 최신 버전으로 마이그레이션. `resources/migrations/<from>-to-<to>.json` manifest 를 인접 minor 단계별 순차 적용 (slot 삽입 등). `--dry-run` 으로 변경 없이 적용 계획 미리보기, `--json` 으로 stdout 단일 라인 JSON 결과 출력, `--force` 로 git working tree dirty 상태 강제 진행. 완료 시 `spec.trellisVersion` 자동 갱신. git working tree clean 검사 기본 수행
   - `check <dir>` — 계층 규칙 위반 탐지
   - `doctor <dir>` — 문서-코드 일관성 점검
 - **stdin/stdout 1등 시민** — 파이프 친화적
@@ -187,3 +188,4 @@ service/
 - Fragment 카탈로그 확장(P11): b2b-saas 풀바디에 `_fragments/form/` (Form 컴포넌트 + Server Action + Zod 한 묶음) 과 `_fragments/admin/` (CRUD 페이지 = page + Table + Filter + actions, `admin-items` + `breadcrumb` 2슬롯 동시 multi-slot patch) 가 추가됨. 풀바디에는 `src/lib/nav-items.ts` 의 `admin-items` 슬롯과 `src/lib/breadcrumb-map.ts` (신규) 의 `breadcrumb` 슬롯이 미리 심어져 있고, 풀바디 자체 `.dependency-cruiser.cjs` 가 fragment 결과의 계층 규칙을 검증한다. doctor `handlebars-token-valid` 규칙이 `.hbs` 토큰을 사전 검증. 본체(cli-tool) 적용 대상 없음.
 - Fragment 카탈로그 확장(P12): cli-tool 풀바디에 `_fragments/command/` (commander 서브커맨드 + index.ts imports/commands 2슬롯 multi-slot patch) 과 `_fragments/service-module/` (src/service/<name>/ 서브패키지 4파일, patches 없음) 가 추가됨. cli-tool 본체 dogfooding 완성 — `trellis add command <name>` 으로 자기 자신에 fragment 적용 가능. doctor `playbook-still-supported` 규칙 (P12 마무리) 으로 알 수 없는 playbookId 감지.
 - 방법론 문서(`harness-engineering/`)의 규칙과 충돌이 생기면 그것은 **문서의 결함** — 문서를 고친다
+- 외부 채택 게이트 완성(P13): `trellis upgrade` 가 도입되어 trellis 진화 비용을 사용자가 아닌 trellis 가 흡수한다. `resources/migrations/<from>-to-<to>.json` migration manifest 가 minor release 별 변경 (신규 slot marker / 신규 필수 파일) 을 선언하고, upgrade 가 인접 minor 만 순차 적용한다. doctor `upgrade-pending` 규칙 (P13 마무리) 이 minor 차이 시 안내. **L5 진입 게이트 — 공공시스템 채택 가능**.

@@ -11,7 +11,7 @@
  ┌─────────────────────────────────────────────────┐
  │  trellis (Node.js CLI, 오프라인)            │
  │                                                 │
- │  L5 cmd/       new · add · list · check · doctor · hello │
+ │  L5 cmd/       new · add · list · upgrade · check · doctor · hello │
  │     │                                           │
  │  L4 service/   interview · matcher · generator  │
  │     │          · scaffolder · validator         │
@@ -74,13 +74,15 @@ src/
 │   ├── scaffolder/   # `new` 오케스트레이션 + `.trellis/spec.json` 직렬화
 │   ├── validator/    # `check` — 계층 규칙 검사
 │   ├── doctor/       # `doctor` — 문서-코드 일관성 검사
-│   └── fragment/     # `add` — fragment 로드/렌더 + package.json dep merge
+│   ├── fragment/     # `add` — fragment 로드/렌더 + package.json dep merge
+│   └── upgrader/     # 버전 마이그레이션 (`trellis upgrade`) — manifest 로더 + applier + git 상태 검사
 │
 └── cmd/              # L5 — commander 엔트리
     ├── index.ts      # 메인 엔트리 (bin)
     ├── new.ts
     ├── add.ts        # `trellis add [type] [name]`
     ├── list.ts       # `trellis list [type]` — fragment 목록/상세/JSON (P12)
+    ├── upgrade.ts    # `trellis upgrade [targetDir]` — migration manifest 순차 적용 (P13)
     ├── check.ts
     ├── doctor.ts
     └── hello.ts      # P0 sanity check용
@@ -111,6 +113,9 @@ resources/
 │                               # ai-rag-platform: api, page
 │                               # cli-tool: command (imports+commands 2슬롯 multi-slot patch),
 │                               #           service-module (src/service/<name>/ 4파일, patches 없음)
+├── migrations/
+│   ├── schema.json            # migration manifest JSON schema (검증용)
+│   └── 0.9.0-to-0.10.0.json  # 인접 minor 마이그레이션 — cli-tool imports+commands 슬롯 삽입 + spec.trellisVersion 갱신
 └── playbooks/
     ├── cli-tool.json          # 매처 입력 — 기계 판독용 스펙
     ├── cli-tool.meta.json     # 원본 MD 경로 + 버전 기록
@@ -247,6 +252,34 @@ cmd/list.ts
 - **상세 모드** (`trellis list <type>`) — 해당 fragment 의 `meta.json` 설명 + patches 정보 상세 출력
 - **`--json`** — 두 모드 모두 stdout 단일 라인 JSON 지원 (UNIX 파이프 친화)
 
+### 3.4 `trellis upgrade [targetDir]` 흐름
+
+```
+[사용자]
+  ↓  trellis upgrade ./my-project   (또는 현재 디렉토리)
+cmd/upgrade.ts
+  ↓  파싱 (commander) + `.trellis/spec.json` 존재 가드
+service/upgrader/git-status
+  ↓  git working tree clean 검사 (--force 없으면 dirty 시 fail-fast)
+service/upgrader/manifest-loader
+  ↓  spec.trellisVersion → 현재 버전 간 인접 minor 경로 탐색
+  ↓  resources/migrations/<from>-to-<to>.json 순차 로드
+service/upgrader/applier
+  ↓  각 manifest 의 steps 순차 적용 (slot 삽입, 파일 추가 등)
+  ↓  --dry-run: 실제 변경 없이 적용 계획 출력
+  ↓  멱등성: 이미 적용된 step 은 silent skip
+service/upgrader/orchestrator
+  ↓  spec.trellisVersion 자동 갱신 (최신 버전으로)
+  ↓  --json: stdout 단일 라인 JSON 결과 / stderr 진행 로그
+[완료 메시지]
+```
+
+- **`--dry-run`** — 파일 미변경, 적용 예정 step 목록만 출력 (자동화 사전 검토용)
+- **`--json`** — stdout 단일 라인 JSON (`{ ok, command, from, to, steps: { applied, skipped } }`), stderr 진행 로그
+- **`--force`** — git working tree dirty 상태에서도 강제 진행
+- **인접 minor 전용** — 0.9.0→0.10.0→0.11.0 처럼 한 단계씩 순차 적용 (건너뜀 금지)
+- **오프라인** — 네트워크 없이 번들된 `resources/migrations/` 만 사용
+
 ### 3.3 `trellis check <dir>` 흐름
 
 ```
@@ -374,6 +407,7 @@ interface ProjectSpec {
 - `trellis doctor` 의 `trellis-version-compat` 규칙 (P10) — 대상 프로젝트의 `.trellis/spec.json.trellisVersion` 이 현재 실행 중인 trellis 와 semver minor 단위로 호환되는지 검사. major 가 다르면 warning, spec.json 부재 시 no-op
 - `trellis doctor` 의 `handlebars-token-valid` 규칙 (P11) — 번들 `resources/templates/` 하위 모든 `.hbs` 파일을 스캔하여, 사용된 `{{token}}` / `{{helper arg}}` 가 컨텍스트 (풀바디 = `GeneratorContext`, fragment = `FragmentContext`) 에 정의된 키/헬퍼인지 검증. 풀바디·fragment 별로 허용 키가 분리되어 있고, 미정의 토큰 (오탈자, 신규 fragment 의 컨텍스트 누락) 을 사전 차단
 - `trellis doctor` 의 `playbook-still-supported` 규칙 (P12) — 대상 프로젝트의 `.trellis/spec.json.playbookId` 가 현재 번들된 playbooks/ 에 존재하는지 검사. 알 수 없는 playbookId 를 가진 프로젝트를 조기 탐지하여 `add` / `check` 실패 전 경고
+- `trellis doctor` 의 `upgrade-pending` 규칙 (P13) — 대상 프로젝트의 `.trellis/spec.json.trellisVersion` 이 현재 trellis minor 버전보다 낮을 때 `info` severity 로 `trellis upgrade` 실행을 안내. spec.json 부재 시 no-op
 - 설정 파일(`~/.config/trellis/`)에 비밀값 저장 금지
 
 ---
@@ -417,3 +451,4 @@ Node.js ≥ 20, OS: macOS / Linux (Windows 는 Phase 2+ 검증).
 - P10 (2026-05-19): b2b-saas model + service fragment, multi-slot patch 검증, trellis add --json, actionable errors, doctor trellis-version-compat
 - P11 (2026-05-19): b2b-saas form + admin fragment (multi-slot patch), admin-items + breadcrumb slot 인프라, trellis new --json, 풀바디 dep-cruiser, doctor handlebars-token-valid
 - P12 (2026-05-19): trellis list 추가 (목록·상세·--json), cli-tool _fragments/command (imports+commands 2슬롯 multi-slot patch) + _fragments/service-module (src/service/<name>/ 4파일), doctor playbook-still-supported, actionable error 일관성 마무리
+- P13 (2026-05-19): trellis upgrade 신설 (migration manifest 시스템, cmd + service/upgrader/), doctor upgrade-pending 규칙, L5 진입 게이트 (공공시스템 채택 가능 상태)

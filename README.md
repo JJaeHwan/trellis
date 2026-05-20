@@ -33,6 +33,7 @@ npx @woghks096/trellis new my-project
 trellis new <dir>           # Interview → match playbook → scaffold + .trellis/spec.json
 trellis add <type> <name>   # Add a fragment (idempotent, multi-slot patch)
 trellis list [type]         # Browse available fragments (--json for scripting)
+trellis upgrade [dir]       # Migrate project to the latest trellis (slot inserts + spec.json bump)
 trellis check <dir>         # Detect layered-architecture violations
 trellis doctor <dir>        # Check doc / code / playbook consistency
 ```
@@ -51,7 +52,7 @@ Predictable quality matters most when you code with AI agents. Instead of asking
 
 **v0.10.0** — daily-driver maturity (L4 graduated)
 
-P0–P12 complete: scaffolding, interview, generator, validator, doctor, `trellis add` (fragment + multi-slot patch), `trellis list` (list / detail / `--json`), cli-tool dogfooding fragments (`command` + `service-module`). All commands include `--json`, actionable error hints, and doctor 5-rules.
+P0–P13 complete: scaffolding, interview, generator, validator, doctor, `trellis add` (fragment + multi-slot patch), `trellis list` (list / detail / `--json`), cli-tool dogfooding fragments (`command` + `service-module`), `trellis upgrade` (migration manifest, idempotent slot inserts, `--dry-run`/`--force`). All commands include `--json`, actionable error hints, and doctor 6-rules.
 
 `release-please` automates version bumps on `feat:`/`fix:` commits, including version-constant sync via `extra-files`.
 

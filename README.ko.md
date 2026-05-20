@@ -13,6 +13,7 @@ $ trellis add command greet     # cli-tool: commander 서브커맨드 추가 + i
 $ trellis add api users         # 기존 프로젝트에 fragment 추가 (필요 시 사이드바 등 기존 파일에 멱등 patch 적용)
 $ trellis add model Invoice     # Prisma 모델 + Zod + Repository 한 묶음 추가 (b2b-saas)
 $ trellis add admin Invoice     # CRUD 페이지 (Table + Filter + actions) + 사이드바/breadcrumb 자동 등록 (b2b-saas)
+$ trellis upgrade [dir]         # 프로젝트를 최신 trellis 버전으로 마이그레이션 (slot 삽입 + spec.json 버전 갱신)
 $ trellis check .               # 계층 규칙 위반 탐지
 $ trellis doctor .              # 문서-코드 일관성 점검
 ```
@@ -48,7 +49,7 @@ AI 에이전트와 함께 프로젝트를 만들 때 **예측 가능한 품질**
 
 ✅ **Released v0.10.0** ([npm](https://www.npmjs.com/package/@woghks096/trellis)) — **L4 (매일 쓰는 도구) 졸업**
 
-P0~P12 완료: 스캐폴딩 / 인터뷰 / 생성기 / 검증기 / 닥터 / `trellis add` (fragment + multi-slot patch) / `trellis list` (목록·상세·`--json`) / cli-tool 자기 적용 fragments (`command` + `service-module`). 모든 명령에 `--json` 옵션, actionable error hints, doctor 5규칙.
+P0~P13 완료: 스캐폴딩 / 인터뷰 / 생성기 / 검증기 / 닥터 / `trellis add` (fragment + multi-slot patch) / `trellis list` (목록·상세·`--json`) / cli-tool 자기 적용 fragments (`command` + `service-module`) / `trellis upgrade` (migration manifest, 멱등 slot 삽입, `--dry-run`/`--force`). 모든 명령에 `--json` 옵션, actionable error hints, doctor 6규칙.
 release-please 가 main 으로의 `feat:`/`fix:` 커밋을 추적해 자동 release PR 을 만든다 (`extra-files` 로 버전 상수 3곳도 자동 동기화).
 로드맵은 [`docs/plans/`](docs/plans/).
 
