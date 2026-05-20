@@ -7,6 +7,7 @@ import { registerDoctorCommand } from "./doctor.js";
 import { registerHelloCommand } from "./hello.js";
 import { registerListCommand } from "./list.js";
 import { registerNewCommand } from "./new.js";
+import { registerUpgradeCommand } from "./upgrade.js";
 
 const VERSION = "0.10.0"; // x-release-please-version
 
@@ -24,6 +25,7 @@ async function main(argv: string[]): Promise<void> {
   registerCheckCommand(program);
   registerDoctorCommand(program);
   registerListCommand(program);
+  registerUpgradeCommand(program);
 
   await program.parseAsync(argv);
 }
