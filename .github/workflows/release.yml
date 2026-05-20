@@ -44,4 +44,11 @@ jobs:
       - run: npm run dep:check
       - run: npm run build
 
+      # Trusted Publishing's OIDC token exchange is bundled with npm CLI
+      # v11.5+. setup-node@v6 + Node 20 ships an older npm, so pin latest.
+      - name: Upgrade npm for Trusted Publishing OIDC exchange
+        run: |
+          npm install -g npm@latest
+          npm --version
+
       - run: npm publish --provenance --access public
