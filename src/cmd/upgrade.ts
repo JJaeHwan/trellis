@@ -5,7 +5,7 @@ import { runUpgrade, type UpgradeOptions, type UpgradeResult } from "../service/
 import { realFsAdapter, type FsAdapter } from "../external/fs-adapter.js";
 
 // 현재 trellis 버전 — release-please extra-files 로 자동 동기화
-const TRELLIS_VERSION = "0.12.1"; // x-release-please-version
+const TRELLIS_VERSION = "0.13.0"; // x-release-please-version
 
 interface CliOptions {
   dryRun?: boolean;
