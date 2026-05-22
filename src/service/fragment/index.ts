@@ -6,3 +6,7 @@ export { patchPackageJson } from "./dep-patcher.js";
 export type { PatchResult as DepPatchResult } from "./dep-patcher.js";
 export { applyPatches } from "./patcher.js";
 export type { PatchResult } from "./patcher.js";
+export { removePatches } from "./un-patcher.js";
+export type { UnPatchResult } from "./un-patcher.js";
+export { removeFiles } from "./un-writer.js";
+export type { UnWriteResult } from "./un-writer.js";
