@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.13.0](https://github.com/JJaeHwan/trellis/compare/v0.12.1...v0.13.0) (2026-05-22)
+
+
+### Features
+
+* **cmd:** add 'trellis remove' command ([7323afa](https://github.com/JJaeHwan/trellis/commit/7323afa16b86ef6b5219f7031806c9a1c8a64051))
+* **cmd:** wire add/upgrade with astPatches ([cd9d998](https://github.com/JJaeHwan/trellis/commit/cd9d998fa175a671e5eb4c1dfbf4c838ceaf0ce5))
+* **doctor:** add ast-patch-target-valid rule ([d22853d](https://github.com/JJaeHwan/trellis/commit/d22853d6e9be364d71e14a8988767d829a3ec516))
+* **external:** add deleteFile to FsAdapter interface ([a0fbb51](https://github.com/JJaeHwan/trellis/commit/a0fbb51c55fb0d08c894ae60324382646aea976d))
+* **fragment:** add un-patcher and un-writer for fragment removal ([316c7d3](https://github.com/JJaeHwan/trellis/commit/316c7d38ec888b5fb7055d13fe3350282ffff017))
+* **fragment:** introduce AST-based patch system (ts-morph) ([d46d943](https://github.com/JJaeHwan/trellis/commit/d46d9431910d868c4fa3edaf8fead4ba787a065a))
+
 ## [0.12.1](https://github.com/JJaeHwan/trellis/compare/v0.12.0...v0.12.1) (2026-05-20)
 
 
