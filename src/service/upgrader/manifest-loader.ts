@@ -2,6 +2,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ExitCode, HarnessError } from "../../common/errors/index.js";
 import { realFsAdapter, type FsAdapter } from "../../external/fs-adapter.js";
+import type { AstPatchDecl, AstPatchSelector } from "../fragment/types.js";
 import type { MigrationManifest, PlaybookMigration, AddSlotAction, AddFileAction } from "./types.js";
 
 function getMigrationsRoot(): string {
@@ -136,7 +137,11 @@ function parsePlaybookMigration(raw: unknown, playbookId: string): PlaybookMigra
   }
 
   const obj = raw as Record<string, unknown>;
-  const result: { addSlots?: readonly AddSlotAction[]; addFiles?: readonly AddFileAction[] } = {};
+  const result: {
+    addSlots?: readonly AddSlotAction[];
+    addFiles?: readonly AddFileAction[];
+    astPatches?: readonly AstPatchDecl[];
+  } = {};
 
   if (obj["addSlots"] !== undefined) {
     if (!Array.isArray(obj["addSlots"])) {
@@ -162,7 +167,86 @@ function parsePlaybookMigration(raw: unknown, playbookId: string): PlaybookMigra
     );
   }
 
+  if (obj["astPatches"] !== undefined) {
+    if (!Array.isArray(obj["astPatches"])) {
+      throw new HarnessError(
+        `migration manifest invalid: playbook "${playbookId}".astPatches must be an array`,
+        ExitCode.GeneralError,
+      );
+    }
+    result.astPatches = obj["astPatches"].map((item: unknown, i: number) =>
+      parseAstPatchActionForMigration(item, playbookId, i),
+    );
+  }
+
   return result;
+}
+
+function parseAstPatchActionForMigration(
+  raw: unknown,
+  playbookId: string,
+  index: number,
+): AstPatchDecl {
+  const context = `playbook "${playbookId}".astPatches[${index}]`;
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new HarnessError(
+      `migration manifest invalid: ${context} must be an object`,
+      ExitCode.GeneralError,
+    );
+  }
+  const obj = raw as Record<string, unknown>;
+
+  if (typeof obj["file"] !== "string" || obj["file"].length === 0) {
+    throw new HarnessError(
+      `migration manifest invalid: ${context}.file must be a non-empty string`,
+      ExitCode.GeneralError,
+    );
+  }
+  if (typeof obj["entryKey"] !== "string" || obj["entryKey"].length === 0) {
+    throw new HarnessError(
+      `migration manifest invalid: ${context}.entryKey must be a non-empty string`,
+      ExitCode.GeneralError,
+    );
+  }
+  if (typeof obj["content"] !== "string") {
+    throw new HarnessError(
+      `migration manifest invalid: ${context}.content must be a string`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  const selRaw = obj["selector"];
+  if (selRaw === null || typeof selRaw !== "object" || Array.isArray(selRaw)) {
+    throw new HarnessError(
+      `migration manifest invalid: ${context}.selector must be an object`,
+      ExitCode.GeneralError,
+    );
+  }
+  const sel = selRaw as Record<string, unknown>;
+  let selector: AstPatchSelector;
+  if (sel["type"] === "arrayPush" && typeof sel["target"] === "string") {
+    selector = { type: "arrayPush", target: sel["target"] };
+  } else if (
+    sel["type"] === "objectKey" &&
+    typeof sel["target"] === "string" &&
+    typeof sel["key"] === "string"
+  ) {
+    selector = { type: "objectKey", target: sel["target"], key: sel["key"] };
+  } else if (sel["type"] === "importAdd" && typeof sel["from"] === "string") {
+    selector = { type: "importAdd", from: sel["from"] };
+  } else {
+    throw new HarnessError(
+      `migration manifest invalid: ${context}.selector has unknown shape`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  return {
+    file: obj["file"],
+    selector,
+    entryKey: obj["entryKey"],
+    content: obj["content"],
+  };
 }
 
 function parseAddSlotAction(raw: unknown, playbookId: string, index: number): AddSlotAction {

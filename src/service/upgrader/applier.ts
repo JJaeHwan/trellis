@@ -1,6 +1,8 @@
 import { resolve } from "node:path";
 import { ExitCode, HarnessError } from "../../common/errors/index.js";
 import type { FsAdapter } from "../../external/fs-adapter.js";
+import { applyAstPatches } from "../fragment/ast-patcher.js";
+import type { AstPatchDecl } from "../fragment/types.js";
 import type { MigrationManifest, AddSlotAction, AddFileAction } from "./types.js";
 
 export interface ApplyResult {
@@ -8,6 +10,8 @@ export interface ApplyResult {
   readonly slotsSkipped: readonly { file: string; slot: string }[];
   readonly filesAdded: readonly string[];
   readonly filesSkipped: readonly string[];
+  readonly astPatchesApplied: readonly AstPatchDecl[];
+  readonly astPatchesSkipped: readonly AstPatchDecl[];
 }
 
 /**
@@ -24,13 +28,22 @@ export function applyManifest(
 ): ApplyResult {
   const playbookMig = manifest.playbooks[playbookId];
   if (playbookMig === undefined) {
-    return { slotsAdded: [], slotsSkipped: [], filesAdded: [], filesSkipped: [] };
+    return {
+      slotsAdded: [],
+      slotsSkipped: [],
+      filesAdded: [],
+      filesSkipped: [],
+      astPatchesApplied: [],
+      astPatchesSkipped: [],
+    };
   }
 
   const slotsAdded: { file: string; slot: string }[] = [];
   const slotsSkipped: { file: string; slot: string }[] = [];
   const filesAdded: string[] = [];
   const filesSkipped: string[] = [];
+  let astPatchesApplied: readonly AstPatchDecl[] = [];
+  let astPatchesSkipped: readonly AstPatchDecl[] = [];
 
   // slot 삽입
   for (const action of playbookMig.addSlots ?? []) {
@@ -98,7 +111,26 @@ export function applyManifest(
     filesAdded.push(action.path);
   }
 
-  return { slotsAdded, slotsSkipped, filesAdded, filesSkipped };
+  // astPatches 적용 (dryRun 시 실제 변경 없이 결과만 계산)
+  if (playbookMig.astPatches !== undefined && playbookMig.astPatches.length > 0) {
+    if (dryRun) {
+      // dryRun 에서는 적용 자체 안 함 — applied 목록만 제공 (실제 멱등 검사 없이 모두 candidate)
+      astPatchesApplied = playbookMig.astPatches;
+    } else {
+      const r = applyAstPatches(projectDir, playbookMig.astPatches, fs);
+      astPatchesApplied = r.applied;
+      astPatchesSkipped = r.skipped;
+    }
+  }
+
+  return {
+    slotsAdded,
+    slotsSkipped,
+    filesAdded,
+    filesSkipped,
+    astPatchesApplied,
+    astPatchesSkipped,
+  };
 }
 
 // Re-export types used by tests / consumers

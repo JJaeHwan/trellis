@@ -43,6 +43,9 @@ function makeFakeFs(files: Record<string, string>): FsAdapter {
       }
       return [...entries];
     },
+    deleteFile(path: string): void {
+      delete store[path];
+    },
   };
 }
 
@@ -128,6 +131,9 @@ function makeMigrationsFs(
         return Object.keys(manifests);
       }
       return base.listDir(path);
+    },
+    deleteFile(path: string): void {
+      base.deleteFile(path);
     },
   };
 }

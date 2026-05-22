@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { ExitCode, HarnessError } from "../../common/errors/index.js";
 import { realFsAdapter, type FsAdapter } from "../../external/fs-adapter.js";
 import { loadSpec } from "../../external/spec-loader.js";
+import type { AstPatchDecl } from "../fragment/types.js";
 import { applyManifest } from "./applier.js";
 import { loadManifest } from "./manifest-loader.js";
 import { realGitChecker, type GitChecker } from "./git-status.js";
@@ -20,6 +21,8 @@ export interface UpgradeResult {
   readonly slotsSkipped: readonly { file: string; slot: string }[];
   readonly filesAdded: readonly string[];
   readonly filesSkipped: readonly string[];
+  readonly astPatchesApplied: readonly AstPatchDecl[];
+  readonly astPatchesSkipped: readonly AstPatchDecl[];
   readonly dryRun: boolean;
 }
 
@@ -96,6 +99,8 @@ export function runUpgrade(
       slotsSkipped: [],
       filesAdded: [],
       filesSkipped: [],
+      astPatchesApplied: [],
+      astPatchesSkipped: [],
       dryRun: options.dryRun ?? false,
     };
   }
@@ -114,6 +119,8 @@ export function runUpgrade(
   const allSlotsSkipped: { file: string; slot: string }[] = [];
   const allFilesAdded: string[] = [];
   const allFilesSkipped: string[] = [];
+  const allAstPatchesApplied: AstPatchDecl[] = [];
+  const allAstPatchesSkipped: AstPatchDecl[] = [];
 
   let cursorMinor = specSemver.minor;
   while (cursorMinor < curSemver.minor) {
@@ -133,6 +140,8 @@ export function runUpgrade(
     allSlotsSkipped.push(...result.slotsSkipped);
     allFilesAdded.push(...result.filesAdded);
     allFilesSkipped.push(...result.filesSkipped);
+    allAstPatchesApplied.push(...result.astPatchesApplied);
+    allAstPatchesSkipped.push(...result.astPatchesSkipped);
 
     cursorMinor++;
   }
@@ -151,6 +160,8 @@ export function runUpgrade(
     slotsSkipped: allSlotsSkipped,
     filesAdded: allFilesAdded,
     filesSkipped: allFilesSkipped,
+    astPatchesApplied: allAstPatchesApplied,
+    astPatchesSkipped: allAstPatchesSkipped,
     dryRun: options.dryRun ?? false,
   };
 }

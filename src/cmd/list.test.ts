@@ -47,6 +47,9 @@ function makeFakeAdapter(files: FakeFiles): FsAdapter {
       }
       return [...entries];
     },
+    deleteFile(path: string): void {
+      delete store[path];
+    },
   };
 }
 
@@ -181,6 +184,9 @@ function makeFakeFs(opts: {
         }
       }
       return base.listDir(path);
+    },
+    deleteFile(path: string): void {
+      base.deleteFile(path);
     },
   };
 }

@@ -6,13 +6,20 @@ import { ExitCode, HarnessError } from "../common/errors/index.js";
 import type { ProjectSpec } from "../domain/index.js";
 import { listFragmentTypes, loadSpec } from "../external/index.js";
 import {
+  applyAstPatches,
   applyPatches,
   buildFragmentContext,
   loadFragment,
   patchPackageJson,
   renderFragment,
 } from "../service/fragment/index.js";
-import type { DepPatchResult, PatchResult } from "../service/fragment/index.js";
+import type {
+  AstPatchDecl,
+  AstPatchResult,
+  AstPatchSelector,
+  DepPatchResult,
+  PatchResult,
+} from "../service/fragment/index.js";
 import { registerHelpers } from "../service/generator/handlebars-helpers.js";
 import { realFsAdapter, type FsAdapter } from "../external/fs-adapter.js";
 import type { VirtualTree } from "../domain/index.js";
@@ -39,6 +46,10 @@ export type AddJsonResult = {
   readonly patches?: {
     readonly applied: readonly { file: string; slot: string; entryKey: string }[];
     readonly skipped: readonly { file: string; slot: string; entryKey: string }[];
+  };
+  readonly astPatches?: {
+    readonly applied: readonly { file: string; selector: AstPatchSelector; entryKey: string }[];
+    readonly skipped: readonly { file: string; selector: AstPatchSelector; entryKey: string }[];
   };
   readonly dependencies?: {
     readonly added: readonly string[];
@@ -170,6 +181,18 @@ async function runAddInner(
     }
   }
 
+  // 8b. astPatches 적용 (P15)
+  let astPatchResult: AstPatchResult | undefined;
+  if (fragment.meta.astPatches !== undefined && fragment.meta.astPatches.length > 0) {
+    const renderedAstPatches = fragment.meta.astPatches.map((p) =>
+      renderAstPatch(p, context),
+    );
+    astPatchResult = applyAstPatches(projectDir, renderedAstPatches, fs);
+    if (!jsonMode) {
+      printAstPatchResult(astPatchResult, options.verbose ?? false);
+    }
+  }
+
   // 9. 성공 출력
   if (jsonMode) {
     const created = tree.map((f) => f.path);
@@ -186,6 +209,19 @@ async function runAddInner(
         }))
       : [];
 
+    const astApplied = (astPatchResult?.applied ?? []).map((p) => ({
+      file: p.file,
+      selector: p.selector,
+      entryKey: p.entryKey,
+    }));
+    const astSkipped = options.verbose
+      ? (astPatchResult?.skipped ?? []).map((p) => ({
+          file: p.file,
+          selector: p.selector,
+          entryKey: p.entryKey,
+        }))
+      : [];
+
     const result: AddJsonResult = {
       ok: true,
       command: "add",
@@ -196,6 +232,10 @@ async function runAddInner(
       patches: {
         applied: patchApplied,
         skipped: patchSkipped,
+      },
+      astPatches: {
+        applied: astApplied,
+        skipped: astSkipped,
       },
       ...(depResult !== undefined
         ? {
@@ -359,4 +399,58 @@ function printPatchResult(result: PatchResult, verbose: boolean): void {
       process.stdout.write(`  - ${p.file} (slot: ${p.slot}, entry: ${p.entryKey})\n`);
     }
   }
+}
+
+function describeSelector(sel: AstPatchSelector): string {
+  if (sel.type === "arrayPush") return `arrayPush:${sel.target}`;
+  if (sel.type === "objectKey") return `objectKey:${sel.target}.${sel.key}`;
+  return `importAdd:${sel.from}`;
+}
+
+function printAstPatchResult(result: AstPatchResult, verbose: boolean): void {
+  if (result.applied.length > 0) {
+    process.stdout.write("AST-patched files:\n");
+    for (const p of result.applied) {
+      process.stdout.write(
+        `  - ${p.file} (${describeSelector(p.selector)}, entry: ${p.entryKey})\n`,
+      );
+    }
+  }
+  if (verbose && result.skipped.length > 0) {
+    process.stdout.write("Skipped AST patches (already applied):\n");
+    for (const p of result.skipped) {
+      process.stdout.write(
+        `  - ${p.file} (${describeSelector(p.selector)}, entry: ${p.entryKey})\n`,
+      );
+    }
+  }
+}
+
+function renderAstPatch(
+  p: AstPatchDecl,
+  context: Record<string, string>,
+): AstPatchDecl {
+  return {
+    file: renderHandlebars(p.file, context),
+    selector: renderSelector(p.selector, context),
+    entryKey: renderHandlebars(p.entryKey, context),
+    content: renderHandlebars(p.content, context),
+  };
+}
+
+function renderSelector(
+  sel: AstPatchSelector,
+  context: Record<string, string>,
+): AstPatchSelector {
+  if (sel.type === "arrayPush") {
+    return { type: "arrayPush", target: renderHandlebars(sel.target, context) };
+  }
+  if (sel.type === "objectKey") {
+    return {
+      type: "objectKey",
+      target: renderHandlebars(sel.target, context),
+      key: renderHandlebars(sel.key, context),
+    };
+  }
+  return { type: "importAdd", from: renderHandlebars(sel.from, context) };
 }

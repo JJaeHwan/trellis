@@ -1,3 +1,5 @@
+import type { AstPatchDecl } from "../fragment/types.js";
+
 /**
  * Migration Manifest — 한 minor 버전 간 변경 사항 선언.
  *
@@ -13,6 +15,7 @@ export interface MigrationManifest {
 export interface PlaybookMigration {
   readonly addSlots?: readonly AddSlotAction[];
   readonly addFiles?: readonly AddFileAction[];
+  readonly astPatches?: readonly AstPatchDecl[];
 }
 
 /**

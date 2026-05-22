@@ -1,5 +1,6 @@
 import type { Command } from "commander";
 import { ExitCode, HarnessError } from "../common/errors/index.js";
+import type { AstPatchSelector } from "../service/fragment/index.js";
 import { runUpgrade, type UpgradeOptions, type UpgradeResult } from "../service/upgrader/index.js";
 import { realFsAdapter, type FsAdapter } from "../external/fs-adapter.js";
 
@@ -22,6 +23,16 @@ export type UpgradeJsonResult = {
   readonly slotsSkipped?: readonly { file: string; slot: string }[];
   readonly filesAdded?: readonly string[];
   readonly filesSkipped?: readonly string[];
+  readonly astPatchesApplied?: readonly {
+    file: string;
+    selector: AstPatchSelector;
+    entryKey: string;
+  }[];
+  readonly astPatchesSkipped?: readonly {
+    file: string;
+    selector: AstPatchSelector;
+    entryKey: string;
+  }[];
   readonly dryRun?: boolean;
   readonly error?: { code: number; message: string; hint?: string };
 };
@@ -94,6 +105,16 @@ function printResult(result: UpgradeResult, jsonMode: boolean): void {
       slotsSkipped: result.slotsSkipped,
       filesAdded: result.filesAdded,
       filesSkipped: result.filesSkipped,
+      astPatchesApplied: result.astPatchesApplied.map((p) => ({
+        file: p.file,
+        selector: p.selector,
+        entryKey: p.entryKey,
+      })),
+      astPatchesSkipped: result.astPatchesSkipped.map((p) => ({
+        file: p.file,
+        selector: p.selector,
+        entryKey: p.entryKey,
+      })),
       dryRun: result.dryRun,
     };
     process.stdout.write(JSON.stringify(output) + "\n");
@@ -129,15 +150,35 @@ function printResult(result: UpgradeResult, jsonMode: boolean): void {
         process.stdout.write(`  ${f}\n`);
       }
     }
+    if (result.astPatchesApplied.length > 0) {
+      process.stdout.write("AST patches applied:\n");
+      for (const p of result.astPatchesApplied) {
+        process.stdout.write(`  ${p.file} (${describeSelector(p.selector)})\n`);
+      }
+    }
+    if (result.astPatchesSkipped.length > 0) {
+      process.stdout.write("AST patches already applied (skipped):\n");
+      for (const p of result.astPatchesSkipped) {
+        process.stdout.write(`  ${p.file} (${describeSelector(p.selector)})\n`);
+      }
+    }
     if (
       result.slotsAdded.length === 0 &&
       result.filesAdded.length === 0 &&
       result.slotsSkipped.length === 0 &&
-      result.filesSkipped.length === 0
+      result.filesSkipped.length === 0 &&
+      result.astPatchesApplied.length === 0 &&
+      result.astPatchesSkipped.length === 0
     ) {
       process.stdout.write("Already up to date.\n");
     }
   }
+}
+
+function describeSelector(sel: AstPatchSelector): string {
+  if (sel.type === "arrayPush") return `arrayPush:${sel.target}`;
+  if (sel.type === "objectKey") return `objectKey:${sel.target}.${sel.key}`;
+  return `importAdd:${sel.from}`;
 }
 
 export { ExitCode };
