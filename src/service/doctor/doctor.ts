@@ -1,4 +1,5 @@
 import { resolve } from "node:path";
+import { checkAstPatchTargetValid } from "./rules/ast-patch-target-valid.js";
 import { checkHandlebarsTokenValid } from "./rules/handlebars-token-valid.js";
 import { checkPatchMarkerPresence } from "./rules/patch-marker-presence.js";
 import { checkPlaybookStillSupported } from "./rules/playbook-still-supported.js";
@@ -18,6 +19,7 @@ export function runDoctor(targetDir: string): DoctorReport {
     ...checkPlaybookStillSupported(absDir),
     ...checkUpgradePending(absDir),
     ...checkHandlebarsTokenValid(),
+    ...checkAstPatchTargetValid(),
   ];
   return { targetDir: absDir, findings };
 }
