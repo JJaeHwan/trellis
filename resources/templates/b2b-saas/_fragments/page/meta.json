@@ -7,5 +7,13 @@
       "entryKey": "/{{nameKebab}}",
       "content": "{ label: \"{{namePascal}}\", href: \"/{{nameKebab}}\" },"
     }
+  ],
+  "astPatches": [
+    {
+      "file": "src/lib/breadcrumb-map.ts",
+      "selector": { "type": "objectKey", "target": "breadcrumbMap", "key": "/{{nameKebab}}" },
+      "entryKey": "/{{nameKebab}}",
+      "content": "\"{{namePascal}}\""
+    }
   ]
 }

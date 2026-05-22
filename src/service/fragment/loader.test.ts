@@ -49,6 +49,9 @@ function makeFakeAdapter(files: FakeFs): FsAdapter {
       }
       return [...entries];
     },
+    deleteFile(path: string): void {
+      delete files[path];
+    },
   };
 }
 
@@ -134,6 +137,7 @@ function makeFakeAdapterForFragment(opts: {
       }
       return [...entries];
     },
+    deleteFile(_path: string): void { /* no-op */ },
   };
 }
 
@@ -405,5 +409,187 @@ describe("loadFragment", () => {
 
     expect(fragment.meta.patches).toHaveLength(1);
     expect(fragment.meta.patches![0]!.content).toBe("");
+  });
+
+  // ---------------------------------------------------------------------------
+  // astPatches field (P15)
+  // ---------------------------------------------------------------------------
+
+  it("loadFragment_noAstPatchesField_astPatchesIsUndefined", () => {
+    const fs = makeFakeAdapterForFragment({
+      playbookId: "b2b-saas",
+      type: "page",
+      meta: JSON.stringify({ description: "No astPatches" }),
+    });
+    const fragment = loadFragment("b2b-saas", "page", fs);
+    expect(fragment.meta.astPatches).toBeUndefined();
+  });
+
+  it("loadFragment_arrayPushSelector_parsed", () => {
+    const meta = JSON.stringify({
+      description: "AST patch arrayPush",
+      astPatches: [
+        {
+          file: "src/lib/nav-items.ts",
+          selector: { type: "arrayPush", target: "navItems" },
+          entryKey: "reports",
+          content: "{ label: 'Reports' }",
+        },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({ playbookId: "b2b-saas", type: "page", meta });
+    const fragment = loadFragment("b2b-saas", "page", fs);
+    expect(fragment.meta.astPatches).toHaveLength(1);
+    expect(fragment.meta.astPatches![0]!.selector).toEqual({ type: "arrayPush", target: "navItems" });
+  });
+
+  it("loadFragment_objectKeySelector_parsed", () => {
+    const meta = JSON.stringify({
+      description: "AST patch objectKey",
+      astPatches: [
+        {
+          file: "src/lib/breadcrumb.ts",
+          selector: { type: "objectKey", target: "breadcrumbMap", key: "reports" },
+          entryKey: "reports",
+          content: "'Reports'",
+        },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({ playbookId: "b2b-saas", type: "page", meta });
+    const fragment = loadFragment("b2b-saas", "page", fs);
+    expect(fragment.meta.astPatches![0]!.selector).toEqual({
+      type: "objectKey",
+      target: "breadcrumbMap",
+      key: "reports",
+    });
+  });
+
+  it("loadFragment_importAddSelector_parsed", () => {
+    const meta = JSON.stringify({
+      description: "AST patch importAdd",
+      astPatches: [
+        {
+          file: "src/cmd/index.ts",
+          selector: { type: "importAdd", from: "./reports.js" },
+          entryKey: "reports",
+          content: "import { reports } from './reports.js';",
+        },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({ playbookId: "b2b-saas", type: "page", meta });
+    const fragment = loadFragment("b2b-saas", "page", fs);
+    expect(fragment.meta.astPatches![0]!.selector).toEqual({
+      type: "importAdd",
+      from: "./reports.js",
+    });
+  });
+
+  it("loadFragment_astPatchMissingFile_throws", () => {
+    const meta = JSON.stringify({
+      description: "Bad AST patch",
+      astPatches: [
+        {
+          selector: { type: "arrayPush", target: "navItems" },
+          entryKey: "x",
+          content: "y",
+        },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({ playbookId: "b2b-saas", type: "page", meta });
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrow(HarnessError);
+  });
+
+  it("loadFragment_astPatchUnknownSelectorType_throws", () => {
+    const meta = JSON.stringify({
+      description: "Bad selector",
+      astPatches: [
+        {
+          file: "src/x.ts",
+          selector: { type: "wrong" },
+          entryKey: "x",
+          content: "y",
+        },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({ playbookId: "b2b-saas", type: "page", meta });
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrow(HarnessError);
+  });
+
+  it("loadFragment_astPatchArrayPushMissingTarget_throws", () => {
+    const meta = JSON.stringify({
+      description: "Missing target",
+      astPatches: [
+        {
+          file: "src/x.ts",
+          selector: { type: "arrayPush" },
+          entryKey: "x",
+          content: "y",
+        },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({ playbookId: "b2b-saas", type: "page", meta });
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrow(HarnessError);
+  });
+
+  it("loadFragment_astPatchObjectKeyMissingKey_throws", () => {
+    const meta = JSON.stringify({
+      description: "Missing key",
+      astPatches: [
+        {
+          file: "src/x.ts",
+          selector: { type: "objectKey", target: "m" },
+          entryKey: "x",
+          content: "y",
+        },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({ playbookId: "b2b-saas", type: "page", meta });
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrow(HarnessError);
+  });
+
+  it("loadFragment_astPatchImportAddMissingFrom_throws", () => {
+    const meta = JSON.stringify({
+      description: "Missing from",
+      astPatches: [
+        {
+          file: "src/x.ts",
+          selector: { type: "importAdd" },
+          entryKey: "x",
+          content: "y",
+        },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({ playbookId: "b2b-saas", type: "page", meta });
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrow(HarnessError);
+  });
+
+  it("loadFragment_astPatchesNotArray_throws", () => {
+    const meta = JSON.stringify({
+      description: "Not an array",
+      astPatches: { not: "array" },
+    });
+    const fs = makeFakeAdapterForFragment({ playbookId: "b2b-saas", type: "page", meta });
+    expect(() => loadFragment("b2b-saas", "page", fs)).toThrow(HarnessError);
+  });
+
+  it("loadFragment_astPatchesCoexistWithPatches_bothParsed", () => {
+    const meta = JSON.stringify({
+      description: "Both",
+      patches: [
+        { file: "src/lib/a.ts", slot: "a", entryKey: "x", content: "y" },
+      ],
+      astPatches: [
+        {
+          file: "src/lib/b.ts",
+          selector: { type: "arrayPush", target: "items" },
+          entryKey: "x",
+          content: "y",
+        },
+      ],
+    });
+    const fs = makeFakeAdapterForFragment({ playbookId: "b2b-saas", type: "page", meta });
+    const fragment = loadFragment("b2b-saas", "page", fs);
+    expect(fragment.meta.patches).toHaveLength(1);
+    expect(fragment.meta.astPatches).toHaveLength(1);
   });
 });

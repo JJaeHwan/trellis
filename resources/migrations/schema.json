@@ -34,6 +34,47 @@
                 "content": { "type": "string" }
               }
             }
+          },
+          "astPatches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["file", "selector", "entryKey", "content"],
+              "properties": {
+                "file": { "type": "string" },
+                "entryKey": { "type": "string" },
+                "content": { "type": "string" },
+                "selector": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": ["type", "target"],
+                      "properties": {
+                        "type": { "const": "arrayPush" },
+                        "target": { "type": "string" }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["type", "target", "key"],
+                      "properties": {
+                        "type": { "const": "objectKey" },
+                        "target": { "type": "string" },
+                        "key": { "type": "string" }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["type", "from"],
+                      "properties": {
+                        "type": { "const": "importAdd" },
+                        "from": { "type": "string" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
       }

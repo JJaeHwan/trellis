@@ -3,7 +3,13 @@ import { fileURLToPath } from "node:url";
 import { ExitCode, HarnessError } from "../../common/errors/index.js";
 import type { Template } from "../../domain/index.js";
 import { realFsAdapter, type FsAdapter } from "../../external/fs-adapter.js";
-import type { Fragment, FragmentMeta, PatchDecl } from "./types.js";
+import type {
+  AstPatchDecl,
+  AstPatchSelector,
+  Fragment,
+  FragmentMeta,
+  PatchDecl,
+} from "./types.js";
 
 const META_FILENAME = "meta.json";
 
@@ -109,12 +115,14 @@ function parseFragmentMeta(raw: unknown, playbookId: string, type: string): Frag
   const dependencies = parseOptionalStringRecord(obj["dependencies"], "dependencies");
   const devDependencies = parseOptionalStringRecord(obj["devDependencies"], "devDependencies");
   const patches = parsePatches(obj["patches"], playbookId, type);
+  const astPatches = parseAstPatches(obj["astPatches"], playbookId, type);
 
   return {
     description: obj["description"],
     ...(dependencies !== undefined && { dependencies }),
     ...(devDependencies !== undefined && { devDependencies }),
     ...(patches !== undefined && { patches }),
+    ...(astPatches !== undefined && { astPatches }),
   };
 }
 
@@ -217,4 +225,136 @@ function parsePatchDecl(
     entryKey: obj["entryKey"],
     content: obj["content"],
   };
+}
+
+function parseAstPatches(
+  value: unknown,
+  playbookId: string,
+  type: string,
+): readonly AstPatchDecl[] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (!Array.isArray(value)) {
+    throw new HarnessError(
+      `invalid astPatch declaration in ${playbookId}/${type}/meta.json: 'astPatches' must be an array`,
+      ExitCode.GeneralError,
+    );
+  }
+  return value.map((item, index) =>
+    parseAstPatchDecl(item, playbookId, type, index),
+  );
+}
+
+function parseAstPatchDecl(
+  item: unknown,
+  playbookId: string,
+  type: string,
+  index: number,
+): AstPatchDecl {
+  const context = `${playbookId}/${type}/meta.json`;
+
+  if (item === null || typeof item !== "object" || Array.isArray(item)) {
+    throw new HarnessError(
+      `invalid astPatch declaration in ${context}: item[${index}] must be an object`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  const obj = item as Record<string, unknown>;
+
+  // file
+  if (typeof obj["file"] !== "string" || obj["file"].length === 0) {
+    throw new HarnessError(
+      `invalid astPatch declaration in ${context}: file`,
+      ExitCode.GeneralError,
+    );
+  }
+  if (obj["file"].startsWith("/")) {
+    throw new HarnessError(
+      `invalid astPatch declaration in ${context}: file`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  // entryKey
+  if (typeof obj["entryKey"] !== "string" || obj["entryKey"].length === 0) {
+    throw new HarnessError(
+      `invalid astPatch declaration in ${context}: entryKey`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  // content (empty allowed but meaningless — keep parity with marker patches)
+  if (typeof obj["content"] !== "string") {
+    throw new HarnessError(
+      `invalid astPatch declaration in ${context}: content`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  // selector
+  const selector = parseAstPatchSelector(obj["selector"], context, index);
+
+  return {
+    file: obj["file"],
+    selector,
+    entryKey: obj["entryKey"],
+    content: obj["content"],
+  };
+}
+
+function parseAstPatchSelector(
+  value: unknown,
+  context: string,
+  index: number,
+): AstPatchSelector {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new HarnessError(
+      `invalid astPatch declaration in ${context}: item[${index}].selector must be an object`,
+      ExitCode.GeneralError,
+    );
+  }
+
+  const obj = value as Record<string, unknown>;
+  const selType = obj["type"];
+
+  if (selType === "arrayPush") {
+    if (typeof obj["target"] !== "string" || obj["target"].length === 0) {
+      throw new HarnessError(
+        `invalid astPatch declaration in ${context}: item[${index}].selector.target must be a non-empty string`,
+        ExitCode.GeneralError,
+      );
+    }
+    return { type: "arrayPush", target: obj["target"] };
+  }
+
+  if (selType === "objectKey") {
+    if (typeof obj["target"] !== "string" || obj["target"].length === 0) {
+      throw new HarnessError(
+        `invalid astPatch declaration in ${context}: item[${index}].selector.target must be a non-empty string`,
+        ExitCode.GeneralError,
+      );
+    }
+    if (typeof obj["key"] !== "string" || obj["key"].length === 0) {
+      throw new HarnessError(
+        `invalid astPatch declaration in ${context}: item[${index}].selector.key must be a non-empty string`,
+        ExitCode.GeneralError,
+      );
+    }
+    return { type: "objectKey", target: obj["target"], key: obj["key"] };
+  }
+
+  if (selType === "importAdd") {
+    if (typeof obj["from"] !== "string" || obj["from"].length === 0) {
+      throw new HarnessError(
+        `invalid astPatch declaration in ${context}: item[${index}].selector.from must be a non-empty string`,
+        ExitCode.GeneralError,
+      );
+    }
+    return { type: "importAdd", from: obj["from"] };
+  }
+
+  throw new HarnessError(
+    `invalid astPatch declaration in ${context}: item[${index}].selector.type must be one of "arrayPush" | "objectKey" | "importAdd"`,
+    ExitCode.GeneralError,
+  );
 }
