@@ -39,6 +39,9 @@ function makeFs(
     listDir(_path) {
       return ["cli-tool", "b2b-saas", "ai-rag-platform"];
     },
+    deleteFile(_path) {
+      // no-op
+    },
   };
 }
 

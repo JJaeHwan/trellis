@@ -4,6 +4,7 @@ import {
   readdirSync,
   readFileSync,
   statSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 
@@ -19,6 +20,8 @@ export interface FsAdapter {
   readFile(path: string): string;
   /** 디렉토리 내 항목 이름 목록 반환 (재귀 X). */
   listDir(path: string): readonly string[];
+  /** 파일을 삭제한다. 파일이 존재하지 않으면 에러를 던진다. */
+  deleteFile(path: string): void;
 }
 
 export const realFsAdapter: FsAdapter = {
@@ -44,5 +47,8 @@ export const realFsAdapter: FsAdapter = {
   },
   listDir(path) {
     return readdirSync(path);
+  },
+  deleteFile(path) {
+    unlinkSync(path);
   },
 };

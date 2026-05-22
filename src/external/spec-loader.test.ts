@@ -60,6 +60,9 @@ class FakeFs implements FsAdapter {
     }
     return [...entries];
   }
+  deleteFile(path: string): void {
+    this.files.delete(path);
+  }
 }
 
 const VALID_SPEC = {

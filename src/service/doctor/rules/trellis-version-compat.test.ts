@@ -33,6 +33,9 @@ function makeFs(files: Record<string, string>): FsAdapter {
     listDir(_path) {
       return [];
     },
+    deleteFile(_path) {
+      // no-op
+    },
   };
 }
 

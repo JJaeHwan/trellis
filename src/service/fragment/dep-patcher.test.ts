@@ -37,6 +37,9 @@ function makeMemFs(files: Record<string, string> = {}): FsAdapter & {
     listDir(_path: string): readonly string[] {
       return [];
     },
+    deleteFile(path: string): void {
+      delete store[path];
+    },
   };
 }
 

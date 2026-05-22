@@ -47,6 +47,9 @@ function makeFakeFs(files: Record<string, string>): FsAdapter & { written: Recor
       }
       return [...entries];
     },
+    deleteFile(path: string): void {
+      delete store[path];
+    },
   };
 }
 
