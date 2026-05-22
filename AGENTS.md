@@ -28,8 +28,8 @@
 
 ## 현재 상태
 
-- **Phase**: P0~P13 완료 (스캐폴딩 / 인터뷰 / 생성기 / 검증기 / 닥터 / `trellis add` / `trellis list` / `trellis upgrade`)
-- **성숙도**: L4 (매일 쓰는 도구) 졸업, L5 (공공시스템) 진입 준비
+- **Phase**: P0~P15 완료 (스캐폴딩 / 인터뷰 / 생성기 / 검증기 / 닥터 / `trellis add` / `trellis list` / `trellis upgrade` / `trellis remove` / AST patch)
+- **성숙도**: L5 (공공시스템) 진입 — 외부 채택 실적 누적 단계. L6 (외부 fragment 카탈로그) enabling tech 완비
 - **npm**: [@woghks096/trellis](https://www.npmjs.com/package/@woghks096/trellis) — Trusted Publishing (OIDC + sigstore provenance)
-- **다음 마일스톤**: P14 `trellis remove` (add 의 역연산), 외부 fragment 카탈로그 (L6)
+- **다음 마일스톤**: L6 외부 fragment 카탈로그 (npm 패키지 형태), 다언어 풀바디 (Go / Python, P16+)
 - **완료된 플랜**: `docs/plans/completed/` 참조

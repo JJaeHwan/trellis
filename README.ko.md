@@ -13,6 +13,7 @@ $ trellis add command greet     # cli-tool: commander 서브커맨드 추가 + i
 $ trellis add api users         # 기존 프로젝트에 fragment 추가 (필요 시 사이드바 등 기존 파일에 멱등 patch 적용)
 $ trellis add model Invoice     # Prisma 모델 + Zod + Repository 한 묶음 추가 (b2b-saas)
 $ trellis add admin Invoice     # CRUD 페이지 (Table + Filter + actions) + 사이드바/breadcrumb 자동 등록 (b2b-saas)
+$ trellis remove admin Invoice  # add 의 역연산 — CRUD 페이지 및 자동 등록 항목 제거 (b2b-saas)
 $ trellis upgrade [dir]         # 프로젝트를 최신 trellis 버전으로 마이그레이션 (slot 삽입 + spec.json 버전 갱신)
 $ trellis check .               # 계층 규칙 위반 탐지
 $ trellis doctor .              # 문서-코드 일관성 점검
@@ -32,6 +33,17 @@ trellis --version
 ```bash
 npx @woghks096/trellis new my-project
 ```
+
+---
+
+## Fragment Patch 시스템
+
+Fragment 가 프로젝트를 확장하는 두 가지 방식:
+
+- **Block-style marker** — 템플릿이 `// trellis:slot:<name>:start/end` 블록을 선언하고, fragment entry 가 그 사이에 멱등 삽입 (entryKey 기준).
+- **AST patch** (P15) — `astPatches` 를 가진 fragment 는 ts-morph selector (`arrayPush`, `objectKey`, `importAdd`) 로 marker 없이 export 갱신. 기본 템플릿 수정 없이 외부 fragment 카탈로그 구현 가능.
+
+두 메커니즘이 공존 — 하나의 fragment 가 marker + AST patch 를 함께 가질 수 있음.
 
 ---
 

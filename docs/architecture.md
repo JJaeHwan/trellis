@@ -11,7 +11,7 @@
  ┌─────────────────────────────────────────────────┐
  │  trellis (Node.js CLI, 오프라인)            │
  │                                                 │
- │  L5 cmd/       new · add · list · upgrade · check · doctor · hello │
+ │  L5 cmd/       new · add · remove · list · upgrade · check · doctor · hello │
  │     │                                           │
  │  L4 service/   interview · matcher · generator  │
  │     │          · scaffolder · validator         │
@@ -75,12 +75,16 @@ src/
 │   ├── validator/    # `check` — 계층 규칙 검사
 │   ├── doctor/       # `doctor` — 문서-코드 일관성 검사
 │   ├── fragment/     # `add` — fragment 로드/렌더 + package.json dep merge
+│   │   ├── ast-parser.ts     # ts-morph 추상화 (P15)
+│   │   ├── ast-patcher.ts    # AST 기반 add (P15)
+│   │   └── ast-un-patcher.ts # AST 기반 remove (P15)
 │   └── upgrader/     # 버전 마이그레이션 (`trellis upgrade`) — manifest 로더 + applier + git 상태 검사
 │
 └── cmd/              # L5 — commander 엔트리
     ├── index.ts      # 메인 엔트리 (bin)
     ├── new.ts
     ├── add.ts        # `trellis add [type] [name]`
+    ├── remove.ts     # `trellis remove [type] [name]` — add 의 역연산 (P14)
     ├── list.ts       # `trellis list [type]` — fragment 목록/상세/JSON (P12)
     ├── upgrade.ts    # `trellis upgrade [targetDir]` — migration manifest 순차 적용 (P13)
     ├── check.ts
@@ -452,3 +456,5 @@ Node.js ≥ 20, OS: macOS / Linux (Windows 는 Phase 2+ 검증).
 - P11 (2026-05-19): b2b-saas form + admin fragment (multi-slot patch), admin-items + breadcrumb slot 인프라, trellis new --json, 풀바디 dep-cruiser, doctor handlebars-token-valid
 - P12 (2026-05-19): trellis list 추가 (목록·상세·--json), cli-tool _fragments/command (imports+commands 2슬롯 multi-slot patch) + _fragments/service-module (src/service/<name>/ 4파일), doctor playbook-still-supported, actionable error 일관성 마무리
 - P13 (2026-05-19): trellis upgrade 신설 (migration manifest 시스템, cmd + service/upgrader/), doctor upgrade-pending 규칙, L5 진입 게이트 (공공시스템 채택 가능 상태)
+- P14 (2026-05-21): trellis remove 신설 (cmd/remove.ts + service/fragment/un-patcher + un-writer + FsAdapter.deleteFile), add ↔ remove 라운드트립 E2E, deps 보존 정책 (Q-C C1)
+- P15 (2026-05-21): AST 기반 patch 시스템 (ts-morph + selector 3종 arrayPush/objectKey/importAdd), marker 시스템과 옵트인 공존, doctor ast-patch-target-valid 규칙, migration manifest astPatches 확장, L6 외부 fragment 카탈로그 enabling tech

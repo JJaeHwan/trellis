@@ -32,6 +32,7 @@ npx @woghks096/trellis new my-project
 ```bash
 trellis new <dir>           # Interview → match playbook → scaffold + .trellis/spec.json
 trellis add <type> <name>   # Add a fragment (idempotent, multi-slot patch)
+trellis remove <type> <name> # Remove a fragment (reverse of add, idempotent)
 trellis list [type]         # Browse available fragments (--json for scripting)
 trellis upgrade [dir]       # Migrate project to the latest trellis (slot inserts + spec.json bump)
 trellis check <dir>         # Detect layered-architecture violations
@@ -39,6 +40,15 @@ trellis doctor <dir>        # Check doc / code / playbook consistency
 ```
 
 All commands support `--json` for AI / script consumption.
+
+## Fragment Patches
+
+Fragments extend your project in two ways:
+
+- **Block-style markers** — Templates declare `// trellis:slot:<name>:start/end` blocks where fragment entries are inserted (idempotent by `entryKey`).
+- **AST patches** (P15) — Fragments with `astPatches` use ts-morph selectors (`arrayPush`, `objectKey`, `importAdd`) to update exports without markers. Enables external fragment catalogs without modifying base templates.
+
+Both mechanisms coexist — a single fragment can use markers + AST patches together.
 
 ## Why
 
