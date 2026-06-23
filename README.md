@@ -60,7 +60,7 @@ Predictable quality matters most when you code with AI agents. Instead of asking
 
 ## Status
 
-**v0.12.1** on npm — L5 maturity (public-adoption gate), L6 enabling tech in place.
+**Published on npm** (current version: see the badge at the top) — L5 maturity (public-adoption gate), L6 enabling tech in place.
 
 P0–P15 complete: scaffolding, interview, generator, validator, doctor, `trellis add` (fragment + multi-slot patch), `trellis remove` (idempotent reverse of add — round-trips), `trellis list` (list / detail / `--json`), `trellis upgrade` (migration manifest, idempotent slot inserts, `--dry-run`/`--force`), cli-tool dogfooding fragments (`command` + `service-module`), and the ts-morph **AST patch system** (`arrayPush` / `objectKey` / `importAdd` — marker-free, coexists with block markers). All commands include `--json`, actionable error hints, and doctor 8-rules.
 
