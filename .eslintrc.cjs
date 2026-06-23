@@ -39,6 +39,7 @@ module.exports = {
     "node_modules",
     "coverage",
     "*.cjs",
+    "scripts/**",
     "fixtures/**",
     "resources/**",
   ],

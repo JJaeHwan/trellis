@@ -49,6 +49,7 @@
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings=0",
     "dep:check": "depcruise --config .dependency-cruiser.cjs src",
+    "manifests:ensure": "node scripts/ensure-migration-manifests.mjs",
     "hello": "node dist/cmd/index.js hello",
     "prepublishOnly": "npm run typecheck && npm run lint && npm run test && npm run build"
   },
