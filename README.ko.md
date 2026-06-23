@@ -59,12 +59,10 @@ AI 에이전트와 함께 프로젝트를 만들 때 **예측 가능한 품질**
 
 ## 상태
 
-✅ **npm v0.10.0** ([npm](https://www.npmjs.com/package/@woghks096/trellis)) — **L4 (매일 쓰는 도구) 졸업**
+✅ **npm v0.12.1** ([npm](https://www.npmjs.com/package/@woghks096/trellis)) — **L5 (공공시스템 채택 게이트) 진입, L6 enabling tech 완비**
 
-> v0.11.0 은 GitHub 에는 태그됐지만 npm 까지 도달하지 못했습니다 — "Mini Shai-Hulud" 공급망 공격 대응으로 npm 이 granular write token 을 회수한 시점이 publish workflow 와 겹쳐 발생한 일회성 사건입니다. publish 파이프라인은 이제 Trusted Publishing (OIDC + provenance) 으로 전환됐고, P13 의 모든 작업은 다음 release 에 함께 게시됩니다.
-
-P0~P13 완료: 스캐폴딩 / 인터뷰 / 생성기 / 검증기 / 닥터 / `trellis add` (fragment + multi-slot patch) / `trellis list` (목록·상세·`--json`) / cli-tool 자기 적용 fragments (`command` + `service-module`) / `trellis upgrade` (migration manifest, 멱등 slot 삽입, `--dry-run`/`--force`). 모든 명령에 `--json` 옵션, actionable error hints, doctor 6규칙.
-release-please 가 main 으로의 `feat:`/`fix:` 커밋을 추적해 자동 release PR 을 만든다 (`extra-files` 로 버전 상수 3곳도 자동 동기화).
+P0~P15 완료: 스캐폴딩 / 인터뷰 / 생성기 / 검증기 / 닥터 / `trellis add` (fragment + multi-slot patch) / `trellis remove` (add 의 멱등 역연산 — 라운드트립) / `trellis list` (목록·상세·`--json`) / `trellis upgrade` (migration manifest, 멱등 slot 삽입, `--dry-run`/`--force`) / cli-tool 자기 적용 fragments (`command` + `service-module`) / ts-morph 기반 **AST patch 시스템** (`arrayPush` / `objectKey` / `importAdd` — marker 불필요, block marker 와 공존). 모든 명령에 `--json` 옵션, actionable error hints, doctor 8규칙.
+release-please 가 main 으로의 `feat:`/`fix:` 커밋을 추적해 자동 release PR 을 만들고 (`extra-files` 로 버전 상수 동기화), npm publish 는 Trusted Publishing (OIDC + provenance) 으로 게시된다.
 로드맵은 [`docs/plans/`](docs/plans/).
 
 ---
