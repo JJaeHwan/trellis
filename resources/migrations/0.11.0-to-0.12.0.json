@@ -1,0 +1,6 @@
+{
+  "from": "0.11.0",
+  "to": "0.12.0",
+  "note": "No-op migration. trellis 0.12.0 only refined a doctor hint (upgrade-pending --dry-run suggestion); the 0.12.x line shipped `trellis remove` (P14) and the AST patch system (P15), all tool-side. No scaffolded fullbody gained slots or required files between 0.11.0 and 0.12.0 — the only resources/templates change was b2b-saas/_fragments/page/meta.json, an on-demand fragment applied by `trellis add`, not part of any existing project's tree. Exists to keep the upgrade chain contiguous.",
+  "playbooks": {}
+}
