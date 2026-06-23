@@ -1,16 +1,18 @@
 import { resolve } from "node:path";
 import { input, select } from "@inquirer/prompts";
-import Handlebars from "handlebars";
 import type { Command } from "commander";
 import { ExitCode, HarnessError } from "../common/errors/index.js";
 import { listFragmentTypes, loadSpec } from "../external/index.js";
 import {
   buildFragmentContext,
+  describeSelector,
   loadFragment,
   removeAstPatches,
   removeFiles,
   removePatches,
+  renderAstPatch,
   renderFragment,
+  renderPatch,
 } from "../service/fragment/index.js";
 import type {
   AstPatchDecl,
@@ -19,7 +21,6 @@ import type {
   UnPatchResult,
   UnWriteResult,
 } from "../service/fragment/index.js";
-import { registerHelpers } from "../service/generator/handlebars-helpers.js";
 import { realFsAdapter, type FsAdapter } from "../external/fs-adapter.js";
 import { realGitChecker, type GitChecker } from "../service/upgrader/git-status.js";
 import type { VirtualTree } from "../domain/index.js";
@@ -62,14 +63,6 @@ export type RemoveJsonResult = {
   };
 };
 
-/**
- * Handlebars 컴파일러 (helpers 등록) — 단순 문자열 치환용.
- */
-function renderHandlebars(template: string, context: Record<string, string>): string {
-  const hbs = Handlebars.create();
-  registerHelpers(hbs);
-  return hbs.compile(template, { noEscape: true })(context);
-}
 
 export function registerRemoveCommand(program: Command): void {
   program
@@ -173,12 +166,7 @@ async function runRemoveInner(
   // 7. patches Handlebars 렌더
   const renderedPatches =
     fragment.meta.patches !== undefined && fragment.meta.patches.length > 0
-      ? fragment.meta.patches.map((p) => ({
-          file: renderHandlebars(p.file, context),
-          slot: p.slot,
-          entryKey: renderHandlebars(p.entryKey, context),
-          content: renderHandlebars(p.content, context),
-        }))
+      ? fragment.meta.patches.map((p) => renderPatch(p, context))
       : [];
 
   // 7b. astPatches Handlebars 렌더 (P15)
@@ -263,40 +251,6 @@ async function runRemoveInner(
   }
 }
 
-function renderAstPatch(
-  p: AstPatchDecl,
-  context: Record<string, string>,
-): AstPatchDecl {
-  return {
-    file: renderHandlebars(p.file, context),
-    selector: renderSelector(p.selector, context),
-    entryKey: renderHandlebars(p.entryKey, context),
-    content: renderHandlebars(p.content, context),
-  };
-}
-
-function renderSelector(
-  sel: AstPatchSelector,
-  context: Record<string, string>,
-): AstPatchSelector {
-  if (sel.type === "arrayPush") {
-    return { type: "arrayPush", target: renderHandlebars(sel.target, context) };
-  }
-  if (sel.type === "objectKey") {
-    return {
-      type: "objectKey",
-      target: renderHandlebars(sel.target, context),
-      key: renderHandlebars(sel.key, context),
-    };
-  }
-  return { type: "importAdd", from: renderHandlebars(sel.from, context) };
-}
-
-function describeSelector(sel: AstPatchSelector): string {
-  if (sel.type === "arrayPush") return `arrayPush:${sel.target}`;
-  if (sel.type === "objectKey") return `objectKey:${sel.target}.${sel.key}`;
-  return `importAdd:${sel.from}`;
-}
 
 function printDryRun(
   tree: VirtualTree,

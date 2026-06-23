@@ -2,17 +2,7 @@ import type { FsAdapter } from "../../../external/fs-adapter.js";
 import { realFsAdapter } from "../../../external/fs-adapter.js";
 import { loadSpec } from "../../../external/spec-loader.js";
 import type { Finding } from "../types.js";
-
-/**
- * 현재 trellis 버전.
- *
- * cmd/new.ts 와 동일한 방식으로 하드코딩한다.
- * package.json 을 런타임에 읽으면 번들 후 경로가 달라질 수 있고,
- * import.meta 로 주입하려면 tsup config 변경이 필요하다.
- * release-please 가 `// x-release-please-version` 마커로 자동 갱신한다
- * (release-please-config.json 의 extra-files 참조).
- */
-const CURRENT_TRELLIS_VERSION = "0.14.0"; // x-release-please-version
+import { TRELLIS_VERSION as CURRENT_TRELLIS_VERSION } from "../../../common/version.js";
 
 interface SemVer {
   readonly major: number;

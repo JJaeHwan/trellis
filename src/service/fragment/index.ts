@@ -25,3 +25,10 @@ export {
   findExportedVariable,
   findImportSpecifier,
 } from "./ast-parser.js";
+export {
+  renderHandlebars,
+  renderPatch,
+  renderSelector,
+  renderAstPatch,
+  describeSelector,
+} from "./patch-render.js";

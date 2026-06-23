@@ -1,6 +1,5 @@
 import { resolve } from "node:path";
 import { input, select } from "@inquirer/prompts";
-import Handlebars from "handlebars";
 import type { Command } from "commander";
 import { ExitCode, HarnessError } from "../common/errors/index.js";
 import type { ProjectSpec } from "../domain/index.js";
@@ -9,18 +8,19 @@ import {
   applyAstPatches,
   applyPatches,
   buildFragmentContext,
+  describeSelector,
   loadFragment,
   patchPackageJson,
+  renderAstPatch,
   renderFragment,
+  renderPatch,
 } from "../service/fragment/index.js";
 import type {
-  AstPatchDecl,
   AstPatchResult,
   AstPatchSelector,
   DepPatchResult,
   PatchResult,
 } from "../service/fragment/index.js";
-import { registerHelpers } from "../service/generator/handlebars-helpers.js";
 import { realFsAdapter, type FsAdapter } from "../external/fs-adapter.js";
 import type { VirtualTree } from "../domain/index.js";
 
@@ -62,15 +62,6 @@ export type AddJsonResult = {
     readonly hint?: string;
   };
 };
-
-/**
- * Handlebars 컴파일러 (helpers 등록) — 단순 문자열 치환용.
- */
-function renderHandlebars(template: string, context: Record<string, string>): string {
-  const hbs = Handlebars.create();
-  registerHelpers(hbs);
-  return hbs.compile(template, { noEscape: true })(context);
-}
 
 export function registerAddCommand(program: Command): void {
   program
@@ -169,12 +160,7 @@ async function runAddInner(
   // 8. patches 적용 (fragment.meta.patches 가 있을 때만)
   let patchResult: PatchResult | undefined;
   if (fragment.meta.patches !== undefined && fragment.meta.patches.length > 0) {
-    const renderedPatches = fragment.meta.patches.map((p) => ({
-      file: renderHandlebars(p.file, context),
-      slot: p.slot,
-      entryKey: renderHandlebars(p.entryKey, context),
-      content: renderHandlebars(p.content, context),
-    }));
+    const renderedPatches = fragment.meta.patches.map((p) => renderPatch(p, context));
     patchResult = applyPatches(projectDir, renderedPatches, fs);
     if (!jsonMode) {
       printPatchResult(patchResult, options.verbose ?? false);
@@ -401,12 +387,6 @@ function printPatchResult(result: PatchResult, verbose: boolean): void {
   }
 }
 
-function describeSelector(sel: AstPatchSelector): string {
-  if (sel.type === "arrayPush") return `arrayPush:${sel.target}`;
-  if (sel.type === "objectKey") return `objectKey:${sel.target}.${sel.key}`;
-  return `importAdd:${sel.from}`;
-}
-
 function printAstPatchResult(result: AstPatchResult, verbose: boolean): void {
   if (result.applied.length > 0) {
     process.stdout.write("AST-patched files:\n");
@@ -426,31 +406,3 @@ function printAstPatchResult(result: AstPatchResult, verbose: boolean): void {
   }
 }
 
-function renderAstPatch(
-  p: AstPatchDecl,
-  context: Record<string, string>,
-): AstPatchDecl {
-  return {
-    file: renderHandlebars(p.file, context),
-    selector: renderSelector(p.selector, context),
-    entryKey: renderHandlebars(p.entryKey, context),
-    content: renderHandlebars(p.content, context),
-  };
-}
-
-function renderSelector(
-  sel: AstPatchSelector,
-  context: Record<string, string>,
-): AstPatchSelector {
-  if (sel.type === "arrayPush") {
-    return { type: "arrayPush", target: renderHandlebars(sel.target, context) };
-  }
-  if (sel.type === "objectKey") {
-    return {
-      type: "objectKey",
-      target: renderHandlebars(sel.target, context),
-      key: renderHandlebars(sel.key, context),
-    };
-  }
-  return { type: "importAdd", from: renderHandlebars(sel.from, context) };
-}
