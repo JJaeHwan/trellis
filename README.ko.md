@@ -59,7 +59,7 @@ AI 에이전트와 함께 프로젝트를 만들 때 **예측 가능한 품질**
 
 ## 상태
 
-✅ **npm v0.12.1** ([npm](https://www.npmjs.com/package/@woghks096/trellis)) — **L5 (공공시스템 채택 게이트) 진입, L6 enabling tech 완비**
+✅ **npm 배포 중** (최신 버전은 [상단 배지](https://www.npmjs.com/package/@woghks096/trellis) 참조) — **L5 (공공시스템 채택 게이트) 진입, L6 enabling tech 완비**
 
 P0~P15 완료: 스캐폴딩 / 인터뷰 / 생성기 / 검증기 / 닥터 / `trellis add` (fragment + multi-slot patch) / `trellis remove` (add 의 멱등 역연산 — 라운드트립) / `trellis list` (목록·상세·`--json`) / `trellis upgrade` (migration manifest, 멱등 slot 삽입, `--dry-run`/`--force`) / cli-tool 자기 적용 fragments (`command` + `service-module`) / ts-morph 기반 **AST patch 시스템** (`arrayPush` / `objectKey` / `importAdd` — marker 불필요, block marker 와 공존). 모든 명령에 `--json` 옵션, actionable error hints, doctor 8규칙.
 release-please 가 main 으로의 `feat:`/`fix:` 커밋을 추적해 자동 release PR 을 만들고 (`extra-files` 로 버전 상수 동기화), npm publish 는 Trusted Publishing (OIDC + provenance) 으로 게시된다.
