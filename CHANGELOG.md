@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.14.1](https://github.com/JJaeHwan/trellis/compare/v0.14.0...v0.14.1) (2026-06-23)
+
+
+### Bug Fixes
+
+* **cmd:** consistent --json for check/doctor/hello (single-line + error envelope) ([efdf778](https://github.com/JJaeHwan/trellis/commit/efdf7784c3083da556bf43f43a244afef51c2e31))
+* **doctor:** stop handlebars-token-valid false-positives; assert logger level ([9892155](https://github.com/JJaeHwan/trellis/commit/989215541ea100db4986cc442bf7c4b79ae3e4e7))
+* **playbook:** self-contained b2b form fragment; add ai-rag dep-cruiser ([130b93a](https://github.com/JJaeHwan/trellis/commit/130b93a73eec37d546e9061ccd02a223a2f20a15))
+
 ## [0.14.0](https://github.com/JJaeHwan/trellis/compare/v0.13.0...v0.14.0) (2026-06-23)
 
 

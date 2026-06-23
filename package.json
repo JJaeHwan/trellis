@@ -1,6 +1,6 @@
 {
   "name": "@woghks096/trellis",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "Trellis — CLI scaffolder and validator for the Harness Engineering methodology.",
   "license": "MIT",
   "author": "JJaeHwan",
