@@ -1,0 +1,6 @@
+{
+  "from": "0.13.0",
+  "to": "0.14.0",
+  "note": "No-op migration. trellis 0.14.0 ships upgrade rollback, dry-run fidelity, boundary-aware fragment idempotency, the bundled-resources path fix, and doc sync — all tool-side, with no change to any scaffolded fullbody (no new slots or required files). Exists to keep the upgrade chain contiguous; added ahead of the 0.14.0 release so the version bump does not break the migration-chain guard.",
+  "playbooks": {}
+}
