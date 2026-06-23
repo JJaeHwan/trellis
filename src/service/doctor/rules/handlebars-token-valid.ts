@@ -242,9 +242,26 @@ function isFragmentFile(filePath: string): boolean {
  * - _fragments/ 안 → FragmentContext 허용 키 검증
  * - 그 외 풀바디 → GeneratorContext 허용 키 검증
  */
-export function checkHandlebarsTokenValid(): Finding[] {
+/**
+ * 토큰을 검증할 "루트 컨텍스트 키" 로 정규화한다. 검증 대상이 아니면 undefined.
+ *
+ * - `@index` / `@key` 등 Handlebars data 변수 → 제외
+ * - `this` / `.` (현재 컨텍스트 참조) → 제외
+ * - `../x` / `./x` (부모/현재 경로, #each·#with 블록 내부) → prefix 제거 후 루트
+ * - `answers.useDocker`, `obj/prop` (속성/경로 접근) → 첫 세그먼트(`answers`)만 검증
+ */
+export function rootContextKey(token: string): string | undefined {
+  if (token.startsWith("@")) return undefined; // data variable (@index/@key/…)
+  let t = token;
+  while (t.startsWith("../")) t = t.slice(3);
+  if (t.startsWith("./")) t = t.slice(2);
+  if (t === "this" || t === "." || t === "") return undefined;
+  return t.split(/[./]/)[0];
+}
+
+export function checkHandlebarsTokenValid(rootOverride?: string): Finding[] {
   const findings: Finding[] = [];
-  const templatesRoot = getTemplatesRoot();
+  const templatesRoot = rootOverride ?? getTemplatesRoot();
 
   if (!existsSync(templatesRoot)) {
     return findings;
@@ -289,9 +306,10 @@ export function checkHandlebarsTokenValid(): Finding[] {
             hint: `허용된 헬퍼: ${[...HELPERS].join(", ")}`,
           });
         }
-        // Validate helper argument (context key)
+        // Validate helper argument (context key) — root segment only
         if (token.helperArg !== undefined) {
-          if (!allowedKeys.has(token.helperArg) && !BUILTIN_BLOCK_HELPERS.has(token.helperArg)) {
+          const root = rootContextKey(token.helperArg);
+          if (root !== undefined && !allowedKeys.has(root) && !BUILTIN_BLOCK_HELPERS.has(root)) {
             findings.push({
               ruleId: "handlebars-token-valid",
               severity: "error",
@@ -301,8 +319,9 @@ export function checkHandlebarsTokenValid(): Finding[] {
           }
         }
       } else {
-        // Simple variable: validate against allowed keys
-        if (!allowedKeys.has(token.name) && !BUILTIN_BLOCK_HELPERS.has(token.name)) {
+        // Simple variable: validate root segment (skips this/@data/dotted-subpaths)
+        const root = rootContextKey(token.name);
+        if (root !== undefined && !allowedKeys.has(root) && !BUILTIN_BLOCK_HELPERS.has(root)) {
           findings.push({
             ruleId: "handlebars-token-valid",
             severity: "error",
