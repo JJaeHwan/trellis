@@ -1,11 +1,10 @@
 import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import type { Playbook, PlaybookMeta } from "../domain/index.js";
+import { resolveResourcesDir } from "./resources-root.js";
 
 function getPlaybooksRoot(): string {
-  const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "../../resources/playbooks");
+  return resolveResourcesDir("playbooks");
 }
 
 export const SUPPORTED_PLAYBOOK_IDS = [

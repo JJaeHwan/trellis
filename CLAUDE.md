@@ -41,7 +41,7 @@ CLI 이므로 Web/DB 계층이 없다. `cli-tool.md` 축약형을 따른다.
 
 ```
 Layer 0: common     (타입, 예외, 유틸리티 — 프레임워크 의존 금지)
-Layer 1: config     (설정 로드 — 우선순위 상세는 § 5 참조)
+Layer 1: config     (예약 — 미구현; 향후 설정 우선순위 로더. § 5 참조)
 Layer 2: domain     (Interview / Playbook / ProjectSpec 등 순수 모델)
 Layer 3: external   (파일 시스템, 번들 리소스 접근 — repository 역할)
 Layer 4: service    (interview / matcher / generator / validator / doctor / scaffolder / fragment)
@@ -53,7 +53,7 @@ Layer 5: cmd        (서브커맨드 엔트리 — new / add / list / upgrade / 
 | ID | 규칙 |
 |----|------|
 | DEP-01 | Layer N은 Layer 0..N-1만 import 가능 |
-| DEP-02 | common(L0)은 써드파티 프레임워크 의존 금지 (Node 표준만) |
+| DEP-02 | common(L0)은 써드파티 프레임워크 의존 금지 (Node 표준 + 로깅 인프라 pino 만) |
 | DEP-03 | domain(L2)은 순수 타입/클래스 — I/O 금지 |
 | DEP-04 | external(L3)은 I/O 어댑터 — 비즈니스 로직 금지 |
 | DEP-05 | cmd(L5)는 얇게 — commander 파싱과 service 호출만 |
@@ -107,6 +107,7 @@ service/
   3. 설정 파일 (`~/.config/trellis/config.json`, 존재 시)
   4. 내장 기본값
   → 즉 `flag > env > file > default`. 뒤의 것은 앞이 없을 때만 적용.
+  → **현 시점 미구현 — 예약된 목표 설계.** 현재는 `HARNESS_DEBUG` 만 `src/common/logger` 가 직접 읽는다. 통합 우선순위 로더는 향후 L1(`src/config/`)에 도입한다.
 - **TTY 감지** — 파이프면 컬러/스피너 off
 - stdout에 진행바·컬러 이스케이프 직접 박지 않는다 (`picocolors` + `process.stdout.isTTY`)
 - 사용자 지정 없이 현재 디렉토리에 임의 파일 생성 금지
@@ -116,8 +117,13 @@ service/
 
 ## 5. 설정 규칙
 
-- 설정 위치: `~/.config/trellis/config.json` (선택)
-- 환경변수 접두사: `HARNESS_*` (예: `HARNESS_TEMPLATE_DIR`)
+> **상태: L1 config 계층은 예약(미구현)이다.** 아래는 향후 도입할 목표 설계이며,
+> 현 MVP 는 config 계층 없이 동작한다 — 유일한 런타임 설정 입력은 `HARNESS_DEBUG` 로
+> `src/common/logger` 가 직접 읽는다. `src/config/` 는 `.gitkeep` 로 slot 만 예약돼
+> 있고(dependency-cruiser 의 L1 규칙도 예약 유지), 통합 우선순위 로더 도입 시 채운다.
+
+- 설정 위치(목표): `~/.config/trellis/config.json` (선택)
+- 환경변수 접두사(목표): `HARNESS_*` (예: `HARNESS_TEMPLATE_DIR`)
 - MVP는 설정 파일 없이도 동작해야 함
 
 ---

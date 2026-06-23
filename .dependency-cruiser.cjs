@@ -57,10 +57,13 @@ module.exports = {
     {
       name: "common-no-framework",
       severity: "error",
-      comment: "common(L0)은 프레임워크 의존 금지 (Node 표준 + 최소 인프라만)",
+      comment:
+        "common(L0)은 Node 표준 + 로깅 인프라(pino)만 허용 — 그 외 써드파티 import 금지 (DEP-02). " +
+        "third-party 는 node_modules/ 로 해석되므로 dependencyTypes 로 매칭한다 (^pkg 앵커는 매치 불가).",
       from: { path: "^src/common" },
       to: {
-        path: "^(commander|@inquirer/prompts|handlebars|tsup|vitest)",
+        dependencyTypes: ["npm"],
+        pathNot: "node_modules/pino/",
       },
     },
   ],

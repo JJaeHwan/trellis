@@ -1,6 +1,6 @@
-import { dirname, resolve, sep as pathSep } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve, sep as pathSep } from "node:path";
 import { ExitCode, HarnessError } from "../../common/errors/index.js";
+import { resolveResourcesDir } from "../../external/resources-root.js";
 import type { Template } from "../../domain/index.js";
 import { realFsAdapter, type FsAdapter } from "../../external/fs-adapter.js";
 import type {
@@ -14,8 +14,7 @@ import type {
 const META_FILENAME = "meta.json";
 
 function getFragmentsRoot(): string {
-  const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "../../../resources/templates");
+  return resolveResourcesDir("templates");
 }
 
 function fragmentDir(root: string, playbookId: string, type: string): string {

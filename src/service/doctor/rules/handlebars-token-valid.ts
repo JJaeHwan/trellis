@@ -1,7 +1,7 @@
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import type { Finding } from "../types.js";
+import { resolveResourcesDir } from "../../../external/resources-root.js";
 
 // ---------------------------------------------------------------------------
 // Allowed keys per context type
@@ -72,9 +72,7 @@ const BUILTIN_BLOCK_HELPERS: ReadonlySet<string> = new Set([
 // ---------------------------------------------------------------------------
 
 function getTemplatesRoot(): string {
-  const here = dirname(fileURLToPath(import.meta.url));
-  // src/service/doctor/rules/ → resources/templates/
-  return resolve(here, "../../../../resources/templates");
+  return resolveResourcesDir("templates");
 }
 
 // ---------------------------------------------------------------------------

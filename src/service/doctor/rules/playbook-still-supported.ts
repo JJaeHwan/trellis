@@ -1,6 +1,6 @@
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import type { FsAdapter } from "../../../external/fs-adapter.js";
+import { resolveResourcesDir } from "../../../external/resources-root.js";
 import { realFsAdapter } from "../../../external/fs-adapter.js";
 import { loadSpec } from "../../../external/spec-loader.js";
 import type { Finding } from "../types.js";
@@ -10,8 +10,7 @@ const FALLBACK_SUPPORTED_PLAYBOOKS = ["cli-tool", "b2b-saas", "ai-rag-platform"]
 
 function getSupportedPlaybooks(fs: FsAdapter): readonly string[] {
   try {
-    const here = dirname(fileURLToPath(import.meta.url));
-    const templatesRoot = resolve(here, "../../../../resources/templates");
+    const templatesRoot = resolveResourcesDir("templates");
 
     if (!fs.exists(templatesRoot) || !fs.isDirectory(templatesRoot)) {
       return FALLBACK_SUPPORTED_PLAYBOOKS;

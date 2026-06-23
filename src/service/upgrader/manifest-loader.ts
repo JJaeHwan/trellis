@@ -1,13 +1,12 @@
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { ExitCode, HarnessError } from "../../common/errors/index.js";
 import { realFsAdapter, type FsAdapter } from "../../external/fs-adapter.js";
+import { resolveResourcesDir } from "../../external/resources-root.js";
 import type { AstPatchDecl, AstPatchSelector } from "../fragment/types.js";
 import type { MigrationManifest, PlaybookMigration, AddSlotAction, AddFileAction } from "./types.js";
 
 function getMigrationsRoot(): string {
-  const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "../../../resources/migrations");
+  return resolveResourcesDir("migrations");
 }
 
 /**

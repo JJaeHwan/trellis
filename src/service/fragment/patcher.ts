@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import { ExitCode, HarnessError } from "../../common/errors/index.js";
 import { realFsAdapter, type FsAdapter } from "../../external/fs-adapter.js";
+import { entryKeyPresent } from "./entry-key.js";
 import type { PatchDecl } from "./types.js";
 
 /**
@@ -123,8 +124,8 @@ export function applyPatches(
     const slotLines = lines.slice(startIndex + 1, endIndex);
     const slotText = slotLines.join("\n");
 
-    // entryKey 멱등 검사
-    if (slotText.includes(patch.entryKey)) {
+    // entryKey 멱등 검사 (토큰 경계 — prefix 충돌 방지)
+    if (entryKeyPresent(slotText, patch.entryKey)) {
       skipped.push(patch);
       // 버퍼 유지 (변경 없음)
       buffers.set(filePath, content);

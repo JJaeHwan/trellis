@@ -1,0 +1,6 @@
+{
+  "from": "0.10.0",
+  "to": "0.11.0",
+  "note": "No-op migration. trellis 0.11.0 introduced the `trellis upgrade` command and the migration-manifest system itself — both tool-side features that change nothing in a scaffolded project's file tree (no new fullbody slots, no new required files). This manifest exists only to keep the upgrade chain contiguous so the stepping loop can advance a project's spec.trellisVersion across this minor.",
+  "playbooks": {}
+}

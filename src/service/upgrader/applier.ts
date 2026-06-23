@@ -111,16 +111,12 @@ export function applyManifest(
     filesAdded.push(action.path);
   }
 
-  // astPatches 적용 (dryRun 시 실제 변경 없이 결과만 계산)
+  // astPatches 적용 — dryRun 시에도 ts-morph 엔진을 in-memory 로 돌려(쓰기 없이)
+  // 정확한 applied/skipped 를 계산하고 target 오류도 동일하게 surface 한다.
   if (playbookMig.astPatches !== undefined && playbookMig.astPatches.length > 0) {
-    if (dryRun) {
-      // dryRun 에서는 적용 자체 안 함 — applied 목록만 제공 (실제 멱등 검사 없이 모두 candidate)
-      astPatchesApplied = playbookMig.astPatches;
-    } else {
-      const r = applyAstPatches(projectDir, playbookMig.astPatches, fs);
-      astPatchesApplied = r.applied;
-      astPatchesSkipped = r.skipped;
-    }
+    const r = applyAstPatches(projectDir, playbookMig.astPatches, fs, dryRun);
+    astPatchesApplied = r.applied;
+    astPatchesSkipped = r.skipped;
   }
 
   return {

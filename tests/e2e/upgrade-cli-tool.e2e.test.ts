@@ -1,6 +1,7 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { ProjectSpec } from "../../src/domain/index.js";
 import { scaffold } from "../../src/service/scaffolder/index.js";
@@ -380,5 +381,53 @@ describe("Case 7: no manifest for 0.8.0 → 0.9.0 → HarnessError", { timeout: 
       expect(err).toBeInstanceOf(HarnessError);
       expect((err as HarnessError).hint).toBeDefined();
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Case 8: full chain to the CURRENT package version — exercises the real
+// multi-step stepping loop. Cases 1–7 all hardcode "0.10.0" as current, so the
+// multi-manifest path (the part most likely to break) was previously uncovered.
+// This case reads the version from package.json so it tracks releases instead
+// of re-introducing the hardcoded-version staleness.
+// ---------------------------------------------------------------------------
+
+describe("Case 8: 0.9.0 → current package version — full manifest chain", { timeout: 30_000 }, () => {
+  const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const currentVersion = (
+    JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf-8")) as { version: string }
+  ).version;
+  const curMinor = parseInt(currentVersion.split(".")[1] ?? "0", 10);
+
+  let projectDir: string;
+  let result: ReturnType<typeof runUpgrade>;
+
+  beforeAll(() => {
+    projectDir = join(workDir, "case8-full-chain");
+    scaffoldV090(projectDir, "0.9.0");
+    result = runUpgrade(projectDir, currentVersion, {}, realFsAdapter, mockGitClean);
+  });
+
+  it("steps cover every minor from 0.9.0 up to the current version", () => {
+    expect(result.steps).toHaveLength(curMinor - 9);
+    expect(result.steps[0]).toEqual({ from: "0.9.0", to: "0.10.0" });
+  });
+
+  it("applies the 0.9.0→0.10.0 slots (imports + commands) along the way", () => {
+    expect(result.slotsAdded.some((s) => s.slot === "imports")).toBe(true);
+    expect(result.slotsAdded.some((s) => s.slot === "commands")).toBe(true);
+  });
+
+  it("bumps spec.json to the current version", () => {
+    const spec = JSON.parse(
+      readFileSync(join(projectDir, ".trellis/spec.json"), "utf-8"),
+    ) as { trellisVersion: string };
+    expect(spec.trellisVersion).toBe(currentVersion);
+  });
+
+  it("is idempotent — a second run is a no-op", () => {
+    const second = runUpgrade(projectDir, currentVersion, {}, realFsAdapter, mockGitClean);
+    expect(second.steps).toHaveLength(0);
+    expect(second.slotsAdded).toHaveLength(0);
   });
 });

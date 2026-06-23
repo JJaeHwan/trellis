@@ -60,17 +60,11 @@ Predictable quality matters most when you code with AI agents. Instead of asking
 
 ## Status
 
-**v0.10.0** on npm — daily-driver maturity (L4 graduated)
+**v0.12.1** on npm — L5 maturity (public-adoption gate), L6 enabling tech in place.
 
-> v0.11.0 was tagged on GitHub but never reached npm — npm rotated
-> granular write tokens in response to the "Mini Shai-Hulud" supply-chain
-> pattern at the same moment the publish workflow tried to run. The
-> pipeline is now wired to Trusted Publishing (OIDC + provenance), and
-> all P13 work ships on the next release.
+P0–P15 complete: scaffolding, interview, generator, validator, doctor, `trellis add` (fragment + multi-slot patch), `trellis remove` (idempotent reverse of add — round-trips), `trellis list` (list / detail / `--json`), `trellis upgrade` (migration manifest, idempotent slot inserts, `--dry-run`/`--force`), cli-tool dogfooding fragments (`command` + `service-module`), and the ts-morph **AST patch system** (`arrayPush` / `objectKey` / `importAdd` — marker-free, coexists with block markers). All commands include `--json`, actionable error hints, and doctor 8-rules.
 
-P0–P13 complete: scaffolding, interview, generator, validator, doctor, `trellis add` (fragment + multi-slot patch), `trellis list` (list / detail / `--json`), cli-tool dogfooding fragments (`command` + `service-module`), `trellis upgrade` (migration manifest, idempotent slot inserts, `--dry-run`/`--force`). All commands include `--json`, actionable error hints, and doctor 6-rules.
-
-`release-please` automates version bumps on `feat:`/`fix:` commits, including version-constant sync via `extra-files`.
+`release-please` automates version bumps on `feat:`/`fix:` commits (version-constant sync via `extra-files`); npm publish runs through Trusted Publishing (OIDC + provenance).
 
 Roadmap: [`docs/plans/`](docs/plans/)
 

@@ -1,7 +1,7 @@
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import type { Finding } from "../types.js";
+import { resolveResourcesDir } from "../../../external/resources-root.js";
 
 interface PatchDeclShape {
   readonly file: string;
@@ -17,12 +17,10 @@ interface FragmentMetaShape {
 
 /**
  * 번들된 resources/templates 루트 경로를 반환한다.
- * (빌드 후 dist/ 에서도 동작하도록 import.meta.url 기준)
+ * (공유 resolveResourcesDir 경유 — 번들/소스 양쪽에서 동작)
  */
 function getTemplatesRoot(): string {
-  const here = dirname(fileURLToPath(import.meta.url));
-  // src/service/doctor/rules/ → resources/templates/
-  return resolve(here, "../../../../resources/templates");
+  return resolveResourcesDir("templates");
 }
 
 /**

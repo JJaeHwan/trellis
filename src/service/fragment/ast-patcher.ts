@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import { Node, SyntaxKind, type SourceFile } from "ts-morph";
+import { entryKeyPresent } from "./entry-key.js";
 import { ExitCode, HarnessError } from "../../common/errors/index.js";
 import { realFsAdapter, type FsAdapter } from "../../external/fs-adapter.js";
 import {
@@ -41,6 +42,7 @@ export function applyAstPatches(
   projectDir: string,
   patches: readonly AstPatchDecl[],
   fs: FsAdapter = realFsAdapter,
+  dryRun = false,
 ): AstPatchResult {
   const applied: AstPatchDecl[] = [];
   const skipped: AstPatchDecl[] = [];
@@ -76,10 +78,13 @@ export function applyAstPatches(
     }
   }
 
-  // dirty 파일만 한 번에 기록
-  for (const [filePath, { sf, dirty }] of cache) {
-    if (dirty) {
-      fs.writeFile(filePath, sf.getFullText());
+  // dirty 파일만 한 번에 기록 (dryRun 시 쓰지 않음 — applied/skipped 는
+  // in-memory 멱등 검사로 이미 정확히 계산됐고, target 오류도 위에서 throw 된다)
+  if (!dryRun) {
+    for (const [filePath, { sf, dirty }] of cache) {
+      if (dirty) {
+        fs.writeFile(filePath, sf.getFullText());
+      }
     }
   }
 
@@ -112,9 +117,9 @@ function applySingleAstPatch(patch: AstPatchDecl, sf: SourceFile): boolean {
         `→ ${patch.file} 의 '${sel.target}' 가 배열 리터럴인지 확인하세요.`,
       );
     }
-    // entryKey 멱등 검사: 배열 요소들의 텍스트 중 entryKey 포함 여부
+    // entryKey 멱등 검사: 배열 요소 텍스트에 entryKey 가 토큰 경계로 존재하는지
     for (const elem of init.getElements()) {
-      if (elem.getText().includes(patch.entryKey)) {
+      if (entryKeyPresent(elem.getText(), patch.entryKey)) {
         return false;
       }
     }

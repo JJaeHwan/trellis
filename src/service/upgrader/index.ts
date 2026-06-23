@@ -6,6 +6,7 @@ import type { AstPatchDecl } from "../fragment/types.js";
 import { applyManifest } from "./applier.js";
 import { loadManifest } from "./manifest-loader.js";
 import { realGitChecker, type GitChecker } from "./git-status.js";
+import { createTransactionalFs } from "./transactional-fs.js";
 
 export interface UpgradeOptions {
   readonly dryRun?: boolean;
@@ -122,32 +123,37 @@ export function runUpgrade(
   const allAstPatchesApplied: AstPatchDecl[] = [];
   const allAstPatchesSkipped: AstPatchDecl[] = [];
 
+  // 멀티스텝 중간 실패 시 부분 적용을 되돌리기 위해 쓰기를 트랜잭션으로 감싼다
+  // (dry-run 은 애초에 쓰지 않으므로 래핑 불필요).
+  const dryRun = options.dryRun ?? false;
+  const tx = dryRun ? undefined : createTransactionalFs(fs);
+  const applyFs = tx ?? fs;
+
   let cursorMinor = specSemver.minor;
-  while (cursorMinor < curSemver.minor) {
-    const fromV = `${specSemver.major}.${cursorMinor}.0`;
-    const toV = `${specSemver.major}.${cursorMinor + 1}.0`;
-    const manifest = loadManifest(fromV, toV, fs);
-    steps.push({ from: fromV, to: toV });
+  try {
+    while (cursorMinor < curSemver.minor) {
+      const fromV = `${specSemver.major}.${cursorMinor}.0`;
+      const toV = `${specSemver.major}.${cursorMinor + 1}.0`;
+      const manifest = loadManifest(fromV, toV, fs);
+      steps.push({ from: fromV, to: toV });
 
-    const result = applyManifest(
-      manifest,
-      spec.playbookId,
-      projectDir,
-      fs,
-      options.dryRun ?? false,
-    );
-    allSlotsAdded.push(...result.slotsAdded);
-    allSlotsSkipped.push(...result.slotsSkipped);
-    allFilesAdded.push(...result.filesAdded);
-    allFilesSkipped.push(...result.filesSkipped);
-    allAstPatchesApplied.push(...result.astPatchesApplied);
-    allAstPatchesSkipped.push(...result.astPatchesSkipped);
+      const result = applyManifest(manifest, spec.playbookId, projectDir, applyFs, dryRun);
+      allSlotsAdded.push(...result.slotsAdded);
+      allSlotsSkipped.push(...result.slotsSkipped);
+      allFilesAdded.push(...result.filesAdded);
+      allFilesSkipped.push(...result.filesSkipped);
+      allAstPatchesApplied.push(...result.astPatchesApplied);
+      allAstPatchesSkipped.push(...result.astPatchesSkipped);
 
-    cursorMinor++;
+      cursorMinor++;
+    }
+  } catch (err) {
+    tx?.rollback();
+    throw err;
   }
 
   // 5. spec.json 갱신 (dry-run 이 아닐 때만)
-  if (!(options.dryRun ?? false)) {
+  if (!dryRun) {
     const newSpec = { ...spec, trellisVersion: currentTrellisVersion };
     fs.writeFile(resolve(projectDir, ".trellis/spec.json"), JSON.stringify(newSpec, null, 2));
   }
@@ -162,7 +168,7 @@ export function runUpgrade(
     filesSkipped: allFilesSkipped,
     astPatchesApplied: allAstPatchesApplied,
     astPatchesSkipped: allAstPatchesSkipped,
-    dryRun: options.dryRun ?? false,
+    dryRun,
   };
 }
 
