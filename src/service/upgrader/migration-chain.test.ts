@@ -82,10 +82,10 @@ describe("migration manifest chain", () => {
     expect(
       missing,
       `Missing migration manifest(s): ${missing.join(", ")}. ` +
-        `Add resources/migrations/<from>-to-<to>.json for each gap so ` +
-        `'trellis upgrade' can step a project up to ${current}. ` +
-        `A no-op manifest ({"from":"...","to":"...","playbooks":{}}) is correct ` +
-        `when the release introduced no scaffolded structural change.`,
+        `Run 'npm run manifests:ensure' to generate no-op manifest(s), or add ` +
+        `resources/migrations/<from>-to-<to>.json manually so 'trellis upgrade' ` +
+        `can step a project up to ${current}. (A no-op manifest is correct when ` +
+        `the release introduced no scaffolded structural change.)`,
     ).toEqual([]);
   });
 });

@@ -153,6 +153,7 @@ service/
   - 린트 통과
   - 단위 + 골든 테스트 통과
   - `docs/plans/NN-*.md` 있을 것 (비자명한 작업 시)
+- 릴리스(minor) 시: release-please 가 버전을 올리면 migration 체인 가드가 새 매니페스트를 요구한다. `npm run manifests:ensure` 로 누락된 no-op 매니페스트를 생성·커밋한다 (해당 릴리스가 슬롯/파일을 추가했다면 실제 매니페스트로 대체).
 
 ---
 
