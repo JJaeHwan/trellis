@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import { Node, type SourceFile } from "ts-morph";
+import { entryKeyPresent } from "./entry-key.js";
 
 /** JS 식별자로 바로 쓸 수 있는지 판단 (슬래시, 하이픈 등 포함 시 따옴표 필요). */
 function isValidIdentifier(key: string): boolean {
@@ -96,7 +97,7 @@ function removeSingleAstPatch(patch: AstPatchDecl, sf: SourceFile): boolean {
     const elements = init.getElements();
     for (let i = 0; i < elements.length; i++) {
       const elem = elements[i]!;
-      if (elem.getText().includes(patch.entryKey)) {
+      if (entryKeyPresent(elem.getText(), patch.entryKey)) {
         init.removeElement(i);
         return true;
       }
