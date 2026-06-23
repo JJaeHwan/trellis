@@ -3,9 +3,7 @@ import { ExitCode, HarnessError } from "../common/errors/index.js";
 import type { AstPatchSelector } from "../service/fragment/index.js";
 import { runUpgrade, type UpgradeOptions, type UpgradeResult } from "../service/upgrader/index.js";
 import { realFsAdapter, type FsAdapter } from "../external/fs-adapter.js";
-
-// 현재 trellis 버전 — release-please extra-files 로 자동 동기화
-const TRELLIS_VERSION = "0.14.0"; // x-release-please-version
+import { TRELLIS_VERSION } from "../common/version.js";
 
 interface CliOptions {
   dryRun?: boolean;

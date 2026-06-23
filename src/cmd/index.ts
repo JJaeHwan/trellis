@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import { HarnessError, ExitCode } from "../common/errors/index.js";
 import { logger } from "../common/logger/index.js";
+import { TRELLIS_VERSION as VERSION } from "../common/version.js";
 import { registerAddCommand } from "./add.js";
 import { registerRemoveCommand } from "./remove.js";
 import { registerCheckCommand } from "./check.js";
@@ -9,8 +10,6 @@ import { registerHelloCommand } from "./hello.js";
 import { registerListCommand } from "./list.js";
 import { registerNewCommand } from "./new.js";
 import { registerUpgradeCommand } from "./upgrade.js";
-
-const VERSION = "0.14.0"; // x-release-please-version
 
 async function main(argv: string[]): Promise<void> {
   const program = new Command();
