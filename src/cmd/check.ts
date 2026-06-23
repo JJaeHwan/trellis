@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { ExitCode } from "../common/errors/index.js";
+import { ExitCode, HarnessError } from "../common/errors/index.js";
 import { validateProject } from "../service/validator/index.js";
 import type { ValidationReport } from "../service/validator/index.js";
 
@@ -13,21 +13,56 @@ export function registerCheckCommand(program: Command): void {
     .description(
       "Validate that the target project respects layered architecture rules.",
     )
-    .option("--json", "Emit JSON to stdout instead of human-readable text")
+    .option(
+      "--json",
+      "Emit a single-line JSON result to stdout (human text goes to stderr)",
+    )
     .action(async (targetDir: string | undefined, options: CheckOptions) => {
-      const dir = targetDir ?? process.cwd();
-      const report = await validateProject(dir);
-
-      if (options.json) {
-        process.stdout.write(JSON.stringify(report, null, 2) + "\n");
-      } else {
-        printReport(report);
-      }
-
-      if (report.violations.length > 0) {
-        process.exit(ExitCode.ValidationFailure);
-      }
+      await runCheck(targetDir ?? process.cwd(), options.json === true);
     });
+}
+
+export async function runCheck(dir: string, jsonMode: boolean): Promise<void> {
+  let report: ValidationReport;
+  try {
+    report = await validateProject(dir);
+  } catch (err) {
+    if (jsonMode && err instanceof HarnessError) {
+      emitJsonError(err);
+      process.exit(err.exitCode);
+    }
+    throw err;
+  }
+
+  if (jsonMode) {
+    process.stdout.write(
+      JSON.stringify({ ok: true, command: "check", ...report }) + "\n",
+    );
+  } else {
+    printReport(report);
+  }
+
+  if (report.violations.length > 0) {
+    process.exit(ExitCode.ValidationFailure);
+  }
+}
+
+function emitJsonError(err: HarnessError): void {
+  process.stdout.write(
+    JSON.stringify({
+      ok: false,
+      command: "check",
+      error: {
+        code: err.exitCode,
+        message: err.message,
+        ...(err.hint !== undefined ? { hint: err.hint } : {}),
+      },
+    }) + "\n",
+  );
+  process.stderr.write(`${err.message}\n`);
+  if (err.hint !== undefined) {
+    process.stderr.write(`→ ${err.hint}\n`);
+  }
 }
 
 function printReport(report: ValidationReport): void {
