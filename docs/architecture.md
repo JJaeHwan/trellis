@@ -23,7 +23,7 @@
  │     │                                           │
  │  L2 domain/    Interview · Playbook · ProjectSpec│
  │     │                                           │
- │  L1 config/    settings loader                  │
+ │  L1 config/    (reserved)                       │
  │     │                                           │
  │  L0 common/    types · errors · logger · tty    │
  └─────────────────────────────────────────────────┘
@@ -49,8 +49,8 @@ src/
 │   ├── logger/       # TTY 감지 기반 로거 (stderr)
 │   └── result/       # Result<T, E> 타입
 │
-├── config/           # L1 — 설정 로드 (default/env/flag/file)
-│   └── settings.ts
+├── config/           # L1 — 예약(미구현): 향후 설정 로드 (default/env/flag/file)
+│   └── .gitkeep       # slot 예약 — settings.ts 는 로더 도입 시 추가
 │
 ├── domain/           # L2 — 순수 도메인 모델
 │   ├── interview.ts    # Question, Option, Answer, InterviewResult
