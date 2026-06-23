@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.14.0](https://github.com/JJaeHwan/trellis/compare/v0.13.0...v0.14.0) (2026-06-23)
+
+
+### Features
+
+* **upgrade:** roll back partial changes on mid-sequence failure ([71e575f](https://github.com/JJaeHwan/trellis/commit/71e575f13c0ed0728e2576b92f1e699742e4a670))
+
+
+### Bug Fixes
+
+* **cmd:** warn and require explicit opt-in on 'new' match mode ([2c7cd00](https://github.com/JJaeHwan/trellis/commit/2c7cd0022dc49bd5b79de45cdb4fca8e9355cdbc))
+* **deps:** enforce DEP-02 in dep-cruiser; mark L1 config as reserved ([96e0587](https://github.com/JJaeHwan/trellis/commit/96e058773b26232ef7505d5d0fd6ddb296487f6a))
+* **external:** resolve bundled resources via upward search ([98aeb37](https://github.com/JJaeHwan/trellis/commit/98aeb3798280a3ea2623d3393b1e6474322d3192))
+* **fragment:** boundary-aware entryKey idempotency; dry-run-safe AST patches ([0e234e2](https://github.com/JJaeHwan/trellis/commit/0e234e22d450463d4370961aee9ec369a5c97568))
+* **upgrade:** backfill migration chain to current version + contiguity guard ([18180dd](https://github.com/JJaeHwan/trellis/commit/18180dd940ca29b21434f7b2fefaa9d6b92b3e89))
+* **upgrade:** backfill no-op manifests for 0.12-&gt;0.13 and 0.13-&gt;0.14 ([fdcfcec](https://github.com/JJaeHwan/trellis/commit/fdcfcec13c8362a6ca2bae6837c4e51c9bd2f41e))
+* **upgrade:** backfill no-op migration manifests (0.12-&gt;0.13, 0.13-&gt;0.14) to green main ([2fa8d72](https://github.com/JJaeHwan/trellis/commit/2fa8d72166157fb9a28f9f5d659a2ed8ddad146e))
+* **upgrade:** faithful astPatch dry-run preview (no over-report) ([d8c9a8a](https://github.com/JJaeHwan/trellis/commit/d8c9a8ae2ab1c5014df39cd9713886941603ec49))
+
 ## [0.13.0](https://github.com/JJaeHwan/trellis/compare/v0.12.1...v0.13.0) (2026-05-22)
 
 
