@@ -1,5 +1,5 @@
 {
-  "description": "Form component + Server Action + Zod schema — 단순 폼 한 묶음. 다이얼로그 wrap 없음. 보통 model fragment 와 함께 사용.",
+  "description": "Form component + Server Action + Zod schema — self-contained 단순 폼 한 묶음 (다이얼로그 wrap 없음). action 은 컴포넌트 옆에 함께 생성되어 admin fragment 없이도 동작한다. model fragment 와 함께 쓰면 action 을 repository 호출로 확장.",
   "dependencies": {
     "zod": "^3.22.4"
   }

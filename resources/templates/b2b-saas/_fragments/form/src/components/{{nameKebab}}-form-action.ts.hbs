@@ -1,0 +1,20 @@
+"use server";
+
+import { {{nameCamel}}FormSchema } from "@/lib/zod/{{nameKebab}}-form";
+
+/**
+ * {{namePascal}} 폼 제출 처리 Server Action (스캐폴드 — self-contained).
+ *
+ * model fragment 를 함께 추가했다면 TODO 위치에서 repository 를 호출하도록
+ * 확장하세요 (예: {{nameCamel}}Repository.create(parsed.data)).
+ */
+export async function create{{namePascal}}(formData: FormData) {
+  const parsed = {{nameCamel}}FormSchema.safeParse(
+    Object.fromEntries(formData.entries()),
+  );
+  if (!parsed.success) {
+    return { ok: false as const, errors: parsed.error.flatten() };
+  }
+  // TODO: persist parsed.data
+  return { ok: true as const };
+}
