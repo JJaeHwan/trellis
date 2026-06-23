@@ -1,7 +1,7 @@
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { Node } from "ts-morph";
+import { resolveResourcesDir } from "../../../external/resources-root.js";
 import {
   findExportedVariable,
   parseSourceFile,
@@ -22,8 +22,7 @@ interface FragmentMetaShape {
 }
 
 function getTemplatesRoot(): string {
-  const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "../../../../resources/templates");
+  return resolveResourcesDir("templates");
 }
 
 /**

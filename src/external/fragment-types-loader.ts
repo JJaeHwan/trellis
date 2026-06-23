@@ -1,12 +1,11 @@
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { realFsAdapter, type FsAdapter } from "./fs-adapter.js";
+import { resolveResourcesDir } from "./resources-root.js";
 
 const FRAGMENTS_DIR = "_fragments";
 
 function getTemplatesRoot(): string {
-  const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "../../resources/templates");
+  return resolveResourcesDir("templates");
 }
 
 /**

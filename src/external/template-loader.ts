@@ -1,11 +1,10 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, resolve, sep as pathSep } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve, sep as pathSep } from "node:path";
 import type { Template } from "../domain/index.js";
+import { resolveResourcesDir } from "./resources-root.js";
 
 function getTemplatesRoot(): string {
-  const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "../../resources/templates");
+  return resolveResourcesDir("templates");
 }
 
 export function loadTemplates(playbookId: string): Template[] {
