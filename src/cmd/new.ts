@@ -129,7 +129,17 @@ async function runNewInner(
   const matchResult = matchPlaybooks(interviewResult.answers, playbooks);
   printMatchSummary(matchResult);
 
-  const proceed = await prompter.confirm("이대로 진행할까요?", true);
+  if (matchResult.mode === "new") {
+    process.stderr.write(
+      `\n⚠ 어떤 플레이북도 충분히 매칭되지 않았습니다 (mode: new).\n` +
+        `  가장 가까운 '${matchResult.primary.id}' 플레이북을 출발점으로 사용합니다.\n` +
+        `  더 잘 맞는 구조가 필요하면 커스텀 플레이북 작성을 고려하세요.\n`,
+    );
+  }
+  const proceed = await prompter.confirm(
+    "이대로 진행할까요?",
+    matchResult.mode !== "new",
+  );
   if (!proceed) {
     process.stderr.write("취소됨.\n");
     if (jsonMode) {
